@@ -1,0 +1,291 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Primary gold: defaults here, overwritten at runtime from Settings (see theme.js). */
+:root {
+  /* Neutral blacks and greys (rgb triplets). White mode below redefines them. */
+  --ink-950: 8 8 8; --ink-900: 16 16 16; --ink-800: 24 24 24; --ink-700: 36 36 36;
+  --ink-600: 56 56 56; --ink-400: 143 143 143; --ink-300: 196 196 196;
+  --bam-gold: #FFC400;
+  --bam-gold-rgb: 255 196 0;
+  --bam-gold-light-rgb: 255 224 115;
+  --bam-gold-dark-rgb: 209 161 0;
+
+  /* Motion: every transition and animation below reads these, so speed is tuned in one place. */
+  --duration-fast: 150ms;
+  --duration-base: 300ms;
+  --duration-slow: 450ms;
+  --timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-row-out: 90ms; /* row hover fade-out; hover-in is always instant */
+}
+
+/* UI density: one class on the app wrapper drives padding, gaps and font sizes everywhere below. */
+.density-standard {
+  --d-page: 2rem; --d-stack: 1.25rem; --d-cell-x: 1rem; --d-cell-y: .75rem;
+  --d-row-x: 1rem; --d-row-y: .75rem; --d-fs: .875rem; --d-fs-sm: .75rem;
+  /* Tailwind p-4 / gap-4 / text-base. Padding and gap are variables (see .d-pad, .d-gap) so the app shell itself is not inset. */
+  --d-pad: 1rem; --d-gap: 1rem;
+  font-size: 1rem; line-height: 1.5rem;
+}
+.density-compact {
+  --d-page: 1rem; --d-stack: .625rem; --d-cell-x: .625rem; --d-cell-y: .3rem;
+  --d-row-x: .75rem; --d-row-y: .35rem; --d-fs: .78rem; --d-fs-sm: .68rem;
+  /* Tailwind p-1 / gap-1 / text-sm. */
+  --d-pad: .25rem; --d-gap: .25rem;
+  font-size: .875rem; line-height: 1.25rem;
+}
+.d-page { padding: var(--d-page); }
+.d-stack > * + * { margin-top: var(--d-stack); }
+.d-cell { padding: var(--d-cell-y) var(--d-cell-x); }
+.d-row { padding: var(--d-row-y) var(--d-row-x); }
+.d-text { font-size: var(--d-fs); }
+.d-text-sm { font-size: var(--d-fs-sm); }
+.d-pad { padding: var(--d-pad); }
+.d-gap { gap: var(--d-gap); }
+.density-compact .d-row .text-sm, .density-compact table .text-sm { font-size: var(--d-fs); }
+.density-compact .d-row .text-xs, .density-compact table .text-xs { font-size: var(--d-fs-sm); }
+
+/* ---- glows: box-shadow utilities. Gold reads --bam-gold-rgb, so it follows the color chosen in Settings. ---- */
+.glow-gold { box-shadow: 0 0 14px rgb(var(--bam-gold-rgb) / .35), 0 0 32px rgb(var(--bam-gold-rgb) / .15); }
+.glow-neutral { box-shadow: 0 0 0 1px rgb(255 255 255 / .06), 0 0 14px rgb(160 160 160 / .2); }
+/* Intense yellow, meant for inputs: also wins over .input:focus while the field is focused. */
+.glow-yellow, .glow-yellow:focus { box-shadow: 0 0 0 2px rgb(255 221 0 / .55), 0 0 18px rgb(255 221 0 / .65), 0 0 40px rgb(255 221 0 / .35); }
+
+/* ---- animations ---- */
+/* Pulses opacity .8 -> 1 and a gold glow. The glow replaces the element's own box-shadow while it runs. */
+@keyframes bam-breathe {
+  0%, 100% { opacity: .8; box-shadow: 0 0 6px rgb(var(--bam-gold-rgb) / .15); }
+  50% { opacity: 1; box-shadow: 0 0 18px rgb(var(--bam-gold-rgb) / .45); }
+}
+.animate-breathe { animation: bam-breathe calc(var(--duration-slow) * 6) var(--timing-function) infinite; }
+
+/* Border cycles gold -> transparent -> gold, 3 times, then stops. The element needs a border (.card, .btn and .input have one; otherwise add Tailwind's `border`).
+   For a flash that repeats until the class is removed, set style={{ animationIterationCount: 'infinite' }}. */
+@keyframes bam-flash {
+  0%, 100% { border-color: var(--bam-gold); }
+  50% { border-color: transparent; }
+}
+.animate-flash { animation: bam-flash var(--duration-base) var(--timing-function) 3; }
+
+/* 4px slide up while fading in. fill-mode is backwards only, so it does not freeze transform and block hover transforms afterward. */
+@keyframes bam-fade-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-fade-up { animation: bam-fade-up var(--duration-base) var(--timing-function) backwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-breathe, .animate-flash, .animate-fade-up { animation: none; }
+}
+
+/* ---- Focus: every focusable element gets a 2px solid white outline, 2px offset ---- */
+*:focus-visible, .input:focus-visible {
+  outline: 2px solid #ffffff !important;
+  outline-offset: 2px !important;
+}
+
+/* ---- Row interaction: hover = full function-color border + matching glow; selected = gold wash + full border ---- */
+/* Hover/selected snaps ON instantly (0ms); only the fade OUT back to rest is animated, so rows feel immediate. */
+.row-int { cursor: pointer; transition: box-shadow var(--duration-row-out) ease-out, background-color var(--duration-row-out) ease-out, border-color var(--duration-row-out) ease-out; }
+.row-int:hover, .row-int[data-selected='true'] { transition-duration: 0ms; }
+/* Interactive cards skip the backdrop blur (the card fill is near-opaque anyway); re-blurring on every hover is what makes them feel laggy. */
+.row-int.card { backdrop-filter: none; }
+tr.row-int > td { transition: box-shadow var(--duration-row-out) ease-out, background-color var(--duration-row-out) ease-out; }
+tr.row-int:hover > td, tr.row-int[data-selected='true'] > td { transition-duration: 0ms; }
+.row-int:hover,
+.row-int[data-selected='true'] {
+  border-color: rgb(var(--accent-rgb));
+  box-shadow: inset 0 0 0 1.5px rgb(var(--accent-rgb)), 0 0 10px rgb(var(--accent-rgb) / .45);
+}
+.row-int[data-selected='true'] { background-color: rgb(var(--bam-gold-rgb) / .10); }
+/* table rows: borders and glow are drawn on the cells (box-shadow on <tr> is unreliable) */
+tr.row-int:hover, tr.row-int[data-selected='true'] { box-shadow: none; }
+tr.row-int:hover > td, tr.row-int[data-selected='true'] > td {
+  box-shadow: inset 0 1.5px 0 0 rgb(var(--accent-rgb)), inset 0 -1.5px 0 0 rgb(var(--accent-rgb)), inset 0 0 10px 0 rgb(var(--accent-rgb) / .3);
+}
+tr.row-int:hover > td:first-child, tr.row-int[data-selected='true'] > td:first-child {
+  box-shadow: inset 1.5px 0 0 0 rgb(var(--accent-rgb)), inset 0 1.5px 0 0 rgb(var(--accent-rgb)), inset 0 -1.5px 0 0 rgb(var(--accent-rgb)), inset 0 0 10px 0 rgb(var(--accent-rgb) / .3);
+}
+tr.row-int:hover > td:last-child, tr.row-int[data-selected='true'] > td:last-child {
+  box-shadow: inset -1.5px 0 0 0 rgb(var(--accent-rgb)), inset 0 1.5px 0 0 rgb(var(--accent-rgb)), inset 0 -1.5px 0 0 rgb(var(--accent-rgb)), inset 0 0 10px 0 rgb(var(--accent-rgb) / .3);
+}
+tr.row-int[data-selected='true'] > td { background-color: rgb(var(--bam-gold-rgb) / .10); }
+
+/* ---- Split-pane inspector: slides in from the right and fades 0.7 -> 1.0 over 300ms ---- */
+@keyframes pane-in { from { transform: translateX(100%); opacity: .7; } to { transform: translateX(0); opacity: 1; } }
+.inspector-pane { animation: pane-in 300ms ease-out both; }
+/* Reduced-motion users keep the 300ms fade (0.7 -> 1.0) but not the movement. */
+@keyframes pane-fade { from { opacity: .7; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .inspector-pane { animation-name: pane-fade; } }
+
+html, body, #root { height: 100%; }
+body { background: #080808; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #383838; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--accent-rgb) / .6); }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ---- per-tab identity: accent color + display font ---- */
+[data-view='today']     { --accent-rgb: var(--bam-gold-rgb);   --font-display: 'Orbitron', sans-serif; }
+[data-view='match']     { --accent-rgb: var(--bam-gold-rgb);  --font-display: 'Audiowide', sans-serif; }
+[data-view='leads']     { --accent-rgb: 240 240 240;  --font-display: 'Rajdhani', sans-serif; }
+[data-view='board']     { --accent-rgb: var(--bam-gold-light-rgb); --font-display: 'Chakra Petch', sans-serif; }
+[data-view='inventory'] { --accent-rgb: var(--bam-gold-dark-rgb);   --font-display: 'Exo 2', sans-serif; }
+[data-view='ingest']    { --accent-rgb: var(--bam-gold-rgb);   --font-display: 'Michroma', sans-serif; }
+[data-view='dashboard'] { --accent-rgb: 190 196 206; --font-display: 'Space Grotesk', sans-serif; }
+[data-view='settings']  { --accent-rgb: 190 196 206; --font-display: 'Space Grotesk', sans-serif; }
+
+/* ---- futuristic stage: deep navy, glow orbs, faint grid ---- */
+.stage {
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgb(var(--accent-rgb) / .16), transparent 60%),
+    radial-gradient(700px 500px at -5% 105%, rgb(var(--accent-rgb) / .10), transparent 60%),
+    #080808;
+}
+.stage-grid {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgb(var(--accent-rgb) / .05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--accent-rgb) / .05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse at 50% 0%, #000 20%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 0%, #000 20%, transparent 75%);
+}
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.view-enter { animation: rise .35s ease-out both; }
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 12px rgb(var(--c) / .4), inset 0 0 12px rgb(var(--c) / .15); }
+  50% { box-shadow: 0 0 26px rgb(var(--c) / .8), inset 0 0 16px rgb(var(--c) / .25); }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl;
+    background: linear-gradient(180deg, rgb(255 255 255 / .045), rgb(255 255 255 / .012)), #101010;
+    border: 1px solid rgb(var(--accent-rgb) / .22);
+    box-shadow: 0 10px 34px rgb(0 0 0 / .4), inset 0 1px 0 rgb(255 255 255 / .05);
+    backdrop-filter: blur(6px);
+  }
+  button.card:hover, a.card:hover, .card.hover-glow:hover {
+    border-color: rgb(var(--accent-rgb) / .8);
+    box-shadow: 0 0 22px rgb(var(--accent-rgb) / .28), 0 10px 34px rgb(0 0 0 / .4);
+  }
+  .h-display { @apply uppercase tracking-wider; font-family: var(--font-display); }
+  h1.h-display {
+    color: #fff;
+    text-shadow: 0 0 24px rgb(var(--accent-rgb) / .65), 0 0 2px rgb(var(--accent-rgb) / .9);
+    letter-spacing: .06em;
+  }
+  .glow-text { text-shadow: 0 0 20px rgb(var(--accent-rgb) / .75); }
+  .label { @apply block text-[11px] font-semibold uppercase tracking-widest text-ink-400 mb-1; }
+  .input {
+    @apply w-full rounded-lg px-3 py-2 text-sm text-neutral-100 placeholder:text-ink-400 focus:outline-none;
+    background: rgb(8 8 8 / .75);
+    border: 1px solid #383838;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .input:focus { border-color: rgb(var(--accent-rgb)); box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / .18), 0 0 16px rgb(var(--accent-rgb) / .3); }
+
+  /* Neon bordered buttons. --c overrides the color per button (defaults to the tab accent). */
+  .btn, .btn-primary, .btn-ghost, .btn-danger, .btn-neon {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold uppercase tracking-wider transition duration-150 disabled:opacity-40 disabled:shadow-none;
+    --c: var(--accent-rgb);
+    color: rgb(var(--c));
+    background: rgb(var(--c) / .08);
+    border: 1.5px solid rgb(var(--c) / .85);
+    box-shadow: 0 0 10px rgb(var(--c) / .35), inset 0 0 10px rgb(var(--c) / .1);
+    text-shadow: 0 0 8px rgb(var(--c) / .6);
+    cursor: pointer;
+  }
+  .btn:hover, .btn-primary:hover, .btn-ghost:hover, .btn-danger:hover, .btn-neon:hover {
+    background: rgb(var(--c));
+    color: #080808;
+    text-shadow: none;
+    box-shadow: 0 0 26px rgb(var(--c) / .75), 0 0 4px rgb(var(--c));
+    transform: translateY(-1px);
+  }
+  .btn-primary { background: rgb(var(--c) / .18); box-shadow: 0 0 18px rgb(var(--c) / .55), inset 0 0 14px rgb(var(--c) / .18); animation: pulse-glow 3s ease-in-out infinite; }
+  .btn-primary:hover { animation: none; }
+  .btn-ghost { --c: 150 150 150; box-shadow: 0 0 6px rgb(var(--c) / .2); }
+  .btn-ghost:hover { --c: var(--accent-rgb); }
+  .btn-danger { --c: 255 90 80; }
+  /* Solid primary-gold action button (follows --bam-gold from Settings). */
+  .btn-gold {
+    @apply inline-flex items-center justify-center rounded-lg px-5 py-2.5 text-sm font-extrabold uppercase tracking-wider text-black transition duration-150 disabled:cursor-not-allowed disabled:opacity-40;
+    background: var(--bam-gold);
+    border: 1.5px solid var(--bam-gold);
+    box-shadow: 0 0 18px rgb(var(--bam-gold-rgb) / .5);
+  }
+  .btn-gold:hover:not(:disabled) { filter: brightness(1.12); box-shadow: 0 0 28px rgb(var(--bam-gold-rgb) / .8); transform: translateY(-1px); }
+  .chip { @apply inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium; }
+}
+
+/* ======================= Settings → Features / Look & Layout ======================= */
+
+/* Self-hosted fonts (copied from the live CRM). Used when "Self-hosted fonts" is on, and as fallbacks. */
+@font-face { font-family: 'Barlow Condensed'; font-weight: 600; font-display: swap; src: url('/fonts/barlow-condensed-600.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 700; font-display: swap; src: url('/fonts/barlow-condensed-700.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 800; font-display: swap; src: url('/fonts/barlow-condensed-800.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 900; font-display: swap; src: url('/fonts/barlow-condensed-900.woff2') format('woff2'); }
+@font-face { font-family: 'Black Ops One'; font-weight: 400; font-display: swap; src: url('/fonts/black-ops-one-400.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-weight: 400; font-display: swap; src: url('/fonts/ibm-plex-mono-400.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-weight: 600; font-display: swap; src: url('/fonts/ibm-plex-mono-600.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 400; font-display: swap; src: url('/fonts/inter-400.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 500; font-display: swap; src: url('/fonts/inter-500.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 600; font-display: swap; src: url('/fonts/inter-600.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 700; font-display: swap; src: url('/fonts/inter-700.woff2') format('woff2'); }
+[data-selfhost='1'] [class*="font-['Orbitron']"] { font-family: 'Black Ops One', 'Barlow Condensed', sans-serif !important; }
+
+/* Menu buttons: glow follows the Glow setting. */
+.nav-btn { box-shadow: 0 0 8px rgb(var(--c) / .15); }
+.nav-btn.is-active { box-shadow: 0 0 24px rgb(var(--c) / .7); }
+
+/* On/off switch used by the Features cards and Look controls. */
+.switch { position: relative; width: 38px; height: 21px; flex-shrink: 0; border-radius: 999px; background: rgb(var(--ink-600)); border: 0; cursor: pointer; transition: background .15s, box-shadow .15s; }
+.switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 15px; height: 15px; border-radius: 999px; background: #bbb; transition: left .15s, background .15s; }
+.switch.is-on { background: var(--bam-gold); box-shadow: 0 0 10px rgb(var(--bam-gold-rgb) / .55); }
+.switch.is-on::after { left: 20px; background: #080808; }
+.switch:disabled { opacity: .35; cursor: not-allowed; }
+.preset-btn { border: 1px solid rgb(var(--ink-600)); border-radius: 6px; padding: 4px 10px; color: rgb(var(--ink-300)); background: transparent; font-weight: 600; }
+.preset-btn:hover { border-color: var(--bam-gold); color: var(--bam-gold); }
+.feat-active { border: 2px solid var(--bam-gold) !important; box-shadow: 0 0 0 4px rgb(var(--bam-gold-rgb) / .07), 0 0 30px rgb(var(--bam-gold-rgb) / .16) !important; }
+.feat-active.is-over { box-shadow: 0 0 0 4px rgb(var(--bam-gold-rgb) / .3), 0 0 44px rgb(var(--bam-gold-rgb) / .4) !important; }
+
+/* Glow: soft and off. Every theme except Neon runs with glow off. */
+[data-glow='soft'] :is(.btn, .btn-primary, .btn-ghost, .btn-danger, .btn-neon) { box-shadow: 0 0 5px rgb(var(--c) / .25); text-shadow: none; animation: none; }
+[data-glow='soft'] .nav-btn.is-active { box-shadow: 0 0 10px rgb(var(--c) / .4); }
+[data-glow='soft'] h1.h-display { text-shadow: 0 0 10px rgb(var(--accent-rgb) / .35); }
+[data-glow='off'] :is(.btn, .btn-primary, .btn-ghost, .btn-danger, .btn-neon, .btn-gold, .nav-btn, .switch) { box-shadow: none !important; text-shadow: none !important; animation: none !important; }
+[data-glow='off'] h1.h-display, [data-glow='off'] .glow-text { text-shadow: none; }
+[data-glow='off'] .stage { background: rgb(var(--ink-950)); }
+
+/* v01 Command: flat black, solid gold primary buttons. */
+[data-theme='command'] .btn-primary { background: var(--bam-gold); color: #080808; }
+[data-theme='command'] .card { backdrop-filter: none; box-shadow: none; background: rgb(var(--ink-900)); border-color: rgb(255 255 255 / .08); }
+
+/* v03 Jobsite: steel and hazard stripes, condensed type, square corners. */
+[data-theme='jobsite'] .stage { background: repeating-linear-gradient(135deg, #17150f 0 26px, #1b1912 26px 52px); }
+[data-theme='jobsite'] aside, [data-theme='jobsite'] header.relative { border-image: repeating-linear-gradient(135deg, var(--bam-gold) 0 12px, #111 12px 24px) 8; }
+[data-theme='jobsite'] .card { background: #1f1c15; border-color: rgb(var(--bam-gold-rgb) / .3); border-radius: 4px; box-shadow: none; backdrop-filter: none; }
+[data-theme='jobsite'] h1.h-display { font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif; font-weight: 900; letter-spacing: .04em; }
+[data-theme='jobsite'] .btn-primary { background: var(--bam-gold); color: #111; border-radius: 3px; }
+
+/* White mode (and the v02 Clean theme): light greys, dark text. */
+[data-mode='white'] {
+  --ink-950: 246 246 248; --ink-900: 255 255 255; --ink-800: 238 238 242; --ink-700: 224 224 230;
+  --ink-600: 200 200 208; --ink-400: 105 105 116; --ink-300: 70 70 80;
+  color: #1c1d22; background: rgb(var(--ink-950));
+}
+[data-mode='white'] .stage { background: rgb(var(--ink-950)); }
+[data-mode='white'] .card { background: #fff; border-color: rgb(0 0 0 / .1); box-shadow: 0 1px 3px rgb(0 0 0 / .06); backdrop-filter: none; }
+[data-mode='white'] :is(.text-white, .text-neutral-100, .text-neutral-200, .text-neutral-300, .text-slate-100) { color: #1c1d22; }
+[data-mode='white'] h1.h-display { color: #111; text-shadow: none; }
+[data-mode='white'] .input { background: #fff; border-color: rgb(0 0 0 / .18); color: #1c1d22; }
+[data-mode='white'] .text-gold, [data-mode='white'] .text-bam { color: rgb(var(--bam-gold-dark-rgb)); filter: brightness(.8); }
+[data-mode='white'] .stage-grid { opacity: .5; }
+[data-mode='white'] aside, [data-mode='white'] header.relative { background: #fff !important; }
+[data-theme='clean'] .btn-primary { background: var(--bam-gold); color: #111; }
+[data-mode='white'] .nav-btn:not(.is-active) { color: #1c1d22 !important; background: #fff !important; border-color: rgb(var(--c) / .55) !important; }
+[data-mode='white'] .nav-btn.is-active { color: #111 !important; }
+[data-mode='white'] [class*="text-gold/60"] { color: rgb(80 80 90) !important; }

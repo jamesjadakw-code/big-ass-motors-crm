@@ -1,0 +1,8 @@
+# Nothing in this package is meant to be served over the web (CLI/cron only).
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>

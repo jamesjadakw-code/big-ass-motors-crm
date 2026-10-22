@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B.A.M. CRM / Antigravity Implementation Brief — Claude Opus 5.5 Handoff</title>
+    <style>
+        :root {
+            --bg-dark: #0b0f19;
+            --panel-dark: #121826;
+            --accent-orange: #ff6b00;
+            --text-bright: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-glow: rgba(255, 107, 0, 0.15);
+            --border-subtle: #1f293d;
+            --code-green: #a7f3d0;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-bright);
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        header {
+            border-bottom: 2px solid var(--accent-orange);
+            padding-bottom: 20px;
+            margin-bottom: 36px;
+            box-shadow: 0 4px 20px rgba(255, 107, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+            color: #fff;
+            text-shadow: 0 0 10px var(--border-glow);
+        }
+        .subtitle {
+            color: var(--accent-orange);
+            font-weight: bold;
+            font-size: 1.05rem;
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+        .header-tag {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: #161f33;
+            border: 1px solid var(--border-subtle);
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
+        .intro-box {
+            background: linear-gradient(135deg, #161f33, #121826);
+            border-left: 4px solid var(--accent-orange);
+            padding: 20px 24px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 36px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .feature-card {
+            background-color: var(--panel-dark);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 28px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .feature-card:hover {
+            border-color: var(--accent-orange);
+            box-shadow: 0 0 15px var(--border-glow);
+            transform: translateY(-2px);
+        }
+        .feature-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .feature-num {
+            background-color: var(--accent-orange);
+            color: #fff;
+            font-weight: bold;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 0.9rem;
+        }
+        .feature-title {
+            font-size: 1.35rem;
+            font-weight: bold;
+            color: #fff;
+            margin: 0;
+            flex: 1;
+        }
+        .module-pill {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.76rem;
+            background: #0b0f19;
+            color: var(--code-green);
+            border: 1px solid #374151;
+            padding: 3px 10px;
+            border-radius: 4px;
+        }
+        .section-title {
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            font-size: 0.83rem;
+            letter-spacing: 1px;
+            margin: 15px 0 6px 0;
+            font-weight: 700;
+        }
+        .section-content {
+            margin: 0 0 12px 0;
+            color: var(--text-bright);
+            font-size: 0.95rem;
+        }
+        ul.spec-bullets {
+            margin: 4px 0 14px 0;
+            padding-left: 20px;
+            color: #d1d5db;
+            font-size: 0.92rem;
+        }
+        ul.spec-bullets li {
+            margin-bottom: 6px;
+        }
+        code {
+            background: #0b0f19;
+            color: var(--code-green);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+        }
+        ul.tech-stack {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 6px 0 0 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        ul.tech-stack li {
+            background-color: #1f293d;
+            border: 1px solid #374151;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .prompt-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 48px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .btn-copy {
+            background: var(--accent-orange);
+            color: #fff;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+        }
+        .btn-copy:hover {
+            background: #ff852b;
+            transform: translateY(-1px);
+        }
+        .system-prompt-box {
+            background-color: #05070b;
+            border: 1px dashed var(--accent-orange);
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 5px;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: var(--code-green);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.88rem;
+            line-height: 1.55;
+            margin: 0;
+        }
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>Big Ass Motors — CRM Architectural Brief</h1>
+            <div class="subtitle">Antigravity Implementation Blueprint for Claude Opus 5.5 Handoff</div>
+        </div>
+        <div class="header-tag">PHP 8.3 • MariaDB 11.8.9 • Node/React CRM</div>
+    </header>
+
+    <div class="intro-box">
+        <strong>ENGINEERING DIRECTIVE:</strong> This technical specification bridges the active <code>CLAUDE CRM</code> build (<code>hunter-backend-php/</code> PSR-4 <code>Bam\Hunter\*</code> + <code>my-crm-project/</code> Node/React) with the live production MariaDB 11.8.9 infrastructure (<strong>2,532 historical leads</strong>, <strong>932 inventory units</strong>). Each functional block isolates dependencies to maintain a bulletproof, zero-downtime live environment on Hostinger.
+    </div>
+
+    <!-- Feature 01 -->
+    <div class="feature-card">
+        <div class="feature-header">
+            <span class="feature-num">01</span>
+            <div class="feature-title">The Autonomous "Whale Hunter" Pipeline</div>
+            <span class="module-pill">Bam\Hunter\Matching\MatchingEngine.php • server/matching.js</span>
+        </div>
+        <div class="section-title">The Core Concept</div>
+        <p class="section-content">Continuous, self-driving multi-unit asset matching that maps third-party marketplace packages (Ditch Witch, Vermeer, CAT, Deere) to qualified historical buyers across all 2,532 leads before manual intervention.</p>
+        
+        <div class="section-title">Antigravity Execution Specs</div>
+        <ul class="spec-bullets">
+            <li><strong>Hybrid Legacy + JSON Lead Scoring:</strong> Upgrade <code>MatchingEngine::matchInventory()</code> so it does not skip historical rows where <code>leads.requirements</code> JSON is null. Add an idempotent backfill migration converting legacy <code>leads</code> columns (<code>type_key</code>, <code>brand_key</code>, <code>machine_make_key</code>, <code>machine_norm</code>, <code>machine</code>, <code>brand</code>, <code>type</code>) into structured <code>requirements</code> JSON (<code>category, make, model, min_year, max_hours, min_hp, budget_max</code>) and score in 500-row keyset-paginated batches.</li>
+            <li><strong>Deterministic Heavy-Equipment Spec Parser (<code>Bam\Hunter\Parser\SpecParser</code>):</strong> Parse raw `inventory` / `sourcing_results` rows (`title, description, specifications_text, attachments`) + `inc/oem_specs.php` (`oem_specs_for_unit()`) into `inventory.ai_specs` JSON, outputting both the flat keys required by `MatchingEngine::score()` (`year, make, model, category, hours, hp, hp_source, asking_price, pullback_lbs, thrust_lbs, torque_ft_lbs, weight_lbs`) and the structured arrays required by the 2-Page BAM Brochure (`specs, highlights, package_includes, subsystems`). Backfill OEM horsepower (`hp_source = 'oem'`) non-destructively only when `ai_specs.hp` is null.</li>
+            <li><strong>Live PHP CRM Hook &amp; Match-on-Live Gate:</strong> Hook directly into the live PHP CRM (`unit_action.php`, `add_url.php`, `api/sourcing_import.php`, `bam_app/tools/worker.php`) and trigger `MatchingEngine::matchInventory()` (`TaskType::MatchAlert` for scores <code>&gt; 80.0</code>) strictly when a unit is verified and goes <code>Live</code> (<code>status = 'Live' AND verified_at IS NOT NULL</code>), never on unverified <code>Draft</code> saves.</li>
+        </ul>
+        
+        <div class="section-title">Target Tech Matrix</div>
+        <ul class="tech-stack">
+            <li>PHP 8.3 Strict Types</li>
+            <li>MariaDB Keyset Pagination</li>
+            <li>Freight Distance Engine</li>
+            <li>Asynchronous Matching Loop</li>
+        </ul>
+    </div>
+
+    <!-- Feature 04 -->
+    <div class="feature-card">
+        <div class="feature-header">
+            <span class="feature-num">04</span>
+            <div class="feature-title">Dynamic "Zero-Latency" Lead Re-Engagement Chronometer</div>
+            <span class="module-pill">Bam\Hunter\Tasks\TaskOrchestrator.php • unit_events • bin/check-cold-leads.php</span>
+        </div>
+        <div class="section-title">The Core Concept</div>
+        <p class="section-content">A rolling intent and telemetry tracker that isolates buyer engagement trends and prioritizes historical cold leads based on machine specification and brochure views, operating cleanly within Hostinger constraints.</p>
+        
+        <div class="section-title">Antigravity Execution Specs</div>
+        <ul class="spec-bullets">
+            <li><strong>Live Schema Owner Resolution:</strong> Update <code>TaskOrchestrator::createTask()</code> to resolve lead ownership via <code>tw_assign</code> (<code>LEFT JOIN tw_assign ta ON ta.lead_key = CONCAT('db:', leads.id)</code>) with fallback to <code>leads.user_id</code> so task creation never fails on the live database.</li>
+            <li><strong>Rolling Intent &amp; Telemetry Regression:</strong> Combine <code>unit_events</code> (<code>view, click, brochure, info_request, quote_request, financing_request, shipping_request</code>), <code>leads.last_contacted_at</code>, and <code>leads.demand_cluster_id</code> using MariaDB 11.8.9 generated columns and composite time-series indices to calculate real-time buyer heat scores.</li>
+            <li><strong>Event-Driven Priority Promotion:</strong> Automatically promote cold/nurture leads (`TaskType::Nurture` → `TaskType::FollowUp` priority 1) when a matching machine enters inventory or regional demand clusters spike, bumping version stamps in <code>inc/live.php</code> (<code>api/changes.php</code>) for instant UI refresh.</li>
+        </ul>
+        
+        <div class="section-title">Target Tech Matrix</div>
+        <ul class="tech-stack">
+            <li>Polymorphic Telemetry</li>
+            <li>Rolling Intent Indices</li>
+            <li>MariaDB Generated Columns</li>
+            <li>Time-Series Sorting</li>
+        </ul>
+    </div>
+
+    <!-- Feature 05 -->
+    <div class="feature-card">
+        <div class="feature-header">
+            <span class="feature-num">05</span>
+            <div class="feature-title">Automated Brochure &amp; Visual Asset Manufacturer</div>
+            <span class="module-pill">server/brochure.py • server/pdf.js • inc/brochure_pdf.php</span>
+        </div>
+        <div class="section-title">The Core Concept</div>
+        <p class="section-content">Automated parsing, PII scrubbing, and deterministic compilation of external inventory listings into official Big Ass Motors commercial distributions using the <strong>existing canonical 2-page BAM Brochure &amp; Multi-Page Criteria Match Portfolio standard</strong>.</p>
+        
+        <div class="section-title">Antigravity Execution Specs</div>
+        <ul class="spec-bullets">
+            <li><strong>Use Existing Canonical 2-Page BAM Brochure Everywhere:</strong> Upgrade <code>my-crm-project/server/brochure.py</code> (ReportLab) and <code>server/pdf.js</code> (PDFKit) from the current 1-page sheet to match <code>inc/brochure_pdf.php</code> and the canonical <strong>2018 Ditch Witch JT20 2-Page PDF</strong>:
+                <ul>
+                    <li><strong>Page 1:</strong> US Flag BAM logo + Jacksonville authority header (`+1-904-767-5232`, `+1-904-729-1051`), `#FFC107` gold rule, `[Year] [Make] [Model]`, package subtitle (`[Class] Package — [Core Machine] • [Sub-System] • [Trailer] • [Tooling]`), `#111111` summary ribbon, framed Hero photo, `UNIT DESCRIPTION`, side-by-side `KEY HIGHLIGHTS` &amp; `PACKAGE INCLUDES`, gold-bordered black price bar, and `Page 1` footer.</li>
+                    <li><strong>Page 2:</strong> BAM header, `[Year] [Make] [Model] • [Package]` banner, <strong>4×2 (8-photo) component thumbnail grid</strong>, gold-bordered 2-column `TECHNICAL SPECIFICATIONS — [MAKE MODEL]` table, <strong>side-by-side gold-bordered Sub-System cards</strong> (e.g. Mud System + Equipment Trailer), dark gold-bordered CTA box (`READY TO WORK — $[Price]` + `Call or text for a walk-around video and inspection details.` — <strong>leave out</strong> <em>"Inspection welcome before any deposit."</em>), as-is disclaimer, and `Page 2` footer.</li>
+                    <li><strong>Format 2 (Multi-Page Criteria Match Portfolio):</strong> Support multi-unit buyer packets with a Page 1 `CRITERIA MATCH` Cover Index (`01`, `02`, `03` unit cards) followed by each machine's 2-page brochure.</li>
+                </ul>
+            </li>
+            <li><strong>Strict Anonymization &amp; PII Scrubbing:</strong> Remove unit city/state (`loc`) from `brochure.py` (line 74) and `pdf.js` (line 71). Route all text through `buyer_safe_unit()` and `bro_pdf_scrub()` to strip seller names, non-BAM phones, emails, URLs, and unit locations. Enforce `verified_at IS NOT NULL`.</li>
+        </ul>
+        
+        <div class="section-title">Target Tech Matrix</div>
+        <ul class="tech-stack">
+            <li>Canonical 2-Page BAM Standard</li>
+            <li>Criteria Match Portfolio</li>
+            <li>buyer_safe_unit() PII Scrub</li>
+            <li>Fast PDF Stream Compilation</li>
+        </ul>
+    </div>
+
+    <!-- Feature 06 -->
+    <div class="feature-card">
+        <div class="feature-header">
+            <span class="feature-num">06</span>
+            <div class="feature-title">Native Unified Database Merging Matrix</div>
+            <span class="module-pill">tasks • crm_tasks • tw_tasks • unit_lead_matches • UnifiedTaskRepository.php</span>
+        </div>
+        <div class="section-title">The Core Concept</div>
+        <p class="section-content">Consolidates sprawling legacy and Hunter task/match table architectures into an integrated, singular data processing engine to eliminate relational clutter and key collisions.</p>
+        
+        <div class="section-title">Antigravity Execution Specs</div>
+        <ul class="spec-bullets">
+            <li><strong>Unify the 3 Task Tables (`tasks`, `crm_tasks`, `tw_tasks`):</strong> Reconcile `tasks` (`001_hunter_schema.sql`: `lead_id, user_id, task_type, priority 1..3, status, trigger_event`), `crm_tasks` (`schema.sql`: `kind, inventory_id, note, done_at`), and `tw_tasks` (`schema_upgrade_teamwork.sql`: `kind, title, lead_key, unit_id, assignee_id, priority, status`) via a unified MariaDB view `v_unified_tasks` and `Bam\Hunter\Tasks\UnifiedTaskRepository`.</li>
+            <li><strong>Polymorphic `lead_key` Normalization:</strong> Standardize on BAM's canonical `lead_key` identifier (`db:<leads.id>`, `inq:<inquiries.id>`, `fin:<finance_requests.id>`, `b:<book_id>`) and unify `unit_lead_matches` + `sourcing_matches` so the Today view, Match Inbox, and Kanban Board query a single high-speed data layer.</li>
+        </ul>
+        
+        <div class="section-title">Target Tech Matrix</div>
+        <ul class="tech-stack">
+            <li>Polymorphic Database Normalization</li>
+            <li>MariaDB v_unified_tasks View</li>
+            <li>Dual-State Split-Pane View</li>
+            <li>UnifiedTaskRepository</li>
+        </ul>
+    </div>
+
+    <!-- Feature 10 -->
+    <div class="feature-card">
+        <div class="feature-header">
+            <span class="feature-num">10</span>
+            <div class="feature-title">The Safe-Staging "Shadow DB" Mirror Environment</div>
+            <span class="module-pill">sourcing_results • url_queue • sync_runs • ShadowStagingManager.php</span>
+        </div>
+        <div class="section-title">The Core Concept</div>
+        <p class="section-content">Total infrastructure stability isolating live asset production tables (`inventory`, `leads`) from volatile scraper ingestions, bulk uploads, and schema migrations via secure staging operations.</p>
+        
+        <div class="section-title">Antigravity Execution Specs</div>
+        <ul class="spec-bullets">
+            <li><strong>Isolated Shadow Schema Container:</strong> Implement `Bam\Hunter\Staging\ShadowStagingManager` to trap incoming marketplace sweeps (`sourcing_results`, `url_queue`, `BAM Grabber` JSON) and bulk CSV imports inside shadow staging tables (`shadow_inventory`, `shadow_leads`) before touching production.</li>
+            <li><strong>Quarantine Pricing &amp; Verification Gate:</strong> All staged/imported units default strictly to `status = 'Draft'`, `verified_at = NULL`, `public_price = NULL`, and `show_price = 0` (storing source ask only in internal `seller_cost_ask` and disabling automatic `default_markup`). Atomic promotion to live `inventory` runs only after deduplication (`url_hash`, `serial_norm`, `dedupe_key`), preview diff validation (`sync_runs.diff_json`), and automated PII leak checks pass.</li>
+        </ul>
+        
+        <div class="section-title">Target Tech Matrix</div>
+        <ul class="tech-stack">
+            <li>MariaDB Shadow Schemas</li>
+            <li>Isolated Transaction Testing</li>
+            <li>public_price = NULL Quarantine</li>
+            <li>Zero-Downtime Safe Deployment</li>
+        </ul>
+    </div>
+
+    <!-- Handoff Block -->
+    <div class="prompt-header-bar">
+        <div class="section-title" style="margin:0;font-size:0.95rem;">🚀 Master Claude Opus 5.5 Handoff System Prompt</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Master Prompt</button>
+    </div>
+    <div class="system-prompt-box">
+        <pre id="master-prompt">You are the Lead Systems Engineer for Big Ass Motors (B.A.M.). Your objective is to build and unify the 5 core backend and full-stack modules for our custom-engineered heavy-equipment CRM platform, code-named Antigravity, bridging our active `CLAUDE CRM` workspace (`hunter-backend-php/` in PHP 8.3 PSR-4 `Bam\Hunter\*` and `my-crm-project/` in Node/Express + React) with our live production MariaDB 11.8.9 database (2,532 leads, 932 inventory units on Hostinger).
+
+Review the architectural specifications in the accompanying brief and implement clean, heavily typed (`declare(strict_types=1);`), production-grade code for all 5 modules with equal depth:
+
+1. THE AUTONOMOUS "WHALE HUNTER" MATCHING LOOP & SPEC PARSER (`Bam\Hunter\Parser\SpecParser`, `Bam\Hunter\Matching\MatchingEngine`, `bin/parse-specs.php`):
+   - Hook Path & Match Timing: Hook directly into the live PHP CRM (MariaDB 11.8.9 on Hostinger) and run `MatchingEngine::matchInventory()` strictly when a unit goes `Live` (`status = 'Live' AND verified_at IS NOT NULL`), never firing `MATCH_ALERT` tasks on unverified `Draft` saves.
+   - Deterministic Heavy-Equipment Spec Parser (`Bam\Hunter\Parser\SpecParser`): Parse `inventory` rows (`title, description, specifications_text, attachments`) + `inc/oem_specs.php` (`oem_specs_for_unit()`) into `inventory.ai_specs` JSON. Output both flat matching keys (`year, make, model, category, hours, hp, hp_source, asking_price, pullback_lbs, thrust_lbs, torque_ft_lbs, weight_lbs`) and 2-page brochure structures (`specs, highlights, package_includes, subsystems`). Non-destructively backfill OEM horsepower (`hp_source = 'oem'`) only when `ai_specs.hp` is null/missing.
+   - Legacy Leads Bridge: Use `SpecParser::parseLeadRequirements()` to idempotently backfill `leads.requirements` JSON (`category, make, model, min_year, max_hours, min_hp, budget_max`) across all 2,532 historical rows in `leads` (`type_key, brand_key, machine_make_key, machine_norm, machine, brand, type, message`) and dual-write > 80.0 matches to `unit_lead_matches` and `TaskOrchestrator`.
+
+2. DYNAMIC "ZERO-LATENCY" LEAD RE-ENGAGEMENT CHRONOMETER (`Bam\Hunter\Tasks\TaskOrchestrator`, `bin/check-cold-leads.php`):
+   - Fix lead owner resolution in `TaskOrchestrator.php`: resolve owner via `LEFT JOIN tw_assign ta ON ta.lead_key = CONCAT('db:', leads.id)` (falling back to `leads.user_id` if present) so task locking and insertion work against the live schema.
+   - Build a time-decay telemetry scoring engine using MariaDB 11.8.9 generated columns/indices over `unit_events` (`view, click, brochure, info_request, quote_request, financing_request, shipping_request`), `leads.last_contacted_at`, and `leads.demand_cluster_id` to re-prioritize cold leads and bump live polling stamps (`inc/live.php`).
+
+3. NATIVE UNIFIED DATABASE MERGING MATRIX (`Bam\Hunter\Tasks\UnifiedTaskRepository`, `migrations/002_antigravity_unified.sql`):
+   - Reconcile and merge the 3 separate task tables (`tasks` from `001_hunter_schema.sql`, `crm_tasks` from `schema.sql`, and `tw_tasks` from `schema_upgrade_teamwork.sql`) alongside `unit_lead_matches` and `sourcing_matches`.
+   - Enforce BAM's canonical polymorphic `lead_key` format (`db:<leads.id>`, `inq:<inquiries.id>`, `fin:<finance_requests.id>`, `b:<book_id>`) via a unified SQL view `v_unified_tasks` and transaction-safe repository methods so Today, Match Inbox, and Board views operate on a single collision-free data layer.
+
+4. AUTOMATED BROCHURE & VISUAL ASSET MANUFACTURER (`my-crm-project/server/brochure.py`, `server/pdf.js`, `inc/brochure_pdf.php`, `Bam\Hunter\Brochure\CanonicalBrochureGenerator`):
+   - MANDATORY: Use the existing canonical BAM Brochure standard (matching the attached 2018 Ditch Witch JT20 2-Page PDF and Multi-Page Criteria Match Portfolio) for ALL single-unit and multi-unit outputs. Replace the current 1-page feature sheet in `brochure.py` and `pdf.js` with the strictly 2-page US Letter layout:
+     * Page 1: US-Flag BAM logo + Jacksonville header (`+1-904-767-5232`, `+1-904-729-1051`), `#FFC107` gold rule, `[Year] [Make] [Model]`, package subtitle (`[Class] Package — [Core Machine] • [Sub-System] • [Trailer] • [Tooling]`), `#111111` summary ribbon, framed Hero photo, `UNIT DESCRIPTION`, side-by-side `KEY HIGHLIGHTS` & `PACKAGE INCLUDES`, gold-bordered black price bar, and `Page 1` running footer.
+     * Page 2: BAM header + gold rules, `[Year] [Make] [Model] • [Package]` title, 4x2 (8-photo) component thumbnail grid, gold-bordered 2-column `TECHNICAL SPECIFICATIONS — [MAKE MODEL]` table, dual gold-bordered Sub-System cards (e.g., Mud System + Equipment Trailer), dark gold-bordered CTA box (`READY TO WORK — $[Price]` + `Call or text for a walk-around video and inspection details.` — leave out "Inspection welcome before any deposit."), 2-line as-is legal disclaimer, and `Page 2` running footer.
+     * Format 2 (Multi-Page Criteria Match Portfolio): Page 1 `CRITERIA MATCH` Cover Index (`01, 02, 03` unit cards) followed by each matched unit's 2-page brochure.
+   - Anonymization & Gate: Remove `loc = f"{unit['city']}, {unit['state']}"` from `brochure.py` (line 74) and `pdf.js` (line 71) — never expose unit city/state, seller info, or source URLs. Route all data through `buyer_safe_unit()` and `bro_pdf_scrub()`, and require `verified_at IS NOT NULL`.
+
+5. ISOLATED "SHADOW DB" SAFE-STAGING ENVIRONMENT (`Bam\Hunter\Staging\ShadowStagingManager`):
+   - Trap incoming scraper/URL/bookmarklet ingestions (`sourcing_results`, `url_queue`) and bulk uploads in isolated shadow staging tables (`shadow_inventory`, `shadow_leads`) with `status = 'Draft'`, `verified_at = NULL`, `public_price = NULL`, `show_price = 0`, and `seller_cost_ask = <source_ask>` (never auto-applying default markup).
+   - Validate deduplication keys (`url_hash`, `serial_norm`, `dedupe_key`), generate preview diffs (`sync_runs.diff_json`), and run automated PII leak assertions before atomic merge to live production tables.
+
+Write complete, production-grade, heavily typed classes and SQL migrations guarded by `information_schema`. Do not use placeholder pseudo-code. Let's execute.</pre>
+    </div>
+
+    <footer>
+        Big Ass Motors © 2026. Built Fearless.
+    </footer>
+</div>
+
+<script>
+function copyPrompt(btn) {
+    const text = document.getElementById('master-prompt').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        const orig = btn.innerText;
+        btn.innerText = '✓ COPIED TO CLIPBOARD!';
+        btn.style.background = '#22c55e';
+        setTimeout(() => {
+            btn.innerText = orig;
+            btn.style.background = '';
+        }, 2500);
+    });
+}
+</script>
+
+</body>
+</html>

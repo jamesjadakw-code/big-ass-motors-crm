@@ -1,0 +1,5 @@
+# Only index.php is an entry point; the helper files are not meant to be opened directly.
+<FilesMatch "^(lib|state|bam)\.php$">
+  Require all denied
+</FilesMatch>
+Options -Indexes

@@ -1,0 +1,14 @@
+{
+  "name": "bam/hunter-backend",
+  "description": "BAM Private Hunter CRM: schema migrations, task trigger engine, matching engine",
+  "type": "project",
+  "require": {
+    "php": ">=8.3",
+    "ext-pdo": "*",
+    "ext-pdo_mysql": "*",
+    "ext-json": "*"
+  },
+  "autoload": {
+    "psr-4": { "Bam\\Hunter\\": "src/" }
+  }
+}

@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BAM CRM · Unified Command Center &amp; Inventory Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0c0b;
+  --surface: #141412;
+  --surface2: #1c1c19;
+  --surface3: #252521;
+  --border: #2e2d28;
+  --text: #f3f2ed;
+  --muted: #9d9b90;
+  --accent: #FFC107;
+  --accent-dim: rgba(255, 193, 7, 0.15);
+  --ok: #22c55e;
+  --warn: #f59e0b;
+  --bad: #ef4444;
+  --display: 'Barlow Condensed', sans-serif;
+  --font: 'Inter', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 13px; line-height: 1.45; display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.side { width: 248px; flex: 0 0 248px; background: var(--surface); border-right: 1px solid var(--border); padding: 14px 12px; display: flex; flex-direction: column; gap: 6px; }
+.side-brand { font-family: var(--display); font-size: 20px; font-weight: 800; letter-spacing: .04em; color: #fff; text-align: center; }
+.side-motto { background: var(--accent); color: #111; font-family: var(--display); font-weight: 800; font-size: 13px; letter-spacing: .06em; text-align: center; padding: 6px 10px; border-radius: 6px; margin: 2px 0 8px; }
+.cockpit-switch { display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(255,193,7,.14); border: 1.5px solid var(--accent); color: var(--accent); font-weight: 700; font-size: 12.5px; padding: 8px 10px; border-radius: 7px; text-decoration: none; margin-bottom: 6px; }
+.cockpit-switch:hover { background: var(--accent); color: #111; }
+.nav-sec { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); padding: 8px 8px 2px; }
+.nav-a { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; border-radius: 6px; color: #d4d3cb; text-decoration: none; font-weight: 500; font-size: 12.8px; }
+.nav-a:hover { background: var(--surface2); color: #fff; }
+.nav-a.on { background: var(--surface2); color: #fff; font-weight: 600; box-shadow: inset 3px 0 0 var(--accent); }
+.nav-a em { font-style: normal; font-family: var(--mono); font-size: 10.5px; background: var(--accent-dim); color: var(--accent); padding: 1px 6px; border-radius: 99px; font-weight: 600; }
+.side-user { margin-top: auto; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; display: flex; align-items: center; gap: 9px; }
+.av { width: 32px; height: 32px; border-radius: 99px; background: var(--accent); color: #111; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+
+/* Main */
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 9px 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ticker-pill { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--ok); border-radius: 6px; padding: 6px 12px; font-size: 12px; display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dot-live { width: 8px; height: 8px; border-radius: 99px; background: var(--ok); box-shadow: 0 0 8px var(--ok); flex: 0 0 auto; }
+.qs-btn { background: var(--surface2); border: 1px solid var(--accent); color: var(--text); padding: 6px 12px; border-radius: 7px; font-size: 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.qs-btn kbd { background: var(--accent); color: #111; font-family: var(--mono); font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; }
+.bell-btn { background: rgba(239,68,68,.14); border: 1px solid var(--bad); color: #fca5a5; padding: 6px 11px; border-radius: 7px; font-weight: 700; font-size: 12px; }
+.lang-pill { border: 1px solid var(--accent); color: var(--accent); padding: 5px 9px; border-radius: 6px; font-weight: 800; font-size: 11.5px; }
+
+.content { padding: 18px 20px; display: grid; gap: 16px; }
+.kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 12px 14px; }
+.kpi.gold { border-color: var(--accent); background: linear-gradient(180deg, rgba(255,193,7,.09), var(--surface)); }
+.kpi .lbl { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.kpi .val { font-family: var(--display); font-size: 28px; font-weight: 800; color: #fff; line-height: 1.1; margin: 3px 0; }
+.kpi.gold .val { color: var(--accent); }
+.kpi .sub { font-size: 11.5px; color: var(--muted); }
+
+.grid-2 { display: grid; grid-template-columns: 1.15fr 1fr; gap: 16px; }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.panel-head { padding: 11px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--surface2); }
+.panel-head h2 { font-family: var(--display); font-size: 18px; text-transform: uppercase; letter-spacing: .04em; display: flex; align-items: center; gap: 8px; }
+.badge-y { background: var(--accent); color: #111; font-family: var(--mono); font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
+.badge-ok { background: rgba(34,197,94,.16); color: #4ade80; border: 1px solid rgba(34,197,94,.4); font-family: var(--mono); font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
+.badge-warn { background: rgba(245,158,11,.16); color: #fbbf24; border: 1px solid rgba(245,158,11,.4); font-family: var(--mono); font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
+.badge-red { background: rgba(239,68,68,.16); color: #f87171; border: 1px solid rgba(239,68,68,.4); font-family: var(--mono); font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
+
+.grabber-box { padding: 14px; display: grid; gap: 12px; }
+.url-bar { display: flex; gap: 8px; }
+.url-bar input { flex: 1; background: #0c0c0b; border: 1px solid var(--accent); color: #fff; border-radius: 6px; padding: 8px 12px; font-family: var(--mono); font-size: 12px; }
+.btn-y { background: var(--accent); color: #111; border: 1px solid var(--accent); font-weight: 700; font-size: 12.5px; padding: 7px 13px; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+.btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); font-weight: 600; font-size: 12px; padding: 6px 11px; border-radius: 6px; cursor: pointer; }
+
+.scraped-card { display: grid; grid-template-columns: 150px 1fr; gap: 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
+.photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.photo-thumb { height: 52px; border-radius: 4px; background: linear-gradient(135deg, #2b2a24, #1a1916); border: 1px solid #3f3d35; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 10px; color: var(--accent); font-weight: 600; }
+.spec-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.spec-pill { background: var(--surface3); border: 1px solid var(--border); padding: 2px 7px; border-radius: 4px; font-size: 11.5px; }
+
+.arrival-matches { border-top: 1px solid var(--border); padding-top: 10px; display: grid; gap: 6px; }
+.match-row { display: flex; align-items: center; justify-content: space-between; background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 6px; padding: 7px 10px; }
+.score-ring { width: 36px; height: 36px; border-radius: 99px; border: 2.5px solid var(--ok); color: #4ade80; font-family: var(--display); font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center; background: rgba(34,197,94,.1); }
+
+/* Red Internal Pricing Lockbox */
+.lockbox { margin: 12px 14px; background: rgba(239,68,68,.07); border: 1.5px solid rgba(239,68,68,.45); border-radius: 8px; padding: 11px 13px; display: grid; gap: 8px; }
+.lockbox-head { display: flex; justify-content: space-between; align-items: center; color: #fca5a5; font-weight: 700; font-size: 12px; }
+.lockbox-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.lock-cell { background: rgba(0,0,0,.35); border: 1px solid rgba(239,68,68,.25); border-radius: 6px; padding: 6px 9px; }
+.lock-cell small { display: block; font-size: 10px; text-transform: uppercase; color: #fca5a5; font-family: var(--mono); }
+.lock-cell b { font-size: 14px; color: #fff; }
+
+/* Table */
+table.tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+table.tbl th { text-align: left; font-family: var(--display); font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 9px 12px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+table.tbl td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+table.tbl tr:hover td { background: rgba(255,193,7,.05); }
+</style>
+</head>
+<body>
+  <aside class="side">
+    <div class="side-brand">BIG ASS MOTORS · CRM</div>
+    <div class="side-motto">YOU CAN'T DEPOSIT EXCUSES</div>
+    <a class="cockpit-switch" href="BAM-CRM-Cockpit-Standalone.html">⚡ Switch to Hunter Cockpit</a>
+
+    <div class="nav-sec">Daily Command</div>
+    <a class="nav-a on" href="#"><span>📊 Unified Dashboard</span><em>LIVE</em></a>
+    <a class="nav-a" href="#"><span>☀️ Today + 85+ Matches</span><em>7</em></a>
+    <a class="nav-a" href="#"><span>🔔 Team Tasks (tw_tasks)</span><em>4 Urgent</em></a>
+
+    <div class="nav-sec">Sourcing &amp; Inventory (50 Pages)</div>
+    <a class="nav-a" href="#"><span>🔗 Add from URL · Grabber</span><em>Photos</em></a>
+    <a class="nav-a" href="#"><span>📥 Inventory Hub Queue</span><em>3 Draft</em></a>
+    <a class="nav-a" href="#"><span>🚜 All Units (URL First)</span><em>48</em></a>
+    <a class="nav-a" href="#"><span>🎯 Matches Workbench</span><em>96% Top</em></a>
+    <a class="nav-a" href="#"><span>📄 2-Page PDF Brochures</span><em>PHP</em></a>
+
+    <div class="nav-sec">Leads &amp; Outreach</div>
+    <a class="nav-a" href="#"><span>👥 Leads (MySQL Scoped)</span><em>2,375</em></a>
+    <a class="nav-a" href="#"><span>✉️ Pitch Outbox (Drafts)</span><em>12</em></a>
+    <a class="nav-a" href="#"><span>🌐 Website Inquiries</span><em>5 New</em></a>
+    <a class="nav-a" href="One-Unified-CRM-Planner.html"><span>🧩 54-Feature Blueprint</span><em>0 Clash</em></a>
+
+    <div class="side-user">
+      <div class="av">JM</div>
+      <div>
+        <div style="font-weight:700;color:#fff">James · Admin</div>
+        <div style="font-size:11px;color:var(--muted)">sales@bigassmotors.com</div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="ticker-pill">
+        <span class="dot-live"></span>
+        <span><b>LIVE 15s ENGAGEMENT TICKER:</b> Carlos Mendez viewed <b>2021 Vermeer D24x40 S3 (#BAM-409)</b> · 📄 2-Page Brochure opened in Dallas, TX · 💲 Quote requested on <b>2019 Ditch Witch JT30</b></span>
+      </div>
+      <button class="qs-btn" type="button">🔍 Search leads &amp; units… <kbd>Ctrl K</kbd></button>
+      <div class="bell-btn">🔔 4 Urgent &gt;80% Alerts</div>
+      <div class="lang-pill">EN · ES</div>
+    </header>
+
+    <div class="content">
+      <div class="kpis">
+        <div class="kpi gold">
+          <div class="lbl">Potential Gross Margin</div>
+          <div class="val">$194,500</div>
+          <div class="sub">Across 14 active matched units</div>
+        </div>
+        <div class="kpi">
+          <div class="lbl">7-Day Buyer Engagement</div>
+          <div class="val">418 Views</div>
+          <div class="sub">64 Brochures · 19 Quote reqs</div>
+        </div>
+        <div class="kpi gold">
+          <div class="lbl">Urgent &gt;80% Matches</div>
+          <div class="val">11 Buyers</div>
+          <div class="sub">Synced to tw_tasks + Bell</div>
+        </div>
+        <div class="kpi">
+          <div class="lbl">MySQL Scoped Leads</div>
+          <div class="val">2,375</div>
+          <div class="sub">Strict email dedupe active</div>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Pending Inspection</div>
+          <div class="val" style="color:var(--warn)">3 Units</div>
+          <div class="sub">Unverified specs flagged safely</div>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Queued Pitch Drafts</div>
+          <div class="val" style="color:var(--ok)">12 Ready</div>
+          <div class="sub">EN/ES · Never auto-sent</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Left: BAM Grabber + Matched Buyers on Arrival -->
+        <section class="panel">
+          <div class="panel-head">
+            <h2>🔗 BAM Grabber + Matched Buyers on Arrival</h2>
+            <span class="badge-y">Hidden Draft + Photo Puller</span>
+          </div>
+          <div class="grabber-box">
+            <div class="url-bar">
+              <input type="text" readonly value="https://www.machinerytrader.com/listings/2021-vermeer-d24x40-s3-directional-drill">
+              <button class="btn-y" type="button">✓ Pulled 12 Photos</button>
+            </div>
+            <div class="scraped-card">
+              <div class="photo-grid">
+                <div class="photo-thumb">📸 Hero #1</div>
+                <div class="photo-thumb">📸 Tracks #2</div>
+                <div class="photo-thumb">📸 Cab #3</div>
+                <div class="photo-thumb">+9 Photos</div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <strong style="font-size:15px;color:#fff">2021 Vermeer D24x40 Series III · Stock #BAM-409</strong>
+                  <span class="badge-warn">Draft · Verify Gate</span>
+                </div>
+                <div class="spec-pills">
+                  <span class="spec-pill">Cat: <b>Directional Drill</b></span>
+                  <span class="spec-pill">Hours: <b>1,140 hrs</b></span>
+                  <span class="spec-pill">HP: <b>125 HP (OEM Verified)</b></span>
+                  <span class="spec-pill" style="border-color:var(--warn);color:#fbbf24">Undercarriage: <b>Pending Inspection</b></span>
+                  <span class="spec-pill" style="border-color:var(--warn);color:#fbbf24">Serial: <b>Hidden (Buyer-Safe)</b></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="arrival-matches">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-family:var(--mono);font-size:11px;color:var(--accent);text-transform:uppercase">⚡ 3 Buyers Matched on Arrival (unit_lead_matches → tw_tasks)</span>
+                <button class="btn-y" type="button">✓ Verify Unit &amp; Queue 3 EN/ES Pitch Drafts</button>
+              </div>
+              <div class="match-row">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div class="score-ring">96</div>
+                  <div>
+                    <div style="font-weight:700;color:#fff">Carlos Mendez · Mendez Underground LLC <span class="badge-y">ES Pitch Ready</span></div>
+                    <div style="font-size:11.5px;color:var(--muted)">Type + Make + Exact Model (D24x40) + Within $165k Budget + Hours &lt; 1,500 · 180 mi haul</div>
+                  </div>
+                </div>
+                <span class="badge-ok">tw_tasks Urgent #1</span>
+              </div>
+              <div class="match-row">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div class="score-ring">89</div>
+                  <div>
+                    <div style="font-weight:700;color:#fff">Mike Thornton · Horizon Fiber &amp; Boring</div>
+                    <div style="font-size:11.5px;color:var(--muted)">Type + Make + Model Series (D24) + Year ±3 · 310 mi haul</div>
+                  </div>
+                </div>
+                <span class="badge-ok">tw_tasks Urgent #1</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right: Unit Editor Red Lockbox + Canonical 2-Page Brochure Guard -->
+        <section class="panel">
+          <div class="panel-head">
+            <h2>🔒 Unit Editor (`unit.php`) · Buyer-Safety Lockbox</h2>
+            <span class="badge-red">Strictly Stripped from Brochures &amp; Pitches</span>
+          </div>
+          <div class="lockbox">
+            <div class="lockbox-head">
+              <span>🛑 INTERNAL-ONLY PRICING &amp; SELLER INTEL (Admin / Broker Only)</span>
+              <span>Never Exposed to Buyers</span>
+            </div>
+            <div class="lockbox-grid">
+              <div class="lock-cell"><small>Seller Cost Ask</small><b>$118,000</b></div>
+              <div class="lock-cell"><small>Internal Buy Price</small><b>$112,500</b></div>
+              <div class="lock-cell"><small>Public List Price</small><b style="color:var(--accent)">$149,000</b></div>
+              <div class="lock-cell"><small>Projected Margin</small><b style="color:var(--ok)">+$36,500 (24.5%)</b></div>
+            </div>
+            <div style="font-size:11.5px;color:#fca5a5;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
+              <span><b>Seller:</b> Sunbelt Midwest Fleet (Private)</span>
+              <span><b>Internal Yard:</b> Tulsa, OK (Hidden)</span>
+              <span><b>Source URL:</b> Locked</span>
+            </div>
+          </div>
+
+          <div style="padding:0 14px 14px;display:grid;gap:8px">
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-weight:700;color:#fff">📄 Canonical 2-Page BAM PDF Brochure (`brochure_pdf.php`)</div>
+                <div style="font-size:11.5px;color:var(--muted)">Page 2 CTA: <em>"Call or text for a walk-around video and inspection details."</em> · Missing specs print <b>Pending Inspection</b></div>
+              </div>
+              <button class="btn-outline" type="button">Preview 2-Page PDF</button>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-weight:700;color:#fff">📚 Multi-Unit Matched Machines Portfolio Packet</div>
+                <div style="font-size:11.5px;color:var(--muted)">Send 3 matched drills in one personalized BAM letterhead packet</div>
+              </div>
+              <button class="btn-outline" type="button">Build Packet</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Bottom: Unified 2,375 MySQL Leads Table with Best-Match Score Column & 5-Sec Call Log -->
+      <section class="panel">
+        <div class="panel-head">
+          <h2>👥 Unified Leads Table (`leads.php` · 2,375 Real MySQL Leads + Best-Match Score Column + 5-Sec Call Log)</h2>
+          <div style="display:flex;gap:8px">
+            <span class="badge-ok">✓ Strict LOWER(TRIM(email)) Dedupe</span>
+            <span class="badge-y">Scoped via tw_assign</span>
+          </div>
+        </div>
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Buyer / Company</th>
+              <th>Wanted Equipment &amp; Criteria</th>
+              <th>Best Matched Unit (unit_lead_matches)</th>
+              <th>Assigned Rep</th>
+              <th>5-Second Smart Call Log → Auto Next-Weekday 10 AM (tw_tasks)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Carlos Mendez</b> · Mendez Underground<br><span style="color:var(--muted);font-size:11.5px">(214) 555-0192 · carlos@mendezug.com · 🇪🇸 ES</span></td>
+              <td>Vermeer D24x40 / D20x22<br><span style="color:var(--muted);font-size:11.5px">Budget ≤ $165,000 · Hours ≤ 1,500 · Year ≥ 2019</span></td>
+              <td><span class="badge-ok" style="font-size:12px">96% Match</span> <b>#BAM-409 · 2021 Vermeer D24x40 S3</b><br><span style="color:var(--muted);font-size:11px">Type + Make + Exact Model + Within Budget</span></td>
+              <td><span class="badge-y">JM · James (Admin)</span></td>
+              <td>
+                <button class="btn-y" style="padding:4px 9px;font-size:11.5px">📞 Log Call + Set 10 AM Follow-Up</button>
+                <button class="btn-outline" style="padding:4px 9px;font-size:11.5px">✉️ Queue ES Pitch + PDF</button>
+              </td>
+            </tr>
+            <tr>
+              <td><b>Mike Thornton</b> · Horizon Fiber LLC<br><span style="color:var(--muted);font-size:11.5px">(405) 555-0148 · mthornton@horizonfiber.net</span></td>
+              <td>Vermeer D24x40 or Ditch Witch JT30<br><span style="color:var(--muted);font-size:11.5px">Budget ≤ $155,000 · Hours ≤ 2,000</span></td>
+              <td><span class="badge-ok" style="font-size:12px">89% Match</span> <b>#BAM-409 · 2021 Vermeer D24x40 S3</b><br><span style="color:var(--muted);font-size:11px">Type + Make + Series + Year ±3</span></td>
+              <td><span class="badge-y" style="background:#38bdf8">MC · Matt (Broker)</span></td>
+              <td>
+                <button class="btn-y" style="padding:4px 9px;font-size:11.5px">📞 Log Call + Set 10 AM Follow-Up</button>
+                <button class="btn-outline" style="padding:4px 9px;font-size:11.5px">✉️ Queue EN Pitch + PDF</button>
+              </td>
+            </tr>
+            <tr>
+              <td><b>Dave Reynolds</b> · Tri-State Trenching<br><span style="color:var(--muted);font-size:11.5px">(615) 555-0183 · dave@tristatetrench.com</span></td>
+              <td>Ditch Witch RT125 Quad Trencher<br><span style="color:var(--muted);font-size:11.5px">Budget ≤ $140,000 · Hours ≤ 1,200</span></td>
+              <td><span class="badge-ok" style="font-size:12px">92% Match</span> <b>#BAM-388 · 2020 Ditch Witch RT125 Quad</b><br><span style="color:var(--muted);font-size:11px">Type + Make + Exact Model + Within Budget</span></td>
+              <td><span class="badge-y">JM · James (Admin)</span></td>
+              <td>
+                <button class="btn-y" style="padding:4px 9px;font-size:11.5px">📞 Log Call + Set 10 AM Follow-Up</button>
+                <button class="btn-outline" style="padding:4px 9px;font-size:11.5px">✉️ Queue EN Pitch + PDF</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

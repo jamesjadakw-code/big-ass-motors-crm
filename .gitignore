@@ -1,0 +1,14 @@
+# Files that once held real CRM passwords. Never commit or upload them (see the README inside).
+_DO-NOT-UPLOAD-old-files-with-passwords/
+
+# Full backups of the live CRM.
+BACKUP-*.zip
+
+# Zips are build/upload copies, rebuilt from the folders here. The folders are the source of truth.
+*.zip
+
+# Secrets and dependencies.
+.env
+bam_config.php
+google-config.php
+node_modules/

@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BAM Unified CRM · Style preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@600;800;900&family=Audiowide&family=Rajdhani:wght@600;700&family=Chakra+Petch:wght@600;700&family=Exo+2:wght@600;700;800&family=Michroma&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* Mockup only: the local Cockpit's tokens (index.css / theme.js) applied to the live CRM's screens. */
+:root {
+  --bam-gold: #FFC400; --bam-gold-rgb: 255 196 0; --bam-gold-light-rgb: 255 224 115; --bam-gold-dark-rgb: 209 161 0;
+  --ink-950: #080808; --ink-900: #101010; --ink-800: #181818; --ink-700: #242424; --ink-600: #383838; --ink-400: #8f8f8f; --ink-300: #c4c4c4;
+}
+[data-view='today'] { --accent-rgb: var(--bam-gold-rgb); --font-display: 'Orbitron', sans-serif; }
+[data-view='desk']  { --accent-rgb: var(--bam-gold-dark-rgb); --font-display: 'Exo 2', sans-serif; }
+[data-view='match'] { --accent-rgb: var(--bam-gold-rgb); --font-display: 'Audiowide', sans-serif; }
+[data-view^='settings'] { --accent-rgb: var(--bam-gold-rgb); --font-display: 'Space Grotesk', sans-serif; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--ink-950); color: #f5f5f5; font-family: Inter, system-ui, sans-serif; font-size: 14px; }
+.app { display: flex; height: 100vh; }
+
+/* sidebar */
+aside { width: 240px; flex-shrink: 0; background: rgb(8 8 8 / .92); border-right: 1px solid rgb(var(--accent-rgb) / .25); box-shadow: 8px 0 40px rgb(0 0 0 / .5); display: flex; flex-direction: column; position: relative; z-index: 2; }
+.wordmark { padding: 22px 20px 16px; text-align: center; }
+.wordmark img { width: 100%; border-radius: 6px; border: 2px solid rgb(255 255 255 / .8); box-shadow: 0 0 14px rgb(255 255 255 / .55), 0 0 32px rgb(255 255 255 / .25); display: block; margin-bottom: 14px; }
+.wordmark .wm { font: 900 25px/1.05 Orbitron, sans-serif; text-transform: uppercase; letter-spacing: .06em; color: #fff; text-shadow: 0 0 18px rgb(var(--bam-gold-rgb) / .8), 0 0 3px rgb(var(--bam-gold-rgb)); }
+.wordmark .rule { width: 32px; height: 2px; background: var(--bam-gold); margin: 8px auto 0; }
+.wordmark .tag { margin-top: 8px; font-size: 11px; font-style: italic; color: rgb(var(--bam-gold-rgb) / .6); }
+nav { padding: 0 12px; display: grid; gap: 7px; flex: 1; overflow: hidden; }
+nav .nb { --c: var(--bam-gold-rgb); display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: rgb(var(--c)); background: rgb(var(--c) / .06); border: 1.5px solid rgb(var(--c) / .4); box-shadow: 0 0 8px rgb(var(--c) / .15); }
+nav .nb.on { color: #080808; background: rgb(var(--c)); border-color: rgb(var(--c)); box-shadow: 0 0 24px rgb(var(--c) / .7); }
+nav .nb .ct { font: 700 10px Inter, sans-serif; background: #e5484d; color: #fff; border-radius: 99px; padding: 1px 7px; letter-spacing: 0; }
+nav .nb.on .ct { background: #080808; color: var(--bam-gold); }
+nav .sec { font: 700 10px Inter; letter-spacing: .2em; color: rgb(var(--bam-gold-rgb) / .55); margin: 8px 4px 0; }
+.me { border-top: 1px solid var(--ink-800); padding: 12px 16px; font-size: 11px; color: var(--ink-400); }
+.me b { color: #fff; } .me .role { color: rgb(var(--accent-rgb)); text-transform: uppercase; }
+.me .db { color: #34d399; font-size: 10px; margin-top: 3px; }
+
+/* stage */
+main { flex: 1; min-width: 0; position: relative; overflow: hidden;
+  background: radial-gradient(900px 500px at 85% -10%, rgb(var(--accent-rgb) / .16), transparent 60%), radial-gradient(700px 500px at -5% 105%, rgb(var(--accent-rgb) / .10), transparent 60%), #080808; }
+.grid { position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(rgb(var(--accent-rgb) / .05) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--accent-rgb) / .05) 1px, transparent 1px); background-size: 44px 44px; -webkit-mask-image: radial-gradient(ellipse at 50% 0%, #000 20%, transparent 75%); mask-image: radial-gradient(ellipse at 50% 0%, #000 20%, transparent 75%); }
+.page { position: relative; padding: 26px 32px; height: 100%; display: flex; flex-direction: column; gap: 18px; }
+.topbar { display: flex; align-items: center; gap: 10px; }
+.topbar .sp { flex: 1; }
+.search { width: 300px; padding: 9px 12px; border-radius: 8px; background: rgb(8 8 8 / .75); border: 1px solid var(--ink-600); color: var(--ink-400); font-size: 13px; }
+.search kbd { float: right; font: 600 10px Inter; border: 1px solid var(--ink-600); border-radius: 4px; padding: 1px 5px; }
+.eyebrow { font: 600 11px Inter; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--accent-rgb)); }
+h1 { margin: 2px 0 0; font-family: var(--font-display); text-transform: uppercase; font-size: 34px; letter-spacing: .06em; color: #fff; text-shadow: 0 0 24px rgb(var(--accent-rgb) / .65), 0 0 2px rgb(var(--accent-rgb) / .9); }
+.h { font-family: var(--font-display); text-transform: uppercase; letter-spacing: .08em; font-size: 15px; margin: 0; }
+.sub { color: var(--ink-400); font-size: 13px; margin-top: 2px; }
+
+.card { border-radius: 12px; background: linear-gradient(180deg, rgb(255 255 255 / .045), rgb(255 255 255 / .012)), #101010; border: 1px solid rgb(var(--accent-rgb) / .22); box-shadow: 0 10px 34px rgb(0 0 0 / .4), inset 0 1px 0 rgb(255 255 255 / .05); }
+.btn { --c: var(--accent-rgb); display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; font: 600 12.5px Inter; text-transform: uppercase; letter-spacing: .08em; color: rgb(var(--c)); background: rgb(var(--c) / .08); border: 1.5px solid rgb(var(--c) / .85); box-shadow: 0 0 10px rgb(var(--c) / .35), inset 0 0 10px rgb(var(--c) / .1); text-shadow: 0 0 8px rgb(var(--c) / .6); white-space: nowrap; }
+.btn.primary { background: rgb(var(--c) / .18); box-shadow: 0 0 22px rgb(var(--c) / .7), inset 0 0 14px rgb(var(--c) / .2); }
+.btn.ghost { --c: 150 150 150; box-shadow: 0 0 6px rgb(var(--c) / .2); }
+.btn.gold { color: #000; background: var(--bam-gold); border-color: var(--bam-gold); text-shadow: none; font-weight: 800; box-shadow: 0 0 18px rgb(var(--bam-gold-rgb) / .5); }
+.btn.lock { --c: 120 120 120; opacity: .55; }
+.chip { display: inline-flex; align-items: center; border-radius: 6px; padding: 2px 8px; font: 600 11px Inter; }
+.c-red { background: rgb(229 72 77 / .16); color: #ff6b70; } .c-green { background: rgb(52 211 153 / .14); color: #34d399; }
+.c-gold { background: rgb(var(--bam-gold-rgb) / .14); color: var(--bam-gold); } .c-grey { background: var(--ink-700); color: var(--ink-300); }
+.c-blue { background: rgb(96 165 250 / .14); color: #7ab4ff; }
+.bell { --c: var(--bam-gold-rgb); position: relative; }
+.bell i { position: absolute; top: -7px; right: -7px; background: #e5484d; color: #fff; font: 700 10px Inter; border-radius: 99px; padding: 1px 6px; font-style: normal; }
+
+/* stats */
+.stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.stat { padding: 14px 16px; }
+.stat b { display: block; font: 800 34px/1 var(--font-display); color: #fff; text-shadow: 0 0 20px rgb(var(--c, var(--accent-rgb)) / .75); }
+.stat span { font: 600 10.5px Inter; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-400); }
+.cols { display: grid; gap: 16px; grid-template-columns: 1.05fr 1fr; min-height: 0; flex: 1; }
+.play { padding: 16px 18px; border-color: rgb(var(--bam-gold-rgb) / .45); }
+.play p { margin: 6px 0 0; font-size: 17px; }
+.mini { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.mini .card { padding: 14px 16px; } .mini p { margin: 6px 0 0; font-size: 14.5px; color: #e9e9e9; }
+ol.steps { margin: 0; padding-left: 18px; color: var(--ink-300); line-height: 1.9; font-size: 13.5px; }
+.tasks .head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--ink-700); }
+.sect { padding: 6px 16px; font: 700 10.5px Inter; letter-spacing: .14em; text-transform: uppercase; }
+.sect.od { background: rgb(229 72 77 / .12); color: #ff6b70; } .sect.dt { background: var(--ink-800); color: var(--ink-300); }
+.task { display: flex; gap: 12px; padding: 11px 16px; border-left: 3px solid var(--ink-600); border-bottom: 1px solid var(--ink-800); }
+.task.od { border-left-color: #e5484d; background: rgb(229 72 77 / .05); }
+.task .box { width: 16px; height: 16px; border: 1.5px solid var(--ink-600); border-radius: 4px; margin-top: 2px; flex-shrink: 0; }
+.task .t { font-weight: 600; } .task .m { font-size: 12px; color: var(--ink-400); margin-top: 2px; }
+.task .m .r { color: #ff6b70; } .task .m .n { color: var(--bam-gold); }
+.task .sp { flex: 1; }
+
+/* desk */
+.pipe { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; flex: 1; min-height: 0; }
+.lane { display: flex; flex-direction: column; min-height: 0; }
+.lane .lh { padding: 12px 14px; border-bottom: 1px solid var(--ink-700); border-top: 3px solid rgb(var(--lc)); border-radius: 12px 12px 0 0; }
+.lane .lh .h { color: rgb(var(--lc)); text-shadow: 0 0 12px rgb(var(--lc) / .5); }
+.lane .lh .sub { font-size: 11.5px; }
+.lane .body { padding: 10px; display: grid; gap: 10px; align-content: start; }
+.unit { border-radius: 10px; background: var(--ink-900); border: 1px solid var(--ink-700); padding: 10px 11px; display: grid; gap: 6px; }
+.unit.sel { border-color: rgb(var(--lc)); box-shadow: inset 0 0 0 1px rgb(var(--lc)), 0 0 14px rgb(var(--lc) / .45); }
+.unit .top { display: flex; gap: 10px; align-items: center; }
+.thumb { width: 46px; height: 46px; border-radius: 8px; background: linear-gradient(135deg, #2a2a2a, #121212); border: 1px solid var(--ink-600); display: grid; place-items: center; flex-shrink: 0; }
+.thumb svg { width: 30px; }
+.unit .nm { font-weight: 700; font-size: 13.5px; line-height: 1.2; }
+.unit .mt { font-size: 11.5px; color: var(--ink-400); }
+.unit .row { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.ask { font: 600 11px Inter; color: #ff6b70; }
+.pend { font-size: 11px; color: #ff9d6b; }
+.avs { display: flex; } .avs i { width: 22px; height: 22px; border-radius: 99px; background: #1f1f1f; border: 1.5px solid var(--bam-gold); font: 700 9px/19px Inter; text-align: center; color: var(--bam-gold); margin-left: -6px; font-style: normal; }
+.avs i:first-child { margin-left: 0; }
+.score { font: 800 12px Inter; color: #000; border-radius: 99px; padding: 2px 8px; }
+.rule { font-size: 12px; color: var(--ink-300); display: flex; gap: 8px; align-items: center; }
+
+/* match */
+.mgrid { display: grid; grid-template-columns: 330px 1fr; gap: 16px; flex: 1; min-height: 0; }
+.list .it { display: flex; gap: 10px; align-items: center; padding: 11px 14px; border-bottom: 1px solid var(--ink-800); }
+.list .it.sel { background: rgb(var(--bam-gold-rgb) / .1); box-shadow: inset 3px 0 0 var(--bam-gold); }
+.list .grp { padding: 8px 14px; font: 700 10.5px Inter; letter-spacing: .14em; color: var(--ink-400); text-transform: uppercase; display: flex; justify-content: space-between; }
+.detail { padding: 18px 20px; display: grid; gap: 14px; align-content: start; }
+.facts { display: grid; grid-template-columns: repeat(4, auto); gap: 4px 26px; font-size: 13px; justify-content: start; }
+.facts span { color: var(--ink-400); }
+.buyers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.buyer { padding: 13px 14px; display: grid; gap: 8px; }
+.buyer.sel { border-color: var(--bam-gold); box-shadow: 0 0 22px rgb(var(--bam-gold-rgb) / .35); }
+.buyer .bt { display: flex; justify-content: space-between; gap: 8px; }
+.buyer .nm { font-weight: 700; } .buyer .mt { font-size: 11.5px; color: var(--ink-400); }
+.pitch { padding: 14px 16px; display: grid; gap: 10px; }
+.pitch .txt { background: rgb(8 8 8 / .75); border: 1px solid var(--ink-600); border-radius: 8px; padding: 10px 12px; font-size: 13.5px; line-height: 1.5; color: #eee; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.lang { display: inline-flex; border: 1px solid var(--ink-600); border-radius: 99px; overflow: hidden; font: 700 10.5px Inter; }
+.lang b { padding: 3px 10px; } .lang b.on { background: var(--bam-gold); color: #000; }
+.watermark { position: absolute; right: 18px; bottom: 12px; font: 600 10px Inter; letter-spacing: .14em; color: rgb(255 255 255 / .28); text-transform: uppercase; }
+</style>
+<link rel="stylesheet" href="settings-preview.css">
+</head>
+<body>
+<div class="app" id="app" data-view="today">
+  <aside>
+    <div class="wordmark">
+      <img src="bam-logo.png" alt="Big Ass Motors">
+      <div class="wm">Big Ass<br>Motors</div>
+      <div class="rule"></div>
+      <div class="tag">YOU CAN'T DEPOSIT EXCUSES</div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="me"><b>James</b> <span class="role">· admin</span><div>sales@bigassmotors.com</div><div class="db">● MySQL · live CRM data</div></div>
+  </aside>
+  <main><div class="grid"></div><div class="page" id="page"></div></main>
+</div>
+
+<script>
+const NAV = [
+  ['today', 'Today', 'Orbitron', 'var(--bam-gold-rgb)', '99+'],
+  ['match', 'Match Inbox', 'Audiowide', 'var(--bam-gold-rgb)', '6'],
+  ['desk', '3rd-Party Machines', 'Exo 2', 'var(--bam-gold-dark-rgb)', '12'],
+  ['leads', 'My Leads', 'Rajdhani', '240 240 240', '5'],
+  ['tasks', 'My Tasks', 'Rajdhani', '240 240 240', '7'],
+  ['board', 'Board', 'Chakra Petch', 'var(--bam-gold-light-rgb)'],
+  ['sec', 'Inventory'],
+  ['inv', 'Units', 'Exo 2', 'var(--bam-gold-dark-rgb)'],
+  ['sourcing', 'Sourcing', 'Michroma', 'var(--bam-gold-rgb)'],
+  ['dash', 'Dashboard', 'Space Grotesk', '190 196 206'],
+  ['outbox', 'Outbox', 'Space Grotesk', '190 196 206', '3'],
+  ['settings', 'Settings', 'Space Grotesk', '190 196 206'],
+];
+const view = (location.hash.slice(1) || 'today');
+document.getElementById('app').dataset.view = view;
+document.getElementById('nav').innerHTML = NAV.map(([k, l, f, c, n]) => k === 'sec'
+  ? `<div class="sec">${l.toUpperCase()}</div>`
+  : `<div class="nb ${(k === view || (k === 'settings' && view.startsWith('settings'))) ? 'on' : ''}" style="--c:${c};font-family:'${f}',sans-serif"><span>${l}</span>${n ? `<span class="ct">${n}</span>` : ''}</div>`).join('');
+
+const machine = `<svg viewBox="0 0 40 28"><rect x="4" y="8" width="18" height="10" rx="2" fill="#FFC400"/><rect x="8" y="3" width="8" height="6" rx="1" fill="#FFC400"/><circle cx="31" cy="15" r="6" fill="none" stroke="#FFC400" stroke-width="3"/><rect x="3" y="19" width="22" height="5" rx="2.5" fill="#d1a100"/></svg>`;
+const topbar = (actions) => `<div class="topbar"><div class="search">Search machines, buyers, cities… <kbd>⌘K</kbd></div><div class="sp"></div>${actions}<span class="btn ghost">ES</span><span class="btn bell">🔔<i>8</i></span><span class="btn gold">+ New</span></div>`;
+const sc = (s) => `<span class="score" style="background:${s >= 85 ? '#34d399' : s >= 65 ? '#FFC400' : '#f97316'}">${s}</span>`;
+const ring = (s, size = 46) => { const r = size / 2 - 4, c = 2 * Math.PI * r, col = s >= 85 ? '#34d399' : s >= 65 ? '#FFC400' : '#f97316';
+  return `<svg width="${size}" height="${size}" style="filter:drop-shadow(0 0 6px ${col}88)"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#2a2a2a" stroke-width="4"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${col}" stroke-width="4" stroke-linecap="round" stroke-dasharray="${s/100*c} ${c}" transform="rotate(-90 ${size/2} ${size/2})"/><text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" fill="#fff" font-size="${size*.32}" font-weight="800" font-family="Inter">${s}</text></svg>`; };
+
+const PAGES = {
+today: () => `
+  ${topbar('<span class="btn">Open board</span><span class="btn">List</span>')}
+  <div><div class="eyebrow">Big Ass Motors · Today</div><h1>Thursday, October 22</h1><div class="sub">Afternoon. Stay on the live ones.</div></div>
+  <div class="stats">
+    <div class="card stat" style="--c:229 72 77"><b style="color:#ff6b70">180</b><span>Overdue</span></div>
+    <div class="card stat"><b style="color:var(--bam-gold)">4</b><span>Due today</span></div>
+    <div class="card stat"><b>2,136</b><span>Never called</span></div>
+    <div class="card stat" style="--c:52 211 153"><b style="color:#34d399">6</b><span>Hot with phone</span></div>
+    <div class="card stat" style="--c:52 211 153"><b style="color:#34d399">3</b><span>Done today</span></div>
+  </div>
+  <div class="cols">
+    <div style="display:grid;gap:14px;align-content:start">
+      <div class="card play"><div class="eyebrow">Today's play</div><p>Clear 180 overdue follow-ups first. They already waited.</p></div>
+      <div class="mini"><div class="card"><div class="eyebrow">Motivation</div><p>The iron doesn't sell itself. You do.</p></div><div class="card"><div class="eyebrow">Sales coach</div><p>Price shoppers: offer freight to their yard. Ask for the drop zip.</p></div></div>
+      <div class="card" style="padding:14px 18px"><ol class="steps"><li>Overdues first. Don't reopen with an apology.</li><li>Then never-touched hots. Qualify model, hours, budget, timing.</li><li>Due today gets a next step: brochure, freight, or a hold.</li></ol></div>
+      <div class="actions"><span class="btn primary">📞 Log a call</span><span class="btn">⚡ New scraped matches · 4</span></div>
+    </div>
+    <div class="card tasks">
+      <div class="head"><div class="h">My tasks <span class="sub" style="font-family:Inter;text-transform:none;letter-spacing:0">· 8 open</span></div><span class="btn ghost">All tasks</span></div>
+      <div class="sect od">Overdue · 7</div>
+      <div class="task od"><div class="box"></div><div><div class="t">Match alert: scraped 2008 CAT D6N XL (FB Marketplace)</div><div class="m"><span class="r">OVERDUE · Sun Oct 18 · 10:00 AM</span> · <span class="n">Sample buyer A</span></div></div><div class="sp"></div><span class="chip c-red">high</span></div>
+      <div class="task od"><div class="box"></div><div><div class="t">Follow up: Sample buyer B <span class="chip c-gold">REMINDER</span></div><div class="m"><span class="r">OVERDUE · Fri Oct 16 · 1:30 PM</span> · Spanish · auto-scheduled from call note</div></div><div class="sp"></div><span class="chip c-grey">normal</span></div>
+      <div class="task od"><div class="box"></div><div><div class="t">Nurture: no contact in 7 days</div><div class="m"><span class="r">OVERDUE · Sat Oct 17 · 10:00 AM</span> · <span class="n">Sample buyer C</span></div></div><div class="sp"></div><span class="chip c-grey">low</span></div>
+      <div class="sect dt">Due today · 4</div>
+      <div class="task"><div class="box"></div><div><div class="t">Send BAM brochure: 2018 Vermeer D60x90</div><div class="m">Today · 4:00 PM · <span class="n">Sample buyer D</span></div></div><div class="sp"></div><span class="chip c-gold">brochure</span></div>
+      <div class="task"><div class="box"></div><div><div class="t">Verify serial before branding: FB-1430…</div><div class="m">Today · 11:00 AM · 3rd-party machine</div></div><div class="sp"></div><span class="chip c-red">high</span></div>
+    </div>
+  </div>`,
+
+desk: () => {
+  const card = (o) => `<div class="unit ${o.sel ? 'sel' : ''}"><div class="top"><div class="thumb">${machine}</div><div style="min-width:0"><div class="nm">${o.t}</div><div class="mt">${o.m}</div></div></div><div class="row">${o.chips}</div>${o.extra || ''}</div>`;
+  const lane = (lc, title, sub, n, cards) => `<div class="card lane" style="--lc:${lc}"><div class="lh"><div class="h">${title} · ${n}</div><div class="sub">${sub}</div></div><div class="body">${cards}</div></div>`;
+  return `
+  ${topbar('<span class="btn primary">⚡ BAM Grabber</span><span class="btn">Pull URL</span>')}
+  <div style="display:flex;align-items:end;justify-content:space-between;gap:16px"><div><div class="eyebrow">Inventory · URL listings</div><h1>3rd-Party Machines</h1><div class="sub">Only scraped machines are matched. Buyers show up the moment a listing lands; pitching unlocks after BAM branding.</div></div>
+  <div class="rule"><span class="chip c-gold">Seller ask = internal</span><span class="chip c-green">Seller info stripped on brand</span></div></div>
+  <div class="pipe">
+    ${lane('255 107 112', 'Scraped', 'Grabbed or pulled · specs parsed, never guessed', 5,
+      card({ t: '2018 Vermeer D60x90', m: 'FB Marketplace · Dallas, TX · 2m ago', chips: '<span class="chip c-blue">HDD Drill</span><span class="chip c-grey">4,000 hrs</span>', extra: '<div class="ask">🔒 Ask $385K · internal</div><div class="pend">serial · weight: Pending Inspection</div>' }) +
+      card({ t: '2007 Vermeer CS800GT', m: 'Machinery Trader · Kansas City · 1h', chips: '<span class="chip c-blue">Vacuum Exc.</span><span class="chip c-grey">3 hrs?</span>', extra: '<div class="ask">🔒 Ask $17.5K · internal</div>' }))}
+    ${lane('var(--bam-gold-rgb)', 'Matched', 'Scored at scrape · internal only', 4,
+      card({ sel: 1, t: '2021 Vermeer RTX1250i2', m: 'MachineryTrader · Simpsonville, SC', chips: `<span class="chip c-blue">Trencher</span><span class="chip c-grey">1,084 hrs</span>${sc(86)}`, extra: '<div class="row"><span class="avs"><i>BL</i><i>JK</i><i>DC</i></span><span class="mt">&nbsp;10 buyers · 3 hot</span></div><div class="row"><span class="btn" style="padding:5px 10px;font-size:11px">Verify & brand →</span><span class="btn lock" style="padding:5px 10px;font-size:11px">🔒 Pitch</span></div>' }) +
+      card({ t: '2019 Ditch Witch RT125 Quad', m: 'HDD Broker · Shakopee, MN', chips: `<span class="chip c-blue">Trencher</span><span class="chip c-grey">1,216 hrs</span>${sc(94)}`, extra: '<div class="row"><span class="avs"><i>DG</i><i>MW</i><i>TL</i></span><span class="mt">&nbsp;6 buyers</span></div>' }))}
+    ${lane('52 211 153', 'BAM-branded', 'Verified · BAM brochure · Call for Price', 2,
+      card({ t: '2014 Ditch Witch RT120', m: 'BAM-1482 · verified today', chips: `<span class="chip c-green">VERIFIED</span>${sc(94)}`, extra: '<div class="row"><span class="btn" style="--c:52 211 153;padding:5px 10px;font-size:11px">📄 BAM brochure</span><span class="btn primary" style="--c:52 211 153;padding:5px 10px;font-size:11px">Pitch 3 buyers</span></div>' }))}
+    ${lane('122 180 255', 'Pitched', 'Text · e-mail · Gmail draft with brochure', 1,
+      card({ t: '2012 Ditch Witch RT115 Quad', m: 'BAM-1439 · pitched to 3', chips: `${sc(100)}<span class="chip c-blue">2 replies</span>`, extra: '<div class="mt">Next follow-up Fri 10:00 AM (auto)</div>' }))}
+  </div>`; },
+
+match: () => `
+  ${topbar('<span class="btn">⚡ Ingest</span><span class="btn primary">Open deal ↵</span>')}
+  <div><div class="eyebrow">3rd-party machines · scraped & matched</div><h1>Match Inbox</h1></div>
+  <div class="mgrid">
+    <div class="card list" style="overflow:hidden">
+      <div class="grp"><span>New ingestions · 6</span><span>matched on arrival</span></div>
+      ${[['2021 Vermeer RTX1250i2', 'Trencher · 1,084 hrs · SC', 86, 1], ['2019 Ditch Witch RT125 QUAD', 'Trencher · 1,216 hrs · MN', 94], ['2021 Ditch Witch JT20', 'HDD Drill · 980 hrs · TX', 76], ['2012 Ditch Witch RT115 Quad', 'Trencher · 2,480 hrs · FL', 100], ['2017 Vermeer RTX1250 Rocksaw', 'Rock Saw · 1,720 hrs · TX', 98], ['2014 Ditch Witch RT120', 'Trencher · 1,213 hrs · IA', 94]]
+        .map(([t, m, s, sel]) => `<div class="it ${sel ? 'sel' : ''}"><div class="thumb" style="width:38px;height:38px">${machine}</div><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px">${t}</div><div style="font-size:11.5px;color:var(--ink-400)">${m}</div></div>${sc(s)}</div>`).join('')}
+    </div>
+    <div class="card detail">
+      <div style="display:flex;gap:16px;align-items:center"><div class="thumb" style="width:96px;height:72px">${machine}</div><div><span class="chip c-red">NEW · MachineryTrader · 1m ago · matched to 10 buyers</span><div class="h" style="font-size:22px;margin-top:6px;color:#fff;text-shadow:0 0 18px rgb(var(--accent-rgb)/.6)">2021 Vermeer RTX1250i2</div></div></div>
+      <div class="facts"><span>Hours</span><b>1,084</b><span>Engine</span><b>Cummins QSB4.5 · 130 hp</b><span>Public price</span><b style="color:var(--bam-gold)">Call for Price</b><span>Internal ask</span><b style="color:#ff6b70">🔒 $215K</b></div>
+      <div class="eyebrow" style="color:var(--ink-400)">Top 3 buyers · press 1 · 2 · 3</div>
+      <div class="buyers">
+        ${[['Sample buyer A', 'Gulf Coast Dewatering · FL', 86, 'Negotiation', 1], ['Sample buyer B', 'Red Koon Utilities · TN', 82, 'Qualified'], ['Sample buyer C', 'Dig One Services · TX', 82, 'Contacted']]
+          .map(([n, m, s, st, sel]) => `<div class="card buyer ${sel ? 'sel' : ''}"><div class="bt"><div><div class="nm">${n}</div><div class="mt">${m}</div><div class="mt" style="color:#ddd;margin-top:4px">Wants <b>Vermeer RTX1250</b></div></div>${ring(s)}</div><div class="row" style="display:flex;flex-wrap:wrap;gap:4px"><span class="chip c-green">Series</span><span class="chip c-green">Brand</span><span class="chip c-green">Type</span><span class="chip c-green">In budget</span><span class="chip c-green">Hours OK</span></div><span class="chip c-grey" style="justify-self:start">${st}</span></div>`).join('')}
+      </div>
+      <div class="card pitch"><div style="display:flex;justify-content:space-between;align-items:center"><div class="eyebrow" style="color:var(--ink-400)">Buyer-safe pitch · no internal pricing</div><span class="lang"><b class="on">EN</b><b>ES</b></span></div>
+        <div class="txt">Hi, James with Big Ass Motors. I have a 2021 Vermeer RTX1250i2 (1,084 hrs, Cummins 130 hp) ready for inspection. Call for price. When do you need it on site? Sending you the BAM spec sheet now.</div>
+        <div class="actions"><span class="btn lock">🔒 Text · unlocks after branding</span><span class="btn lock">🔒 Email</span><span class="btn" style="--c:var(--bam-gold-rgb)">📞 Log call</span><span class="btn" style="--c:52 211 153">Verify & brand →</span><span class="btn ghost">Link to lead</span><span class="btn ghost">Change stage</span></div>
+      </div>
+    </div>
+  </div>`,
+};
+if (view.startsWith('settings')) { window.BAM_VIEW = view; } else document.getElementById('page').innerHTML = (PAGES[view] || PAGES.today)() + '<div class="watermark">Style preview · sample data · live CRM features in the local look</div>';
+</script>
+<script src="features-data.js"></script>
+<script src="settings-preview.js"></script>
+</body>
+</html>

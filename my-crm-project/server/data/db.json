@@ -1,0 +1,870 @@
+{
+  "leads": [
+    {
+      "id": "7c8830fb-6600-48e6-a88b-e98d336a5006",
+      "createdAt": "2026-10-09T14:00:00.000Z",
+      "language": "en",
+      "source": "Sample",
+      "interactions": [
+        {
+          "id": "677df7f6-1835-4842-acfb-57e7b02052f9",
+          "at": "2026-10-13T14:00:00.000Z",
+          "type": "call",
+          "note": "Wants combo plow/trencher, needs it by spring."
+        },
+        {
+          "id": "237c6677-e02d-4d78-ba8d-33343caa4f0e",
+          "at": "2026-10-20T21:24:08.385Z",
+          "type": "text",
+          "note": "Texted pitch for 2020 Ditch Witch RT125 Quad",
+          "unitId": "76d94077-6bb3-4fd5-ab38-9470cac6301f"
+        },
+        {
+          "id": "9b22d70e-1144-4866-8610-3f9f442f7284",
+          "at": "2026-10-20T21:24:11.684Z",
+          "type": "email",
+          "note": "Emailed pitch for 2020 Ditch Witch RT125 Quad",
+          "unitId": "76d94077-6bb3-4fd5-ab38-9470cac6301f"
+        },
+        {
+          "id": "f543d662-f843-4c35-a9b7-d5289e5dc005",
+          "at": "2026-10-20T21:24:13.973Z",
+          "type": "email",
+          "note": "Emailed pitch for 2020 Ditch Witch RT125 Quad",
+          "unitId": "76d94077-6bb3-4fd5-ab38-9470cac6301f"
+        },
+        {
+          "id": "4bb67225-45ba-4748-9db7-1e02df12fe84",
+          "at": "2026-10-20T21:24:19.654Z",
+          "type": "email",
+          "note": "Emailed pitch for 2020 Ditch Witch RT125 Quad",
+          "unitId": "76d94077-6bb3-4fd5-ab38-9470cac6301f"
+        },
+        {
+          "id": "662a75c3-55bd-4c3d-87cf-caf98ef4013d",
+          "at": "2026-10-20T21:24:20.934Z",
+          "type": "email",
+          "note": "Emailed pitch for 2020 Ditch Witch RT125 Quad",
+          "unitId": "76d94077-6bb3-4fd5-ab38-9470cac6301f"
+        },
+        {
+          "id": "fa4ef1e8-5dca-4dca-89aa-c47a0d9b31cb",
+          "at": "2026-10-20T21:26:28.517Z",
+          "type": "email",
+          "note": "Emailed pitch for 2020 Ditch Witch RT125 Quad",
+          "unitId": "76d94077-6bb3-4fd5-ab38-9470cac6301f"
+        },
+        {
+          "id": "e34e7a01-6982-47bf-b4a9-fcff8bce5c58",
+          "at": "2026-10-20T21:38:19.391Z",
+          "type": "brochure",
+          "note": "Sent brochure for 2020 Ditch Witch RT125 Quad",
+          "unitId": "76d94077-6bb3-4fd5-ab38-9470cac6301f"
+        },
+        {
+          "id": "7d0d9556-37e8-45e5-9f3d-c97b800e434c",
+          "at": "2026-10-20T23:19:07.132Z",
+          "type": "brochure",
+          "note": "Sent brochure for 2020 Ditch Witch RT125 Quad",
+          "unitId": "76d94077-6bb3-4fd5-ab38-9470cac6301f"
+        },
+        {
+          "id": "2e5dc06e-b690-46ba-a4bb-f552eda00cad",
+          "at": "2026-10-20T23:57:20.615Z",
+          "type": "brochure",
+          "note": "Sent brochure for 2020 Ditch Witch RT125 Quad",
+          "unitId": "76d94077-6bb3-4fd5-ab38-9470cac6301f"
+        },
+        {
+          "id": "f4196460-863b-43f2-81cc-ec92bc1482e3",
+          "at": "2026-10-20T23:59:18.412Z",
+          "type": "brochure",
+          "note": "Sent brochure for 2020 Ditch Witch RT125 Quad",
+          "unitId": "76d94077-6bb3-4fd5-ab38-9470cac6301f"
+        },
+        {
+          "id": "1c848233-41f5-4371-8dc4-e26f5cdf2780",
+          "at": "2026-10-21T00:30:57.016Z",
+          "type": "text",
+          "note": "Texted pitch for 2020 Ditch Witch RT125 Quad",
+          "unitId": "76d94077-6bb3-4fd5-ab38-9470cac6301f"
+        },
+        {
+          "id": "d8a0d6d5-1150-41d3-83a9-a16c36a536ba",
+          "at": "2026-10-21T04:58:58.735Z",
+          "type": "email",
+          "note": "Emailed pitch for 2020 Ditch Witch RT125 Quad",
+          "unitId": "76d94077-6bb3-4fd5-ab38-9470cac6301f"
+        },
+        {
+          "id": "dccc62d8-3abe-4973-b0a1-2796d5466cb4",
+          "at": "2026-10-21T04:59:29.803Z",
+          "type": "text",
+          "note": "Texted pitch for 2020 Ditch Witch RT125 Quad",
+          "unitId": "76d94077-6bb3-4fd5-ab38-9470cac6301f"
+        }
+      ],
+      "notes": "",
+      "stage": "Qualified",
+      "urgency": "High",
+      "firstName": "Wes",
+      "lastName": "Harlan",
+      "email": "wes@westtxtrenching.example",
+      "phone": "(432) 555-0114",
+      "company": "West Texas Trenching",
+      "city": "Midland",
+      "state": "TX",
+      "budgetMax": 120000,
+      "maxHours": 1800,
+      "minHp": 120,
+      "wants": {
+        "make": "Ditch Witch",
+        "model": "RT125",
+        "category": "Trencher",
+        "minYear": 2018
+      }
+    },
+    {
+      "id": "43450bf0-8a6d-48e3-87ca-6803fecfbe02",
+      "createdAt": "2026-10-09T14:00:00.000Z",
+      "language": "es",
+      "source": "Sample",
+      "interactions": [
+        {
+          "id": "a5e7a84a-7dcd-49a6-a6ee-4a12f3cbfff0",
+          "at": "2026-10-16T14:00:00.000Z",
+          "type": "call",
+          "note": "Quiere inspección la próxima semana."
+        },
+        {
+          "id": "1f7293c8-7583-4dcc-8e8e-2d0aa3c83032",
+          "at": "2026-10-20T00:08:27.035Z",
+          "type": "brochure",
+          "note": "Sent brochure for 2018 Vermeer D60x90",
+          "unitId": "3285fe5e-f81a-4198-8ed7-e40da24d3153"
+        }
+      ],
+      "notes": "",
+      "stage": "Negotiation",
+      "urgency": "High",
+      "firstName": "Mike",
+      "lastName": "Duarte",
+      "email": "mike@duartebore.example",
+      "phone": "(305) 555-0172",
+      "company": "Duarte Directional",
+      "city": "Miami",
+      "state": "FL",
+      "budgetMax": 420000,
+      "maxHours": 4500,
+      "wants": {
+        "make": "Vermeer",
+        "model": "D60x90",
+        "category": "HDD Drill"
+      }
+    },
+    {
+      "id": "16ada5ab-019d-4e10-857b-c8b27b5d8db7",
+      "createdAt": "2026-10-09T14:00:00.000Z",
+      "language": "en",
+      "source": "Sample",
+      "interactions": [
+        {
+          "id": "be26cf74-05fe-436f-a604-05611db5fa33",
+          "at": "2026-10-17T14:00:00.000Z",
+          "type": "call",
+          "note": "Comparing against a new unit. Budget firm."
+        },
+        {
+          "id": "81b32a81-7f32-4f7b-bea4-b88b72f5ba28",
+          "at": "2026-10-20T15:27:30.467Z",
+          "type": "stage",
+          "note": "Stage: Negotiation → Qualified"
+        },
+        {
+          "id": "ad1a8f54-9f2d-43c5-a8bc-4fa5b4cad01d",
+          "at": "2026-10-20T15:28:14.682Z",
+          "type": "stage",
+          "note": "Stage: Qualified → Negotiation"
+        },
+        {
+          "id": "89c15bd5-2743-46ab-9c7c-c86ce06c2f88",
+          "at": "2026-10-20T21:28:57.028Z",
+          "type": "call",
+          "note": "Wants it delivered to Panama City by Friday"
+        }
+      ],
+      "notes": "",
+      "stage": "Negotiation",
+      "urgency": "High",
+      "firstName": "Brad",
+      "lastName": "Lambert",
+      "email": "brad@gulfcoastdewater.example",
+      "phone": "(229) 555-0148",
+      "company": "Gulf Coast Dewatering",
+      "city": "Panama City",
+      "state": "FL",
+      "budgetMax": 246000,
+      "maxHours": 2500,
+      "minHp": 120,
+      "wants": {
+        "make": "Vermeer",
+        "model": "RTX1250",
+        "category": "Trencher"
+      }
+    },
+    {
+      "id": "8cf76e77-69b9-4566-a6a1-743b3853dc67",
+      "createdAt": "2026-10-09T14:00:00.000Z",
+      "language": "en",
+      "source": "Sample",
+      "interactions": [
+        {
+          "id": "b538a23d-3d34-4d80-8cab-d801a2d9a856",
+          "at": "2026-10-21T05:05:03.732Z",
+          "type": "brochure",
+          "note": "Sent brochure for 2021 Vermeer RTX1250I2",
+          "unitId": "dba27796-6209-418b-aadc-74d75182de4e"
+        }
+      ],
+      "notes": "",
+      "stage": "Qualified",
+      "urgency": "Medium",
+      "firstName": "Jim",
+      "lastName": "Kirton",
+      "email": "jim@redkoon.example",
+      "phone": "(901) 555-0190",
+      "company": "Red Koon Utilities",
+      "city": "Memphis",
+      "state": "TN",
+      "budgetMax": 230000,
+      "maxHours": 2000,
+      "wants": {
+        "make": "Vermeer",
+        "model": "RTX1250",
+        "category": "Trencher"
+      }
+    },
+    {
+      "id": "a94c4547-b19b-45fa-a743-a4091c770ad4",
+      "createdAt": "2026-10-09T14:00:00.000Z",
+      "language": "en",
+      "source": "Sample",
+      "interactions": [
+        {
+          "id": "a66b7dfb-163c-4fc1-9b55-d79c21759289",
+          "at": "2026-10-20T23:18:47.010Z",
+          "type": "brochure",
+          "note": "Sent brochure for 2020 Ditch Witch RT125 Quad",
+          "unitId": "76d94077-6bb3-4fd5-ab38-9470cac6301f"
+        },
+        {
+          "id": "93162016-6793-4c39-a81b-c4bd7006c476",
+          "at": "2026-10-21T00:30:48.476Z",
+          "type": "text",
+          "note": "Texted pitch for 2020 Ditch Witch RT125 Quad",
+          "unitId": "76d94077-6bb3-4fd5-ab38-9470cac6301f"
+        }
+      ],
+      "notes": "",
+      "stage": "Contacted",
+      "urgency": "Medium",
+      "firstName": "Debra",
+      "lastName": "Chapman",
+      "email": "debra@dig1.example",
+      "phone": "(512) 555-0133",
+      "company": "Dig One Services",
+      "city": "Austin",
+      "state": "TX",
+      "budgetMax": 200000,
+      "wants": {
+        "make": "Vermeer",
+        "category": "Trencher"
+      }
+    },
+    {
+      "id": "339fdf08-1b50-4657-957f-581c2db3976d",
+      "createdAt": "2026-10-09T14:00:00.000Z",
+      "language": "en",
+      "source": "Sample",
+      "interactions": [
+        {
+          "id": "096fda5e-3e89-47ee-9066-b49082502f28",
+          "at": "2026-10-20T00:07:23.851Z",
+          "type": "stage",
+          "note": "Stage: New → Contacted"
+        },
+        {
+          "id": "c3e1620a-0531-4f39-bde2-cdaa8d06d564",
+          "at": "2026-10-20T00:07:24.528Z",
+          "type": "stage",
+          "note": "Stage: Contacted → Qualified"
+        },
+        {
+          "id": "4ca850d3-8236-412c-95e8-20394bbb6180",
+          "at": "2026-10-20T20:04:17.286Z",
+          "type": "stage",
+          "note": "Stage: Qualified → Negotiation"
+        },
+        {
+          "id": "dbf254e0-7d4a-425a-8014-8d90050a5ea8",
+          "at": "2026-10-20T20:04:18.287Z",
+          "type": "stage",
+          "note": "Stage: Negotiation → Qualified"
+        }
+      ],
+      "notes": "",
+      "stage": "Qualified",
+      "urgency": "Low",
+      "firstName": "Tom",
+      "lastName": "Reyes",
+      "email": "tom@reyesexcavating.example",
+      "phone": "(713) 555-0166",
+      "company": "Reyes Excavating",
+      "city": "Houston",
+      "state": "TX",
+      "budgetMax": 90000,
+      "maxHours": 6000,
+      "wants": {
+        "make": "Caterpillar",
+        "model": "320E",
+        "category": "Excavator"
+      }
+    },
+    {
+      "id": "fb177433-a24e-4b4f-a74d-52f8a036598a",
+      "createdAt": "2026-10-09T14:00:00.000Z",
+      "language": "en",
+      "source": "Sample",
+      "interactions": [],
+      "notes": "",
+      "stage": "Contacted",
+      "urgency": "Medium",
+      "firstName": "Ana",
+      "lastName": "Morales",
+      "email": "ana@moralesvac.example",
+      "phone": "(904) 555-0121",
+      "company": "Morales Vac Services",
+      "city": "Jacksonville",
+      "state": "FL",
+      "budgetMax": 60000,
+      "wants": {
+        "category": "Vacuum Excavator"
+      }
+    },
+    {
+      "id": "dbb5efdf-fd54-4d2d-a732-30475e2330c1",
+      "createdAt": "2026-10-09T14:00:00.000Z",
+      "language": "es",
+      "source": "Sample",
+      "interactions": [
+        {
+          "id": "e067fe8c-48c6-420a-9b1c-bccc36f4494f",
+          "at": "2026-10-20T14:37:26.641Z",
+          "type": "import",
+          "note": "Re-ingested from Manual entry; preferences updated."
+        },
+        {
+          "id": "0017ce3c-dfcc-4e56-a990-6e9364fd58bd",
+          "at": "2026-10-20T15:24:59.246Z",
+          "type": "call",
+          "note": "Quiere el equipo para marzo, necesita flete a Midland"
+        },
+        {
+          "id": "7be651fa-5801-4c62-8cb7-56094964f2a9",
+          "at": "2026-10-21T04:22:25.096Z",
+          "type": "stage",
+          "note": "Stage: Won → Negotiation"
+        }
+      ],
+      "notes": "",
+      "stage": "Negotiation",
+      "urgency": "Medium",
+      "firstName": "Carl",
+      "lastName": "Owens",
+      "email": "carl@owensgrading.example",
+      "phone": "(615) 555-0177",
+      "company": "Owens Grading",
+      "city": "Nashville",
+      "state": "TN",
+      "wants": {
+        "make": "Caterpillar",
+        "category": "Dozer"
+      }
+    },
+    {
+      "id": "950f04c8-00f7-4c24-be1b-4f9537ad5fea",
+      "createdAt": "2026-10-20T15:20:50.013Z",
+      "stage": "New",
+      "urgency": "Medium",
+      "language": "en",
+      "notes": "",
+      "wants": {
+        "make": "Vermeer",
+        "model": "RTX1250",
+        "category": "Trencher"
+      },
+      "interactions": [
+        {
+          "id": "58c48e8f-5549-4a6f-b77b-df25d8b91a02",
+          "at": "2026-10-20T15:20:50.013Z",
+          "type": "import",
+          "note": "Created from Bulk import."
+        },
+        {
+          "id": "c1ca9556-b52d-46ef-9622-7d9ee641004c",
+          "at": "2026-10-20T15:20:50.013Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "7ff03ce8-7159-46b6-ae32-1806abfcbab0",
+          "at": "2026-10-20T15:20:55.037Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "4d1c5916-cbb8-4013-ba90-c0e01520e4e2",
+          "at": "2026-10-20T15:20:55.038Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "73716fc2-db9e-4b26-83ed-da89d4dd1843",
+          "at": "2026-10-20T15:20:57.813Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "4687654c-5bad-4d22-b291-c0ec8ee58a17",
+          "at": "2026-10-20T15:20:57.813Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "d73534dc-af2f-4099-a36b-2893d50f596a",
+          "at": "2026-10-20T15:20:58.502Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "052d9851-d3c2-439f-8506-75c076ba8b7d",
+          "at": "2026-10-20T15:20:58.502Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "9e1233c4-8cfe-4388-aebf-39ee4507795c",
+          "at": "2026-10-20T15:21:11.809Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "f9825e72-30a0-4aa6-aa52-5e0503478976",
+          "at": "2026-10-20T15:21:11.809Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "a72e96ba-4bd3-4e53-9f2b-16b74a6e5529",
+          "at": "2026-10-20T15:23:40.815Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "0cce6de3-939e-44f1-936e-0765169d9bc5",
+          "at": "2026-10-20T15:23:40.815Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "6680fef5-2236-4e26-ab60-39f1092e3eaf",
+          "at": "2026-10-20T15:24:24.841Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "8ae98554-d24c-4873-9558-8c097724b368",
+          "at": "2026-10-20T15:24:24.842Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        }
+      ],
+      "source": "Bulk import",
+      "firstName": "Ann",
+      "lastName": "Rivera",
+      "company": "Rivera Dirt",
+      "city": "Tulsa",
+      "email": "ann@csvtest.example",
+      "state": "OK",
+      "budgetMax": 90000,
+      "maxHours": 2000
+    },
+    {
+      "id": "bfb54945-a9f9-4e6d-a6aa-2cc97250ef47",
+      "createdAt": "2026-10-20T15:20:50.013Z",
+      "stage": "Contacted",
+      "urgency": "Medium",
+      "language": "en",
+      "notes": "",
+      "wants": {
+        "make": "Bobcat",
+        "category": "Skid Steer"
+      },
+      "interactions": [
+        {
+          "id": "b25523b2-2100-47e3-ab8b-06e48764b6b6",
+          "at": "2026-10-20T15:20:50.013Z",
+          "type": "import",
+          "note": "Created from Bulk import."
+        },
+        {
+          "id": "44700423-b631-4a74-8c0d-1b1b253bbde9",
+          "at": "2026-10-20T15:20:55.037Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "4b461711-4537-4099-b6e6-414a15468e7d",
+          "at": "2026-10-20T15:20:57.813Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "3480c6a0-8e0d-4928-98f7-ce15089289e0",
+          "at": "2026-10-20T15:20:58.502Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "a152491c-dec5-47d6-8dd4-02c5ae0bb937",
+          "at": "2026-10-20T15:21:11.809Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "ece992e8-c86a-48b1-9677-134fc4fab92b",
+          "at": "2026-10-20T15:23:40.815Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "08abe8b0-4aa7-49b9-8268-1910a03e652d",
+          "at": "2026-10-20T15:24:24.842Z",
+          "type": "import",
+          "note": "Re-ingested from Bulk import; preferences updated."
+        },
+        {
+          "id": "22d8c3cc-0fc8-40a3-bec8-e64201e24e40",
+          "at": "2026-10-21T03:37:10.542Z",
+          "type": "stage",
+          "note": "Stage: New → Contacted"
+        }
+      ],
+      "source": "Bulk import",
+      "firstName": "Bob",
+      "lastName": "Stone",
+      "city": "Reno",
+      "email": "bob@csvtest.example",
+      "state": "NV",
+      "budgetMax": 40000
+    }
+  ],
+  "inventory": [
+    {
+      "id": "76d94077-6bb3-4fd5-ab38-9470cac6301f",
+      "createdAt": "2026-10-14T14:00:00.000Z",
+      "status": "Live",
+      "media": [],
+      "pendingFields": [],
+      "oemSpecs": {},
+      "serviceHistory": "Full dealer service records",
+      "inspectionNotes": "",
+      "sellerStatus": "Motivated",
+      "stock": "BAM-1001",
+      "year": 2020,
+      "make": "Ditch Witch",
+      "model": "RT125 Quad",
+      "category": "Trencher",
+      "hours": 1140,
+      "hp": 125,
+      "serial": "DW2020RT125Q01",
+      "askPrice": 89500,
+      "listPrice": null,
+      "buyPrice": 82000,
+      "city": "Phoenix",
+      "state": "AZ",
+      "narrative": "Quad-track trencher with complete dealer records and walk-around video available."
+    },
+    {
+      "id": "f0f12d20-f277-445b-a3b9-cf4059bbfe1f",
+      "createdAt": "2026-10-14T14:00:00.000Z",
+      "status": "Live",
+      "media": [],
+      "pendingFields": [],
+      "oemSpecs": {},
+      "serviceHistory": "",
+      "inspectionNotes": "",
+      "sellerStatus": "Motivated",
+      "stock": "BAM-1002",
+      "year": 2019,
+      "make": "Ditch Witch",
+      "model": "RT125",
+      "category": "Trencher",
+      "hours": 1620,
+      "hp": 125,
+      "serial": "DW2019RT12502",
+      "askPrice": 94000,
+      "listPrice": 112000,
+      "buyPrice": 86000,
+      "city": "Raleigh",
+      "state": "NC",
+      "narrative": "Clean RT125 with fresh chain and teeth."
+    },
+    {
+      "id": "dba27796-6209-418b-aadc-74d75182de4e",
+      "createdAt": "2026-10-14T14:00:00.000Z",
+      "status": "Draft",
+      "media": [],
+      "pendingFields": [
+        "serial"
+      ],
+      "oemSpecs": {
+        "engine": "Cummins QSB4.5",
+        "hp": 130
+      },
+      "serviceHistory": "",
+      "inspectionNotes": "",
+      "sellerStatus": "Motivated",
+      "stock": "BAM-1003",
+      "year": 2021,
+      "make": "Vermeer",
+      "model": "RTX1250I2",
+      "category": "Trencher",
+      "hours": 1084,
+      "hp": 130,
+      "serial": "",
+      "askPrice": 215000,
+      "listPrice": null,
+      "buyPrice": 203000,
+      "city": "Simpsonville",
+      "state": "SC",
+      "sourceUrl": "https://www.machinerytrader.com/",
+      "narrative": "Quad-track RTX1250 trencher. Serial pending inspection."
+    },
+    {
+      "id": "3285fe5e-f81a-4198-8ed7-e40da24d3153",
+      "createdAt": "2026-10-14T14:00:00.000Z",
+      "status": "Draft",
+      "media": [],
+      "pendingFields": [
+        "serial",
+        "hp",
+        "weight",
+        "dimensions"
+      ],
+      "oemSpecs": {},
+      "serviceHistory": "Seller states: fully serviced (records not verified)",
+      "inspectionNotes": "",
+      "sellerStatus": "Motivated",
+      "stock": "BAM-1004",
+      "year": 2018,
+      "make": "Vermeer",
+      "model": "D60x90",
+      "category": "HDD Drill",
+      "hours": 4000,
+      "serial": "",
+      "askPrice": 385000,
+      "listPrice": null,
+      "buyPrice": 360000,
+      "city": "Dallas",
+      "state": "TX",
+      "narrative": "Ready-to-work 60x90 HDD with 600 ft of drill pipe included."
+    },
+    {
+      "id": "bb498390-5006-4acd-9881-93d0beebfeb2",
+      "createdAt": "2026-10-14T14:00:00.000Z",
+      "status": "Live",
+      "media": [],
+      "pendingFields": [],
+      "oemSpecs": {},
+      "serviceHistory": "",
+      "inspectionNotes": "",
+      "sellerStatus": "Motivated",
+      "stock": "BAM-1005",
+      "year": 2014,
+      "make": "Caterpillar",
+      "model": "320E",
+      "category": "Excavator",
+      "hours": 6200,
+      "serial": "CAT320E0099",
+      "askPrice": 78000,
+      "listPrice": 92000,
+      "buyPrice": 70000,
+      "city": "Houston",
+      "state": "TX",
+      "narrative": "Well-maintained 320E excavator."
+    },
+    {
+      "id": "0be01c9a-fe07-4db7-a93b-06c453d2681f",
+      "createdAt": "2026-10-14T14:00:00.000Z",
+      "status": "Live",
+      "media": [],
+      "pendingFields": [],
+      "oemSpecs": {},
+      "serviceHistory": "",
+      "inspectionNotes": "",
+      "sellerStatus": "Motivated",
+      "stock": "BAM-1006",
+      "year": 2017,
+      "make": "Vermeer",
+      "model": "RTX1250 Rocksaw",
+      "category": "Rock Saw",
+      "hours": 1720,
+      "hp": 130,
+      "serial": "VM2017RTX0155",
+      "askPrice": 189000,
+      "listPrice": null,
+      "buyPrice": 175000,
+      "city": "Austin",
+      "state": "TX",
+      "narrative": "Rock saw configuration, strong hours."
+    },
+    {
+      "id": "a46dd1f4-249a-41d1-b3b4-beb6cf8fd5ef",
+      "createdAt": "2026-10-21T05:01:41.588Z",
+      "status": "Draft",
+      "media": [
+        "https://www.hddbroker.com/en/common/img/template/header-logo.svg",
+        "https://www.hddbroker.com/en/common/img/template/header-logo-two.svg",
+        "https://www.hddbroker.com/files/listings/41065/pictures/41065--38822358-674d-4a07-a0f8-603b09b9f1fe.jpg"
+      ],
+      "oemSpecs": {},
+      "sellerStatus": "",
+      "make": "Ditch Witch",
+      "model": "JT60",
+      "category": "HDD Drill",
+      "serial": "INSPECTION",
+      "engineModel": "",
+      "weight": "",
+      "dimensions": "",
+      "attachments": "",
+      "hydraulicFlow": "",
+      "serviceHistory": "",
+      "inspectionNotes": "",
+      "city": "",
+      "sourceUrl": "https://www.hddbroker.com/en/listings/viewlisting.php?id=41065",
+      "narrative": "",
+      "knownDefects": "",
+      "state": "",
+      "year": 2025,
+      "hours": 406,
+      "hp": null,
+      "askPrice": 848000,
+      "listPrice": null,
+      "buyPrice": null,
+      "stock": "BAM-1007"
+    },
+    {
+      "id": "ddb9c157-e067-4a02-b289-9474d3a394b5",
+      "createdAt": "2026-10-21T07:00:46.612Z",
+      "status": "Live",
+      "media": [],
+      "oemSpecs": {},
+      "sellerStatus": "Motivated",
+      "make": "Ditch Witch",
+      "model": "RT120 Quad",
+      "category": "Trencher",
+      "attachments": "RC120 rear attachment, quad tracks, chain trencher boom",
+      "inspectionNotes": "Photos show wear on the tracks and drive sprockets. Confirm hours, serial, hydraulic condition and cutting chain at inspection.",
+      "narrative": "Ditch Witch RT120 Quad rock trencher on quad tracks, with the RC120 rear attachment. Orange machine with black cab and canopy, unit marking E151 on the side. Walk-around photos on file (12 images). Hours, serial and price to be confirmed at inspection.",
+      "knownDefects": "Track and sprocket wear visible in photos",
+      "stock": "BAM-1008"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "64c6b53c-9d76-4fb1-b9ae-18902f2f9389",
+      "title": "Follow up: Wes Harlan",
+      "leadId": "7c8830fb-6600-48e6-a88b-e98d336a5006",
+      "due": "2026-10-18T18:00:00.000Z",
+      "done": false,
+      "priority": "high"
+    },
+    {
+      "id": "d47b10af-5576-4b31-abc5-8fd957662d6a",
+      "title": "Send quote sheet to Brad Lambert",
+      "leadId": "16ada5ab-019d-4e10-857b-c8b27b5d8db7",
+      "due": "2026-10-19T20:00:00.000Z",
+      "done": true,
+      "priority": "normal",
+      "doneAt": "2026-10-20T21:30:27.489Z"
+    },
+    {
+      "id": "2efb2629-59f5-4be5-b0a3-02e4f40b61a0",
+      "title": "Verify serial on BAM-1004",
+      "leadId": null,
+      "due": "2026-10-19T15:00:00.000Z",
+      "done": false,
+      "priority": "high"
+    },
+    {
+      "id": "d84eb91d-75ac-4b09-80a8-6234cbe89d5d",
+      "title": "Follow up: Carl Owens",
+      "leadId": "dbb5efdf-fd54-4d2d-a732-30475e2330c1",
+      "due": "2026-10-21T14:00:00.000Z",
+      "done": false,
+      "priority": "normal",
+      "auto": true
+    },
+    {
+      "id": "fa1a9318-1e52-4c75-80fb-54d6562fb0af",
+      "title": "Follow up: Brad Lambert",
+      "leadId": "16ada5ab-019d-4e10-857b-c8b27b5d8db7",
+      "due": "2026-10-21T14:00:00.000Z",
+      "done": true,
+      "priority": "high",
+      "auto": true,
+      "doneAt": "2026-10-20T21:32:44.116Z"
+    },
+    {
+      "id": "df85c2c7-26f9-463b-9973-2449491e320f",
+      "title": "Call JAmes",
+      "leadId": null,
+      "due": "2026-10-21T21:00:00.000Z",
+      "done": false,
+      "priority": "normal"
+    }
+  ],
+  "matches": [
+    {
+      "leadId": "43450bf0-8a6d-48e3-87ca-6803fecfbe02",
+      "unitId": "3285fe5e-f81a-4198-8ed7-e40da24d3153",
+      "status": "pitched",
+      "at": "2026-10-20T00:08:27.035Z"
+    },
+    {
+      "leadId": "7c8830fb-6600-48e6-a88b-e98d336a5006",
+      "unitId": "76d94077-6bb3-4fd5-ab38-9470cac6301f",
+      "status": "pitched",
+      "at": "2026-10-21T04:59:29.803Z"
+    },
+    {
+      "leadId": "a94c4547-b19b-45fa-a743-a4091c770ad4",
+      "unitId": "76d94077-6bb3-4fd5-ab38-9470cac6301f",
+      "status": "pitched",
+      "at": "2026-10-21T00:30:48.476Z"
+    },
+    {
+      "leadId": "16ada5ab-019d-4e10-857b-c8b27b5d8db7",
+      "unitId": "dba27796-6209-418b-aadc-74d75182de4e",
+      "status": "dismissed",
+      "at": "2026-10-21T00:32:25.985Z"
+    },
+    {
+      "leadId": "8cf76e77-69b9-4566-a6a1-743b3853dc67",
+      "unitId": "dba27796-6209-418b-aadc-74d75182de4e",
+      "status": "pitched",
+      "at": "2026-10-21T05:05:03.732Z"
+    }
+  ]
+}

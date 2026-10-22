@@ -1,0 +1,493 @@
+/* BIG ASS MOTORS — Canonical BAM SaaS Design System (Linear / Notion Light Standard)
+ * Primary Font: Inter (400, 500, 600, 700)
+ * Palette: #fbfbfc (bg), #ffffff (card), #f6f6f8 (sidebar/surface2), #ececf0 (hairline border),
+ *          #1c1d22 (text), #6f7180 (muted), #FFC107 (BAM Yellow accent), #18a957 (green), #d97706 (amber), #e5484d (red)
+ */
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/inter-400.woff2') format('woff2'), url('/assets/fonts/inter-latin-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/assets/fonts/inter-500.woff2') format('woff2'), url('/assets/fonts/inter-latin-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/assets/fonts/inter-600.woff2') format('woff2'), url('/assets/fonts/inter-latin-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/assets/fonts/inter-700.woff2') format('woff2'), url('/assets/fonts/inter-latin-700.woff2') format('woff2');
+}
+
+:root {
+  color-scheme: light !important;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif !important;
+  --font-display: 'Inter', system-ui, -apple-system, sans-serif !important;
+  --color-bg: #fbfbfc !important;
+  --color-surface: #ffffff !important;
+  --color-surface2: #f6f6f8 !important;
+  --color-surface3: #ececf1 !important;
+  --color-line: #ececf0 !important;
+  --color-fg: #1c1d22 !important;
+  --color-muted: #6f7180 !important;
+  --color-faint: #9a9cab !important;
+  --color-accent: #FFC107 !important;
+  --color-accent-2: #FFC107 !important;
+  --color-ink: #111111 !important;
+  --color-good: #18a957 !important;
+  --color-warn: #d97706 !important;
+  --color-bad: #e5484d !important;
+}
+
+html, body {
+  background: #fbfbfc !important;
+  color: #1c1d22 !important;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  display: block !important;
+  width: 100% !important;
+  min-height: 100vh !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+#bam-command-center-root {
+  display: none !important;
+}
+
+/* 1. Left Sidebar (v02 Clean SaaS #f6f6f8 rail) */
+aside.desk-side {
+  display: flex !important;
+  flex-direction: column !important;
+  background: #f6f6f8 !important;
+  border-right: 1px solid #ececf0 !important;
+  width: 232px !important;
+  padding: 14px 10px !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+.bam-brand {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #1c1d22 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.2 !important;
+  margin-bottom: 6px !important;
+  text-transform: none !important;
+}
+
+.side-brand button,
+.bam-work-the-book-pill,
+aside.desk-side a[href*="book"],
+aside.desk-side .side-brand span.rounded-full,
+aside.desk-side button.bg-accent {
+  background: #FFC107 !important;
+  color: #111111 !important;
+  border: 1px solid #e5ac00 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 11.5px !important;
+  letter-spacing: 0.02em !important;
+  padding: 5px 12px !important;
+  border-radius: 7px !important;
+  text-transform: none !important;
+  line-height: 1.2 !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+  margin-bottom: 12px !important;
+}
+
+.bam-nav {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  padding: 6px 10px !important;
+  border-radius: 6px !important;
+  color: #3b3d48 !important;
+  transition: all 0.12s ease !important;
+  margin-bottom: 2px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.bam-nav:hover {
+  color: #1c1d22 !important;
+  background: #ececf1 !important;
+}
+
+.bam-nav.is-on {
+  background: #e8e8f0 !important;
+  color: #1c1d22 !important;
+  font-weight: 600 !important;
+  box-shadow: inset 3px 0 0 #FFC107 !important;
+}
+
+.bam-nav em,
+.bam-nav span[data-testid*="badge"] {
+  background: rgba(255, 193, 7, 0.2) !important;
+  color: #92400e !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 1px 7px !important;
+  border-radius: 9999px !important;
+  margin-left: auto !important;
+}
+
+/* 2. Top Header Bar (v02 Clean SaaS) */
+header.no-print {
+  background: #ffffff !important;
+  border-bottom: 1px solid #ececf0 !important;
+  padding: 10px 18px !important;
+}
+
+.bam-title {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.01em !important;
+  color: #1c1d22 !important;
+  text-transform: none !important;
+  line-height: 1.2 !important;
+}
+
+nav[data-testid="top-nav"] {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.bam-top,
+button[data-testid="qs-open"],
+button[data-testid="lang-toggle"],
+button[data-testid="top-inventory"] {
+  background: #ffffff !important;
+  border: 1px solid #e2e2e8 !important;
+  border-radius: 7px !important;
+  color: #3b3d48 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  padding: 5px 11px !important;
+  min-height: 30px !important;
+  transition: all 0.12s ease !important;
+}
+
+.bam-top:hover,
+button[data-testid="qs-open"]:hover,
+button[data-testid="lang-toggle"]:hover,
+button[data-testid="top-inventory"]:hover {
+  background: #fafafb !important;
+  color: #1c1d22 !important;
+  border-color: #cfcfd8 !important;
+}
+
+.bam-top.is-on {
+  background: rgba(255, 193, 7, 0.15) !important;
+  border-color: #FFC107 !important;
+  color: #111111 !important;
+  font-weight: 600 !important;
+}
+
+header button.btn-primary {
+  background: #FFC107 !important;
+  border: 1px solid #FFC107 !important;
+  border-radius: 7px !important;
+  color: #111111 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  padding: 6px 13px !important;
+  min-height: 32px !important;
+}
+
+header button.btn-primary:hover {
+  background: #e5ac00 !important;
+  border-color: #e5ac00 !important;
+}
+
+header button.truncate.text-muted {
+  background: #f6f6f8 !important;
+  border: 1px solid #e2e2e8 !important;
+  border-radius: 7px !important;
+  color: #6f7180 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  padding: 4px 10px !important;
+}
+
+/* 3. Filter Bar */
+div.no-print.flex.flex-wrap.items-end {
+  background: #ffffff !important;
+  border-bottom: 1px solid #ececf0 !important;
+  padding: 10px 18px !important;
+  gap: 12px !important;
+}
+
+div.no-print.flex.flex-wrap.items-end label {
+  color: #6f7180 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 12px !important;
+}
+
+.field {
+  background: #ffffff !important;
+  border: 1px solid #e2e2e8 !important;
+  border-radius: 8px !important;
+  color: #1c1d22 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  min-height: 34px !important;
+  padding: 6px 10px !important;
+}
+
+.field:focus {
+  border-color: #FFC107 !important;
+  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2) !important;
+}
+
+div.no-print.flex.flex-wrap.items-end button.btn-sm {
+  background: #ffffff !important;
+  border: 1px solid #e2e2e8 !important;
+  border-radius: 7px !important;
+  color: #3b3d48 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  min-height: 34px !important;
+  padding: 4px 12px !important;
+}
+
+/* 4. Data Table (v02 Clean SaaS) */
+.overflow-x-auto.rounded-lg.border {
+  background: #ffffff !important;
+  border: 1px solid #ececf0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+table[data-testid="lead-list"] thead {
+  background: #f8f8fa !important;
+  color: #6f7180 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  border-bottom: 1px solid #ececf0 !important;
+}
+
+table[data-testid="lead-list"] tbody tr {
+  border-top: 1px solid #f2f2f5 !important;
+  transition: background-color 0.1s ease !important;
+}
+
+table[data-testid="lead-list"] tbody tr:hover {
+  background: #fafafc !important;
+}
+
+table[data-testid="lead-list"] td {
+  padding: 10px 12px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  color: #1c1d22 !important;
+}
+
+table[data-testid="lead-list"] td button .font-semibold {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 13.5px !important;
+  color: #1c1d22 !important;
+}
+
+table[data-testid="lead-list"] td[data-col="machine"],
+table[data-testid="lead-list"] td.text-accent-2,
+.text-accent-2 {
+  color: #d97706 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 550 !important;
+}
+
+table[data-testid="lead-list"] td.text-muted {
+  color: #6f7180 !important;
+}
+
+table[data-testid="lead-list"] select {
+  background: #ffffff !important;
+  border: 1px solid #e2e2e8 !important;
+  border-radius: 6px !important;
+  color: #1c1d22 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 12px !important;
+  padding: 4px 8px !important;
+}
+
+/* Touch Badges (v02 Soft Tints) */
+.temp-warm, .pill-warm {
+  background: #fdf3e2 !important;
+  color: #d97706 !important;
+  border: 1px solid #fde68a !important;
+  border-radius: 9999px !important;
+  padding: 2px 8px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  display: inline-block !important;
+}
+
+.temp-hot, .pill-hot {
+  background: #e7f7ee !important;
+  color: #18a957 !important;
+  border: 1px solid #bfe9d0 !important;
+  border-radius: 9999px !important;
+  padding: 2px 8px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  display: inline-block !important;
+}
+
+.temp-cold, .pill-cold {
+  background: #f1f1f4 !important;
+  color: #6f7180 !important;
+  border: 1px solid #e2e2e8 !important;
+  border-radius: 9999px !important;
+  padding: 2px 8px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  display: inline-block !important;
+}
+
+/* 5. Lead Card Details Modal (v02 Clean SaaS) */
+aside[data-testid="buyer-info"] {
+  background: #ffffff !important;
+  border: 1px solid #ececf0 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.14) !important;
+  font-family: 'Inter', sans-serif !important;
+  color: #1c1d22 !important;
+}
+
+aside[data-testid="buyer-info"] h2 {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 650 !important;
+  color: #1c1d22 !important;
+}
+
+button[data-testid="bi-edit"] {
+  background: #ffffff !important;
+  border: 1px solid #e2e2e8 !important;
+  color: #1c1d22 !important;
+  border-radius: 7px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 500 !important;
+  font-size: 12.5px !important;
+}
+
+button[data-testid="bi-save"] {
+  background: #FFC107 !important;
+  color: #111111 !important;
+  border-radius: 7px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 700 !important;
+}
+
+div[data-testid="notes-panel"] textarea {
+  background: #ffffff !important;
+  border: 1px solid #e2e2e8 !important;
+  border-radius: 8px !important;
+  color: #1c1d22 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  padding: 10px 12px !important;
+}
+
+div[data-testid="quick-log"] button {
+  background: #ffffff !important;
+  border: 1px solid #e2e2e8 !important;
+  border-radius: 7px !important;
+  color: #3b3d48 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
+  padding: 4px 10px !important;
+}
+
+div[data-testid="quick-log"] button.btn-primary {
+  background: #FFC107 !important;
+  color: #111111 !important;
+  border-color: #FFC107 !important;
+  font-weight: 700 !important;
+}
+
+/* 6. QuickSearch Omnibar (⌘K) — Restyled to Canonical BAM Yellow */
+div[data-testid="quicksearch"] > div {
+  background: #ffffff !important;
+  border: 1px solid #ececf0 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.16) !important;
+}
+
+input[data-testid="qs-input"] {
+  font-family: 'Inter', sans-serif !important;
+  color: #1c1d22 !important;
+  border-bottom: 1px solid #ececf0 !important;
+}
+
+input[data-testid="qs-input"]:focus {
+  border-bottom-color: #FFC107 !important;
+  outline: none !important;
+}
+
+div[data-testid="quicksearch"] button[data-testid="qs-lead"]:hover,
+div[data-testid="quicksearch"] button[data-testid="qs-unit"]:hover,
+div[data-testid="quicksearch"] button.bg-accent\/15 {
+  background: rgba(255, 193, 7, 0.16) !important;
+}
+
+div[data-testid="quicksearch"] p.text-faint {
+  color: #b45309 !important;
+  font-weight: 700 !important;
+}
+
+/* Hide legacy external AI floating buttons */
+#bam-one-brain-fab,
+#bam-war-room-fab,
+#bam-one-brain-drawer {
+  display: none !important;
+}

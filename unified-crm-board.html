@@ -1,0 +1,472 @@
+<title>One Unified CRM</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: merge verdict strip on top, then three lanes — Live CRM | ONE UNIFIED CRM (drop box) | Local CRM.
+   Single committed look: BAM shop-floor black with safety-yellow, matching the live CRM's own fonts. */
+:root {
+  --bg: #0b0b0a;
+  --panel: #151513;
+  --panel-2: #1d1d1a;
+  --line: #2e2d28;
+  --fg: #f1efe8;
+  --muted: #9d9a8f;
+  --gold: #ffc21a;
+  --live: #4fd1c5;
+  --local: #ff7ab8;
+  --ok: #3ccf7a;
+  --warn: #ffb020;
+  --bad: #ff5a5f;
+  --display: 'Barlow Condensed', 'Arial Narrow', Impact, sans-serif;
+  --body: 'Barlow', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+  background-image: repeating-linear-gradient(135deg, transparent 0 22px, rgb(255 194 26 / .025) 22px 24px);
+}
+.wrap { max-width: 1380px; margin: 0 auto; display: grid; gap: 22px; }
+h1, h2, h3 { font-family: var(--display); text-transform: uppercase; letter-spacing: .04em; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(30px, 5vw, 50px); line-height: 1; font-weight: 800; }
+h1 em { font-style: normal; color: var(--gold); }
+.eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.tape { height: 8px; border-radius: 2px; background: repeating-linear-gradient(135deg, var(--gold) 0 14px, #111 14px 28px); }
+header { display: grid; gap: 10px; }
+header p { margin: 0; color: var(--muted); max-width: 70ch; }
+
+/* verdict */
+.verdict { display: grid; gap: 14px; grid-template-columns: minmax(0, 1.1fr) minmax(0, 2fr); background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+.verdict .call { display: grid; gap: 8px; align-content: start; }
+.verdict .call b { font-family: var(--display); font-size: 30px; line-height: 1; text-transform: uppercase; color: var(--warn); }
+.verdict .call span { color: var(--muted); font-size: 14px; }
+.findings { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.finding { border-left: 4px solid var(--line); background: var(--panel-2); border-radius: 6px; padding: 10px 12px; font-size: 13.5px; min-width: 0; }
+.finding strong { display: block; font-family: var(--display); font-size: 17px; text-transform: uppercase; letter-spacing: .03em; margin-bottom: 2px; }
+.finding.bad { border-color: var(--bad); } .finding.bad strong { color: var(--bad); }
+.finding.warn { border-color: var(--warn); } .finding.warn strong { color: var(--warn); }
+.finding.ok { border-color: var(--ok); } .finding.ok strong { color: var(--ok); }
+.finding p { margin: 0; color: var(--muted); }
+.finding p + p { margin-top: 4px; color: var(--fg); }
+
+/* toolbar */
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip { font-family: var(--mono); font-size: 12px; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; }
+.chip[aria-pressed="true"] { border-color: var(--gold); color: #111; background: var(--gold); }
+.chip:focus-visible, .btn:focus-visible, .card button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.search { flex: 1 1 200px; min-width: 0; background: var(--panel); border: 1px solid var(--line); color: var(--fg); border-radius: 8px; padding: 8px 12px; font: inherit; }
+.search:focus { outline: none; border-color: var(--gold); }
+
+/* lanes */
+.lanes { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1fr); align-items: start; }
+.lane { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; display: grid; grid-template-rows: auto 1fr; min-width: 0; }
+.lane-head { padding: 14px 14px 10px; border-bottom: 1px solid var(--line); display: grid; gap: 4px; }
+.lane-head h2 { font-size: 22px; display: flex; gap: 8px; align-items: baseline; }
+.lane-head .count { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.lane-head p { margin: 0; font-size: 12.5px; color: var(--muted); }
+.lane.live .lane-head h2 { color: var(--live); }
+.lane.local .lane-head h2 { color: var(--local); }
+.list { padding: 10px; display: grid; gap: 8px; max-height: 78vh; overflow-y: auto; align-content: start; }
+.group-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding: 6px 2px 0; }
+
+.unified { border: 2px solid var(--gold); box-shadow: 0 0 0 4px rgb(255 194 26 / .08), 0 0 40px rgb(255 194 26 / .12); }
+.unified .lane-head h2 { color: var(--gold); }
+.unified .list { min-height: 360px; }
+.unified.over { box-shadow: 0 0 0 4px rgb(255 194 26 / .3), 0 0 60px rgb(255 194 26 / .35); }
+.lane.over-side { outline: 2px dashed var(--muted); outline-offset: -6px; }
+.empty { border: 2px dashed var(--line); border-radius: 10px; padding: 28px 16px; text-align: center; color: var(--muted); font-size: 14px; }
+.empty b { display: block; font-family: var(--display); font-size: 22px; color: var(--fg); text-transform: uppercase; margin-bottom: 4px; }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.btn { font-family: var(--display); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; font-size: 14px; padding: 7px 12px; border-radius: 6px; border: 1.5px solid var(--gold); color: var(--gold); background: transparent; cursor: pointer; }
+.btn:hover { background: var(--gold); color: #111; }
+.btn.quiet { border-color: var(--line); color: var(--muted); }
+.btn.quiet:hover { background: var(--panel-2); color: var(--fg); }
+.save-state { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.save-state.ok { color: var(--ok); }
+
+/* cards */
+.card { background: var(--panel-2); border: 1px solid var(--line); border-left: 4px solid var(--c); border-radius: 7px; padding: 9px 10px 9px 11px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 8px; cursor: grab; }
+.card.live { --c: var(--live); } .card.local { --c: var(--local); }
+.card.dragging { opacity: .4; }
+.card.picked { opacity: .45; }
+.card .name { font-weight: 600; font-size: 14.5px; line-height: 1.25; }
+.card .desc { grid-column: 1 / -1; color: var(--muted); font-size: 12.8px; }
+.card .meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.tag { font-family: var(--mono); font-size: 10.5px; padding: 2px 6px; border-radius: 4px; background: #24231f; color: var(--muted); }
+.tag.src { color: var(--c); background: transparent; border: 1px solid #33322c; }
+.tag.rec { background: rgb(60 207 122 / .14); color: var(--ok); }
+.tag.risk { background: rgb(255 90 95 / .14); color: var(--bad); }
+.tag.clash { background: rgb(255 176 32 / .16); color: var(--warn); }
+.card button.add { font-family: var(--display); font-weight: 800; font-size: 16px; width: 30px; height: 30px; border-radius: 6px; border: 1.5px solid var(--c); background: transparent; color: var(--c); cursor: pointer; align-self: start; }
+.card button.add:hover { background: var(--c); color: #111; }
+.card button.add:disabled { opacity: .35; cursor: default; background: transparent; color: var(--c); }
+.card.clash-card { box-shadow: inset 0 0 0 1px var(--warn); }
+
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12.5px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.copy-out { width: 100%; min-height: 120px; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-family: var(--mono); font-size: 12px; }
+
+@media (max-width: 1000px) {
+  .verdict { grid-template-columns: minmax(0, 1fr); }
+  .lanes { grid-template-columns: minmax(0, 1fr); }
+  .unified { order: -1; }
+  .list { max-height: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="tape" aria-hidden="true"></div>
+    <div class="eyebrow">Big Ass Motors · CRM merge planner · built from public_html (4).zip + the local Cockpit/Hunter</div>
+    <h1>Build the <em>one unified</em> CRM</h1>
+    <p>Drag features and looks from either CRM into the gold box (or tap <b>+</b>). Your picks save automatically so Claude can read them back and build exactly this. Two features that do the same job get flagged so you pick one.</p>
+  </header>
+
+  <section class="verdict" aria-labelledby="v-title">
+    <div class="call">
+      <div class="eyebrow" id="v-title">Will the merge go smoothly?</div>
+      <b>Yes, with care. Your picks cleared 2 of 3 blockers.</b>
+      <span>The live CRM is far bigger than the local one (82 PHP files, 50 inventory pages, its own matching engine). Neither the Cockpit nor Hunter is on the live site yet, so nothing has to be undone.</span>
+    </div>
+    <div class="findings">
+      <div class="finding ok"><strong>Source tree found</strong><p>Downloads/bam-crm-repo-for-antigravity is a git repo (last commit Oct 18) that matches the live site: 49 of 55 inventory pages identical, the other 6 are Google sign-in files added on the server.</p><p>The package's 6 core files are that repo plus the uncommitted Oct 22 edits, so they diff cleanly.</p></div>
+      <div class="finding ok"><strong>One matching engine</strong><p>Your picks keep the live engine and drop Hunter's engine and task table.</p><p>Hunter's good rules (urgent alert over 80%, 7-day nurture) move into inc/matching.php and tw_tasks.</p></div>
+      <div class="finding bad"><strong>Your rule: scraped only</strong><p>War Room, One Brain and Deal Pulse pull existing units and send buyer data to outside AI. The workbench's Live tab and Draft re-match also skip the scraped-only filter.</p><p>Fix: removed from the plan; the engine and Buyer Finder already comply.</p></div>
+      <div class="finding warn"><strong>Lead Desk rebuild needed</strong><p>Your shell is the Lead Desk with the Cockpit look and Match Inbox, so its React source (crm_react) has to be changed and rebuilt.</p><p>Its build script also runs a database migration, so it must be built against a staging copy first.</p></div>
+      <div class="finding ok"><strong>Package edits are clean</strong><p>Against today's live files, the package changes only 4 public_html files: indigo → BAM yellow, the Hunter hook in verify.php, and the "Inspection welcome before any deposit" line removed.</p><p>Also rotate the passwords written in DEPLOY-INSTRUCTIONS.md.</p></div>
+    </div>
+  </section>
+
+  <div class="toolbar" role="group" aria-label="Filter by area" id="filters"></div>
+  <div class="toolbar">
+    <input class="search" id="q" type="search" placeholder="Search features (e.g. brochure, Spanish, map)…" aria-label="Search features">
+    <div class="legend">
+      <span><i style="background:var(--live)"></i>Live Hostinger CRM</span>
+      <span><i style="background:var(--local)"></i>Local Cockpit + Hunter</span>
+      <span><span class="tag rec">rec</span> Claude's pick</span>
+      <span><span class="tag clash">pick one</span> same job twice</span>
+    </div>
+  </div>
+
+  <div class="lanes">
+    <section class="lane live" data-lane="live" aria-labelledby="h-live">
+      <div class="lane-head"><h2 id="h-live">Live CRM <span class="count" id="c-live"></span></h2><p>bigassmotorscrm.bigassmotors.com · Lead Desk + PHP inventory + Workspace</p></div>
+      <div class="list" id="l-live"></div>
+    </section>
+
+    <section class="lane unified" data-lane="unified" aria-labelledby="h-uni" id="uni-lane">
+      <div class="lane-head">
+        <h2 id="h-uni">One Unified CRM <span class="count" id="c-uni"></span></h2>
+        <p id="uni-summary">Drop features here.</p>
+        <div class="actions">
+          <button class="btn" id="b-rec" type="button">Add Claude's picks</button>
+          <button class="btn quiet" id="b-copy" type="button">Copy list</button>
+          <button class="btn quiet" id="b-clear" type="button">Clear</button>
+          <span class="save-state" id="save-state" role="status">Loading saved picks…</span>
+        </div>
+        <div id="clear-confirm" hidden class="actions" style="margin-top:6px">
+          <span class="save-state">Remove everything from the box?</span>
+          <button class="btn" id="b-clear-yes" type="button">Yes, clear</button>
+          <button class="btn quiet" id="b-clear-no" type="button">Keep</button>
+        </div>
+      </div>
+      <div class="list" id="l-uni"></div>
+    </section>
+
+    <section class="lane local" data-lane="local" aria-labelledby="h-local">
+      <div class="lane-head"><h2 id="h-local">Local CRM <span class="count" id="c-local"></span></h2><p>my-crm-project Cockpit + hunter-backend-php</p></div>
+      <div class="list" id="l-local"></div>
+    </section>
+  </div>
+
+  <textarea class="copy-out" id="copy-out" hidden readonly aria-label="Unified CRM list to copy"></textarea>
+</div>
+
+<script>
+const AREAS = [
+  ['home', 'Daily work'], ['leads', 'Leads & pipeline'], ['inv', 'Inventory'], ['source', 'Sourcing & intake'],
+  ['match', 'Matching'], ['out', 'Outreach & docs'], ['team', 'Team & admin'], ['look', 'Look & layout'],
+];
+// side: live | local · pair: same job as another item · rec: Claude's suggestion · risk: needs care
+const ITEMS = [
+  // ---- LIVE: daily work
+  { id: 'L-today', side: 'live', area: 'home', pair: 'today', rec: 1, name: 'Today view (Lead Desk)', desc: 'Overdue, due today, never called, hot with phone, done today; Today\'s play, motivation and sales-coach cards.', src: 'Lead Desk SPA' },
+  { id: 'L-follow', side: 'live', area: 'home', rec: 1, name: 'Follow-ups with alerts (New York time)', desc: 'Overdue follow-up list with browser alerts while the tab is open.', src: 'Lead Desk' },
+  { id: 'L-brain', side: 'live', area: 'home', name: 'War Room + One Brain (⌘J)', desc: 'War Room ranks leads against existing units with mostly made-up scores; One Brain sends buyer names, locations and wants to xAI / Google.', src: 'api/brain.php', risk: 'Breaks your rule: existing units + outside AI' },
+  { id: 'L-search', side: 'live', area: 'home', rec: 1, name: 'Global search (⌘K)', desc: 'Search machines, buyers and cities from any screen.', src: 'Lead Desk' },
+  { id: 'L-es', side: 'live', area: 'home', rec: 1, name: 'Spanish interface (ES)', desc: 'One-click Spanish UI for the whole CRM.', src: 'Lead Desk' },
+  { id: 'L-notif', side: 'live', area: 'home', rec: 1, name: 'Notification bell', desc: 'Unread alerts count in the top bar.', src: 'Lead Desk' },
+  { id: 'L-dash', side: 'live', area: 'home', pair: 'dash', rec: 1, name: 'Inventory dashboard + 7-day engagement', desc: 'Total, live, draft, pending, sold, archived, live list value, seller submissions; views, clicks, brochures, info and quote requests.', src: 'index.php' },
+  { id: 'L-ticker', side: 'live', area: 'home', rec: 1, name: 'Live engagement ticker', desc: 'Who viewed or clicked which unit, refreshed every 15 s.', src: 'ticker.php' },
+  { id: 'L-hot', side: 'live', area: 'home', rec: 1, name: 'Hot units · 14 days', desc: 'Heat score per unit from views, brochures, info and quote requests.', src: 'unit_heat()' },
+  { id: 'L-weekly', side: 'live', area: 'home', rec: 1, name: 'Weekly list', desc: 'This week\'s units in one sheet.', src: 'weekly.php' },
+  // ---- LIVE: leads
+  { id: 'L-leads', side: 'live', area: 'leads', pair: 'leads', rec: 1, name: 'Leads list (2,375 real leads)', desc: 'Server-side search and filters; Sales users only see leads assigned to them.', src: 'leads.php' },
+  { id: 'L-tasks', side: 'live', area: 'leads', pair: 'tasks', rec: 1, name: 'Team tasks + reminders', desc: 'Give a task to any teammate with due date, time and priority, linked to a lead.', src: 'tasks.php · tw_tasks' },
+  { id: 'L-board', side: 'live', area: 'leads', pair: 'board', rec: 1, name: 'Kanban board + List view', desc: 'Lead Desk board and list views of the pipeline.', src: 'Lead Desk' },
+  { id: 'L-call', side: 'live', area: 'leads', pair: 'call', rec: 1, name: 'Call log + next-step suggestions', desc: 'Call box on every lead card with suggested next steps.', src: 'calllog.js' },
+  { id: 'L-assign', side: 'live', area: 'leads', rec: 1, name: 'Lead assignment + team settings', desc: 'Who may assign leads; bulk assignment; owner-scoped access.', src: 'tw_assign · team_settings.php' },
+  { id: 'L-inq', side: 'live', area: 'leads', rec: 1, name: 'Website inquiries + e-mail alerts', desc: 'Inquiries from the public site land in the CRM with alerts.', src: 'inquiries.php' },
+  { id: 'L-fin', side: 'live', area: 'leads', rec: 1, name: 'Finance requests', desc: 'Buyer finance applications in one list.', src: 'finance.php' },
+  { id: 'L-sellers', side: 'live', area: 'leads', rec: 1, name: 'Sellers + Exclusive Sellers portal', desc: 'Seller records and a Google-sign-in portal for exclusive sellers.', src: 'sellers.php' },
+  // ---- LIVE: inventory
+  { id: 'L-inv', side: 'live', area: 'inv', pair: 'inv', rec: 1, name: 'Inventory list with URL-listings tab', desc: 'Live, draft, staged, sold and archived units; URL listings first.', src: 'inventory.php' },
+  { id: 'L-unit', side: 'live', area: 'inv', pair: 'unit', rec: 1, name: 'Full unit editor', desc: 'Condition, undercarriage %, tires %, attachments, public vs internal fields, auto stock #.', src: 'unit.php (714 lines)' },
+  { id: 'L-ai', side: 'live', area: 'inv', rec: 1, name: 'AI specs + "parse specs from description"', desc: 'Draft specs, highlights and a buyer-safe description for review; batch mode from the list.', src: 'ai_specs.php · xAI / Gemini' },
+  { id: 'L-spec', side: 'live', area: 'inv', rec: 1, name: 'Verify-only OEM spec fill', desc: 'Fills missing manufacturer specs only after you verify them.', src: 'spec_fill.php' },
+  { id: 'L-tpl', side: 'live', area: 'inv', rec: 1, name: 'Field templates per machine type', desc: 'Different spec fields for drills, trenchers, excavators…', src: 'field_templates.php' },
+  { id: 'L-verify', side: 'live', area: 'inv', rec: 1, name: 'Verify gate + List Now / Sold / Archive', desc: 'A unit goes Live only after verification.', src: 'api/hub/verify.php' },
+  { id: 'L-import', side: 'live', area: 'inv', rec: 1, name: 'Bulk import, template, CSV export', desc: 'Spreadsheet in and out for inventory.', src: 'import.php · export.php' },
+  { id: 'L-legacy', side: 'live', area: 'inv', name: 'Old-site import (Machinio CSV)', desc: 'One-time import from the previous website.', src: 'legacy.php' },
+  // ---- LIVE: sourcing
+  { id: 'L-addurl', side: 'live', area: 'source', pair: 'ingest', rec: 1, name: 'Add from URL + BAM Grabber', desc: 'Bookmarklet, Pull, Import with photos; always lands as a hidden Draft.', src: 'add_url.php' },
+  { id: 'L-sourcing', side: 'live', area: 'source', rec: 1, name: 'Sourcing module (internal)', desc: 'Track machines to buy, with results feeding the match workbench.', src: 'sourcing.php' },
+  { id: 'L-sync', side: 'live', area: 'source', rec: 1, name: 'Auto-sync sources', desc: 'Scheduled pulls from configured listing sources.', src: 'sync.php' },
+  { id: 'L-hub', side: 'live', area: 'source', rec: 1, name: 'Inventory Hub queue', desc: 'Step-by-step queue that moves grabbed units to verified.', src: 'hub.php · api/hub' },
+  // ---- LIVE: matching
+  { id: 'L-engine', side: 'live', area: 'match', pair: 'engine', rec: 1, name: 'Matching engine (score + reasons)', desc: 'Scores leads per unit and saves matches. Already limited to scraped machines (url_listing + verified).', src: 'inc/matching.php · unit_lead_matches', note: 'Fits your rule' },
+  { id: 'L-wb', side: 'live', area: 'match', rec: 1, name: 'Matches & Scraped Units workbench', desc: 'Tabs for new, follow-up, staged and sourcing; minimum-score filter.', src: 'matches.php', risk: 'Drop the Live-inventory tab + filter bypass' },
+  { id: 'L-finder', side: 'live', area: 'match', rec: 1, name: 'Buyer Finder per unit', desc: 'Every lead that fits one unit, ranked.', src: 'buyer_finder.php' },
+  { id: 'L-ws', side: 'live', area: 'match', pair: 'inbox', name: 'Workspace Match Inbox', desc: 'Top-3 buyers, keys 1/2/3, action bar T/E/C/Q/L/S, brand chips, dealer & service map, haul miles.', src: 'inventory/workspace' },
+  { id: 'N-desk', side: 'live', area: 'match', rec: 1, name: 'Third-Party Machines desk (new)', desc: 'Inventory → URL LISTINGS becomes one pipeline: Scraped → Matched at scrape (internal) → BAM-branded (verified, seller stripped, BAM brochure) → Pitched. Pitching stays locked until branded. Only scraped machines are ever matched.', src: 'url_listings.php + inc/matching.php', note: 'Your rule, confirmed' },
+  { id: 'L-auto', side: 'live', area: 'match', rec: 1, name: 'Automations (drafts only, never auto-sent)', desc: 'Matching leads get a drafted e-mail to review. Retarget from new Live units to newly BAM-branded scraped machines.', src: 'automations.php' },
+  // ---- LIVE: outreach
+  { id: 'L-broch', side: 'live', area: 'out', pair: 'pdf', rec: 1, name: 'Official 2-page BAM brochure PDF', desc: 'US-flag logo, BAM letterhead, multi-unit packets and list sheets.', src: 'brochure_pdf.php' },
+  { id: 'L-outbox', side: 'live', area: 'out', pair: 'drafts', rec: 1, name: 'Draft e-mails outbox', desc: 'Review, edit and send drafted e-mails.', src: 'outbox.php' },
+  { id: 'L-inbox', side: 'live', area: 'out', rec: 1, name: 'Messages inbox', desc: 'Incoming messages in the CRM.', src: 'inbox.php' },
+  { id: 'L-invoice', side: 'live', area: 'out', rec: 1, name: 'Invoice generator', desc: 'Invoice from a unit\'s stock number.', src: 'invoice.php' },
+  { id: 'L-gmail', side: 'live', area: 'out', rec: 1, name: 'Gmail link (Google OAuth)', desc: 'Connect the sales mailbox.', src: 'google-gmail.php' },
+  // ---- LIVE: team
+  { id: 'L-users', side: 'live', area: 'team', pair: 'users', rec: 1, name: 'Users & roles (server-enforced)', desc: 'Admin, Sales, Broker; menus and APIs both check the role.', src: 'users.php · inc/roles.php' },
+  { id: 'L-audit', side: 'live', area: 'team', rec: 1, name: 'Audit log + Activity feed', desc: 'Every change, plus log-ins and session length per user.', src: 'audit.php · activity.php' },
+  { id: 'L-gsign', side: 'live', area: 'team', rec: 1, name: 'Google sign-in allow-list + Turnstile', desc: 'Only listed Google accounts get in; bot check on forms.', src: 'google_callback.php' },
+  { id: 'N-switch', side: 'live', area: 'team', rec: 1, name: 'Settings switchboard (new)', desc: 'Settings → Features: this same drag-and-drop board inside the CRM, switching features on and off for the team, with saved combinations and undo. Settings → Look & Layout: every look option as its own control.', src: 'settings.php + feature flags', note: 'Your request' },
+  { id: 'L-settings', side: 'live', area: 'team', pair: 'settings', rec: 1, name: 'Settings (site, pricing, stock #, AI keys)', desc: 'Website, featured units, signature, pricing rules, AI keys, automations.', src: 'settings.php (459 lines)' },
+  { id: 'L-site', side: 'live', area: 'team', rec: 1, name: 'Public website + match form', desc: 'bigassmotors.com units and the buyer match form feed the CRM.', src: 'match-form · public pages' },
+  { id: 'L-pwa', side: 'live', area: 'team', rec: 1, name: 'Installable app (phone home screen)', desc: 'PWA icons and manifest.', src: 'manifest.webmanifest' },
+  // ---- LIVE: looks
+  { id: 'L-v01', side: 'live', area: 'look', pair: 'shell', rec: 1, name: 'Shell: Lead Desk (v01 Command, black + yellow)', desc: 'The dark yellow "Work the book" layout with the left menu.', src: 'Lead Desk' },
+  { id: 'L-v03', side: 'live', area: 'look', pair: 'theme', name: 'Theme: v03 Jobsite', desc: 'The alternate per-user look.', src: 'ui_theme.php' },
+  { id: 'L-v02', side: 'live', area: 'look', pair: 'theme', name: 'Theme: v02 Clean SaaS (white + indigo)', desc: 'Light Linear/Notion look now on the Workspace.', src: 'bam-command-center.css' },
+  { id: 'L-mode', side: 'live', area: 'look', rec: 1, name: 'Per-user dark / white mode', desc: 'Each person picks their own look.', src: 'users.ui_mode' },
+  { id: 'L-fonts', side: 'live', area: 'look', name: 'Fonts: Barlow Condensed, Black Ops One, Plex Mono', desc: 'Self-hosted, so no Google Fonts call.', src: 'assets/fonts' },
+  { id: 'L-sound', side: 'live', area: 'look', name: 'Dialer sounds', desc: '"Pick up the phone and start dialing" and kick sounds.', src: 'assets/*.mp3' },
+
+  // ---- LOCAL: daily work
+  { id: 'C-today', side: 'local', area: 'home', pair: 'today', name: 'Today (Cockpit)', desc: 'Tiles, today\'s play, hot buyers 85+, never called, quick add task.', src: 'Today.jsx' },
+  { id: 'C-dash', side: 'local', area: 'home', pair: 'dash', name: 'Dashboard: pipeline + potential margin', desc: 'Pipeline by stage, potential margin and units pending inspection.', src: 'Dashboard.jsx' },
+  // ---- LOCAL: leads
+  { id: 'C-leads', side: 'local', area: 'leads', pair: 'leads', name: 'Leads with best-match score column', desc: 'Each lead shows its best unit and score; machinery criteria on the form.', src: 'Leads.jsx' },
+  { id: 'C-dedupe', side: 'local', area: 'leads', rec: 1, name: 'Strict e-mail dedupe + merge on import', desc: 'LOWER(TRIM(email)) key; a duplicate updates the existing lead and its history.', src: 'server/index.js', risk: 'Check live import first' },
+  { id: 'C-board', side: 'local', area: 'leads', pair: 'board', name: 'Drag-and-drop board with budget totals', desc: 'Stage columns show total buyer budget.', src: 'Board.jsx' },
+  { id: 'C-call', side: 'local', area: 'leads', rec: 1, name: '5-second call note → auto follow-up', desc: 'Schedules next weekday 10 AM, detects Spanish, drafts the follow-up text.', src: 'LeadParts.jsx · pitch.js', note: 'Add into the live call log' },
+  { id: 'C-cold', side: 'local', area: 'leads', rec: 1, name: 'Cold-lead nurture (7 days)', desc: 'Daily cron gives every lead untouched for 7 days a nurture task.', src: 'Hunter checkColdLeads()', risk: 'Write to tw_tasks, not a new table' },
+  { id: 'C-tasks', side: 'local', area: 'leads', pair: 'tasks', name: 'Hunter task table (MATCH_ALERT, NURTURE…)', desc: 'Separate `tasks` table with priorities 1–3.', src: 'TaskOrchestrator', risk: 'Not shown in CRM task screens' },
+  // ---- LOCAL: inventory
+  { id: 'C-unit', side: 'local', area: 'inv', pair: 'unit', name: 'Unit form with internal pricing box', desc: 'Seller ask, buy price and public price in a red "never shown to buyers" box.', src: 'UnitForm.jsx' },
+  { id: 'C-margin', side: 'local', area: 'inv', rec: 1, name: 'Margin per unit', desc: '(list or ask) − buy price on every card.', src: 'Inventory.jsx' },
+  { id: 'C-pending', side: 'local', area: 'inv', rec: 1, name: '"Pending Inspection" flags', desc: 'Missing specs are flagged on the unit and the brochure, never guessed.', src: 'parser.js · pdf.js' },
+  { id: 'C-inv', side: 'local', area: 'inv', pair: 'inv', name: 'Inventory cards with buyer count', desc: 'Card grid showing top score and number of buyers per unit.', src: 'Inventory.jsx' },
+  // ---- LOCAL: sourcing
+  { id: 'C-ingest', side: 'local', area: 'source', pair: 'ingest', name: 'Add From Listing (grabber, Pull, paste)', desc: 'Strips feed junk, extracts specs, shows matched buyers on arrival.', src: 'Ingest.jsx · parser.js' },
+  { id: 'C-buyers-arrival', side: 'local', area: 'source', rec: 1, name: 'Matched buyers on arrival', desc: 'Before saving a grabbed listing, see which buyers it fits.', src: 'POST /api/ingest/parse' },
+  { id: 'C-specparser', side: 'local', area: 'source', name: 'Hunter SpecParser (title-only ai_specs)', desc: 'Builds ai_specs from the title; OEM horsepower only fills blanks.', src: 'SpecParser.php' },
+  // ---- LOCAL: matching
+  { id: 'C-engine', side: 'local', area: 'match', pair: 'engine', name: 'Hunter MatchingEngine', desc: 'Over 80% → urgent alert; only Live + verified units match.', src: 'MatchingEngine.php', risk: 'Second engine' },
+  { id: 'C-inbox', side: 'local', area: 'match', pair: 'inbox', rec: 1, name: 'Cockpit Match Inbox', desc: 'Score rings, reason chips, top buyers, buyer-safe pitch in English or Spanish, one-click actions.', src: 'MatchInbox.jsx' },
+  { id: 'C-strict80', side: 'local', area: 'match', rec: 1, name: 'Urgent alert rule (> 80%)', desc: 'A strong match creates a priority-1 task once, never twice.', src: 'MatchingEngine rule', note: 'Add to live engine' },
+  // ---- LOCAL: outreach
+  { id: 'C-bulk', side: 'local', area: 'out', rec: 1, name: 'Bulk Pitch → Gmail drafts with sheet attached', desc: 'Tick several buyers, get one personalized draft each with the feature sheet attached. Nothing is sent.', src: 'google.js', note: 'Rebuild in PHP' },
+  { id: 'C-pitch', side: 'local', area: 'out', rec: 1, name: 'Buyer-safe pitch (EN / ES)', desc: 'Never includes ask, buy price, margin or seller details.', src: 'pitch.js' },
+  { id: 'C-pdf', side: 'local', area: 'out', pair: 'pdf', name: 'Feature sheet PDF (Python reportlab)', desc: 'One-page sheet; blank list price prints "Call for Price".', src: 'brochure.py', risk: 'Python can\'t run on Hostinger' },
+  // ---- LOCAL: team
+  { id: 'C-users', side: 'local', area: 'team', pair: 'users', name: 'Users, Team & Audit screen', desc: 'Cockpit screen for users, roles and the audit trail.', src: 'TeamUsers.jsx' },
+  { id: 'C-settings', side: 'local', area: 'team', pair: 'settings', name: 'Settings with live preview', desc: 'Change the brand gold and density and see it before saving.', src: 'Settings.jsx' },
+  // ---- LOCAL: looks
+  { id: 'C-shell', side: 'local', area: 'look', pair: 'shell', name: 'Shell: Cockpit sidebar', desc: 'Left menu with BAM wordmark, user card and sign-out.', src: 'App.jsx' },
+  { id: 'C-neon', side: 'local', area: 'look', pair: 'theme', rec: 1, name: 'Theme: neon glow, bordered buttons', desc: 'Glowing outlined buttons, glass panels, grid background.', src: 'index.css' },
+  { id: 'C-tabfonts', side: 'local', area: 'look', rec: 1, name: 'A different font per tab', desc: 'Orbitron, Audiowide, Rajdhani, Chakra Petch, Exo 2, Michroma.', src: 'App.jsx NAV' },
+  { id: 'C-gold', side: 'local', area: 'look', rec: 1, name: 'One brand-gold color from Settings', desc: 'Change one color and the whole CRM follows.', src: 'theme.js' },
+  { id: 'C-density', side: 'local', area: 'look', rec: 1, name: 'Compact / standard density', desc: 'Fit more rows on screen for heavy users.', src: 'density-*' },
+  { id: 'C-mobile', side: 'local', area: 'look', rec: 1, name: 'Mobile top-bar menu', desc: 'Menu turns into a scrolling bar on phones.', src: 'App.jsx' },
+];
+const BY_ID = Object.fromEntries(ITEMS.map((i) => [i.id, i]));
+const AREA_NAME = Object.fromEntries(AREAS);
+
+let picked = [];          // ids in the unified box, in drop order
+let area = 'all';
+let query = '';
+let docRef = null;        // db document when the store is available
+let saveTimer = null;
+let saving = Promise.resolve();
+const $ = (id) => document.getElementById(id);
+
+function clashes(ids) {
+  const byPair = {};
+  ids.forEach((id) => { const p = BY_ID[id]?.pair; if (p) (byPair[p] = byPair[p] || []).push(id); });
+  return new Set(Object.values(byPair).filter((a) => a.length > 1).flat());
+}
+
+function matches(i) {
+  if (area !== 'all' && i.area !== area) return false;
+  if (!query) return true;
+  return (i.name + ' ' + i.desc + ' ' + i.src + ' ' + (i.note || '') + ' ' + (i.risk || '')).toLowerCase().includes(query);
+}
+
+function card(i, opts) {
+  const el = document.createElement('div');
+  el.className = 'card ' + i.side + (opts.picked ? ' picked' : '') + (opts.clash ? ' clash-card' : '');
+  el.draggable = true;
+  el.dataset.id = i.id;
+  const name = document.createElement('div'); name.className = 'name'; name.textContent = i.name;
+  const btn = document.createElement('button');
+  btn.type = 'button'; btn.className = 'add';
+  btn.textContent = opts.inBox ? '−' : '+';
+  btn.setAttribute('aria-label', (opts.inBox ? 'Remove ' : 'Add ') + i.name + (opts.inBox ? ' from' : ' to') + ' the unified CRM');
+  btn.disabled = !opts.inBox && opts.picked;
+  btn.addEventListener('click', () => (opts.inBox ? remove(i.id) : add(i.id)));
+  const desc = document.createElement('div'); desc.className = 'desc'; desc.textContent = i.desc;
+  const meta = document.createElement('div'); meta.className = 'meta';
+  const tag = (cls, text) => { const t = document.createElement('span'); t.className = 'tag ' + cls; t.textContent = text; meta.appendChild(t); };
+  tag('src', i.src);
+  if (opts.inBox) tag('', i.side === 'live' ? 'from Live' : 'from Local');
+  if (i.rec) tag('rec', 'rec');
+  if (i.risk) tag('risk', i.risk);
+  if (i.note) tag('', i.note);
+  if (opts.clash) tag('clash', 'pick one');
+  el.append(name, btn, desc, meta);
+  el.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', i.id); e.dataTransfer.effectAllowed = 'move'; el.classList.add('dragging'); });
+  el.addEventListener('dragend', () => el.classList.remove('dragging'));
+  return el;
+}
+
+function renderSide(side) {
+  const list = $('l-' + side);
+  list.replaceChildren();
+  const items = ITEMS.filter((i) => i.side === side && matches(i));
+  AREAS.forEach(([a, label]) => {
+    const g = items.filter((i) => i.area === a);
+    if (!g.length) return;
+    const h = document.createElement('div'); h.className = 'group-label'; h.textContent = label; list.appendChild(h);
+    g.forEach((i) => list.appendChild(card(i, { picked: picked.includes(i.id) })));
+  });
+  if (!items.length) { const e = document.createElement('div'); e.className = 'empty'; e.textContent = 'Nothing matches this filter.'; list.appendChild(e); }
+  $('c-' + side).textContent = ITEMS.filter((i) => i.side === side).length + ' items';
+}
+
+function renderUnified() {
+  const list = $('l-uni');
+  list.replaceChildren();
+  const cl = clashes(picked);
+  if (!picked.length) {
+    const e = document.createElement('div'); e.className = 'empty';
+    e.innerHTML = '<b>Drop features here</b>Drag cards from either side, tap +, or start with Claude\'s picks.';
+    list.appendChild(e);
+  }
+  AREAS.forEach(([a, label]) => {
+    const g = picked.map((id) => BY_ID[id]).filter((i) => i && i.area === a);
+    if (!g.length) return;
+    const h = document.createElement('div'); h.className = 'group-label'; h.textContent = label + ' · ' + g.length; list.appendChild(h);
+    g.forEach((i) => list.appendChild(card(i, { inBox: true, clash: cl.has(i.id) })));
+  });
+  const live = picked.filter((id) => BY_ID[id]?.side === 'live').length;
+  $('c-uni').textContent = picked.length + ' picked';
+  $('uni-summary').textContent = picked.length
+    ? live + ' from Live · ' + (picked.length - live) + ' from Local' + (cl.size ? ' · ' + cl.size + ' cards do the same job — keep one of each' : ' · no duplicates')
+    : 'Drop features here.';
+}
+
+function render() { renderSide('live'); renderSide('local'); renderUnified(); }
+
+function setState(text, ok) { const s = $('save-state'); s.textContent = text; s.classList.toggle('ok', !!ok); }
+
+function persist() {
+  try { localStorage.setItem('bam-unified', JSON.stringify(picked)); } catch (e) {}
+  if (!docRef) { setState('Saved in this browser only'); return; }
+  clearTimeout(saveTimer);
+  setState('Saving…');
+  saveTimer = setTimeout(() => {
+    const body = { ids: picked.slice(), updatedAt: new Date().toISOString() };
+    saving = saving.then(() => docRef.set(body)).then(
+      () => setState('Saved · Claude can read this', true),
+      (err) => setState('Not saved (' + (err && err.code ? err.code : 'error') + ') · kept in this browser'),
+    );
+  }, 600);
+}
+
+function add(id) { if (!BY_ID[id] || picked.includes(id)) return; picked.push(id); render(); persist(); }
+function remove(id) { picked = picked.filter((x) => x !== id); render(); persist(); }
+
+// drag targets
+const uni = $('uni-lane');
+uni.addEventListener('dragover', (e) => { e.preventDefault(); uni.classList.add('over'); });
+uni.addEventListener('dragleave', (e) => { if (!uni.contains(e.relatedTarget)) uni.classList.remove('over'); });
+uni.addEventListener('drop', (e) => { e.preventDefault(); uni.classList.remove('over'); add(e.dataTransfer.getData('text/plain')); });
+document.querySelectorAll('.lane.live, .lane.local').forEach((lane) => {
+  lane.addEventListener('dragover', (e) => { e.preventDefault(); lane.classList.add('over-side'); });
+  lane.addEventListener('dragleave', (e) => { if (!lane.contains(e.relatedTarget)) lane.classList.remove('over-side'); });
+  lane.addEventListener('drop', (e) => { e.preventDefault(); lane.classList.remove('over-side'); remove(e.dataTransfer.getData('text/plain')); });
+});
+
+// filters
+const fbar = $('filters');
+[['all', 'All areas'], ...AREAS].forEach(([k, label]) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'chip'; b.textContent = label; b.setAttribute('aria-pressed', String(k === area));
+  b.addEventListener('click', () => { area = k; fbar.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true'); render(); });
+  fbar.appendChild(b);
+});
+$('q').addEventListener('input', (e) => { query = e.target.value.trim().toLowerCase(); renderSide('live'); renderSide('local'); });
+
+$('b-rec').addEventListener('click', () => {
+  ITEMS.filter((i) => i.rec && !picked.includes(i.id)).forEach((i) => picked.push(i.id));
+  render(); persist();
+});
+$('b-clear').addEventListener('click', () => { $('clear-confirm').hidden = false; });
+$('b-clear-no').addEventListener('click', () => { $('clear-confirm').hidden = true; });
+$('b-clear-yes').addEventListener('click', () => { $('clear-confirm').hidden = true; picked = []; render(); persist(); });
+$('b-copy').addEventListener('click', () => {
+  const cl = clashes(picked);
+  const lines = ['ONE UNIFIED BAM CRM — ' + picked.length + ' features'];
+  AREAS.forEach(([a, label]) => {
+    const g = picked.map((id) => BY_ID[id]).filter((i) => i && i.area === a);
+    if (!g.length) return;
+    lines.push('', label.toUpperCase());
+    g.forEach((i) => lines.push('- ' + i.name + ' [' + (i.side === 'live' ? 'Live' : 'Local') + ': ' + i.src + ']' + (cl.has(i.id) ? ' (PICK ONE)' : '')));
+  });
+  const text = lines.join('\n');
+  const out = $('copy-out');
+  out.value = text;
+  const done = () => { out.hidden = true; setState('List copied', true); };
+  const fallback = () => { out.hidden = false; out.focus(); out.select(); setState('Select the text below and copy it'); };
+  try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
+});
+
+// load saved picks: shared store first, browser storage as fallback
+try { picked = JSON.parse(localStorage.getItem('bam-unified') || '[]').filter((id) => BY_ID[id]); } catch (e) { picked = []; }
+render();
+setState(picked.length ? 'Loaded from this browser' : 'Nothing saved yet');
+
+(async () => {
+  const db = window.claude ? await window.claude.use('db') : null;
+  if (!db) { setState(picked.length ? 'Saved in this browser only' : 'Sign in to save picks for Claude'); return; }
+  docRef = db.doc('boards/unified');
+  let first = true;
+  docRef.onSnapshot((snap) => {
+    const ids = snap.exists && Array.isArray(snap.data().ids) ? snap.data().ids.filter((id) => BY_ID[id]) : null;
+    if (ids && (first || !snap.metadata.hasPendingWrites)) {
+      if (ids.join() !== picked.join()) { picked = ids; render(); }
+      setState('Saved · Claude can read this', true);
+    } else if (first && !ids) {
+      setState(picked.length ? 'Not saved for Claude yet — make any change' : 'Ready · picks save for Claude', true);
+    }
+    first = false;
+  }, () => setState('Saving off · kept in this browser'));
+})();
+</script>
