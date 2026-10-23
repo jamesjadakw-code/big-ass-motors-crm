@@ -18,8 +18,8 @@ require_once BAM_ROOT . '/inc/crm_boot.php';
 require_once BAM_ROOT . '/inc/teamwork.php';
 require_once BAM_ROOT . '/inc/inventory.php';
 require_once BAM_ROOT . '/inc/settings.php';
-require_once __DIR__ . '/new/lib.php';
-require_once __DIR__ . '/new/state.php';
+require_once __DIR__ . '/lib.php';
+require_once __DIR__ . '/state.php';
 
 // ---------------- Handle Mutations via Standard PHP POST + CSRF ----------------
 if (is_post()) {

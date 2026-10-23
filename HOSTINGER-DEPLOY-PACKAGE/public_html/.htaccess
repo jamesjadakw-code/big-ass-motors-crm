@@ -29,6 +29,9 @@ RewriteRule ^inventory/bam_app_path\.txt$ - [F,L]
 <FilesMatch "\.(csv|tsv|xlsx?|xlsm|ods|sql|sqlite|db|zip|gz|tar|7z|rar|bak|old|log|lock|ini|env|md|sh|dist|txt)$">
   Require all denied
 </FilesMatch>
+<FilesMatch "^(lib|state)\.php$">
+  Require all denied
+</FilesMatch>
 <FilesMatch "^(\.env.*|bam_config.*\.php|config\.php|bam(_locate)?\.php)$">
   Require all denied
 </FilesMatch>

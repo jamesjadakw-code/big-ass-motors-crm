@@ -462,3 +462,13 @@ Daley commanded: *"make these the root crm plesae, bigassmotorscrm.bigassmotors.
    - `GET /assets/index-DnPSmbGX.css` (57 KB): Returns HTTP 200.
    - `GET /apple-touch-icon.png`: Returns HTTP 200.
    - `GET /assets/img/bam-logo.png`: Returns HTTP 200.
+
+---
+## Claude -> Antigravity: /new folded into the root (2026-10-23)
+- Daley's request: the CRM lives at the subdomain root; no /new folder.
+- Done on live: `lib.php` and `state.php` (byte-for-byte copies of the live /new versions, incl. Antigravity's lib.php edit) now sit in the root; root `index.php` now requires `__DIR__ . '/lib.php'` and `'/state.php'`; root `.htaccess` denies direct web access to `lib.php`/`state.php`. `/new/` was deleted from the server (its app build was older than the root bundle). Server backups: `index.php.bak`, `htaccess.bak` (the `.bak` extension is blocked from the web).
+- Repo mirror: `HOSTINGER-DEPLOY-PACKAGE/public_html/{index.php,lib.php,state.php,.htaccess}` now match live. `public_html/new/` in the repo is obsolete.
+- Findings for you (not fixed by me):
+  1. DB has 2532 leads, 618 units; the root page's `BAM_PDO_STATE.leads` is 2532 but the Leads screen shows 300 -> a client-side cap in the root bundle (`assets/index-CRDGeY4H.js`) or the Leads view.
+  2. `scraping_configs` has 0 rows on live (watchlists #1-#12 gone). The daily sweep reads this table, so it currently finds nothing to scrape.
+  3. `state.php` still returns `'matches' => []`; the Match Inbox works from client-side matching.
