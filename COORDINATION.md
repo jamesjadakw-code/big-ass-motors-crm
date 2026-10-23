@@ -318,3 +318,33 @@ Daley reviewed and gave the green light: *"looks good, upload hostinger with the
      - `X-BAM-TOKEN: <sourcing.api_token>`
      - `X-API-KEY: <sourcing.api_token>`
      - Active web session cookie (`crm_boot` / `$_SESSION['user_id']`), allowing the React client at `/new/#/sourcing-config` to read and edit watchlists without a separate API token.
+
+
+### [2026-10-23] Antigravity Update: BAM Canonical 2-Page Brochure Standard Restored 🎯
+
+1. **Daley's Review & Alignment**:
+   - Daley reviewed the generated 2-page equipment brochure for Stock BAM-RT-1520 and confirmed the layout standard:
+     - **Full-Color US-Flag BAM Shield Logo on the Top-Left**.
+     - **Jacksonville Authority Letterhead on the Top-Right**.
+     - Strictly matching the canonical saved on-file 2018 Ditch Witch JT20 equipment brochure (`BAM_2018_DitchWitch_JT20_HDD_Package_Brochure_175000.pdf`) and 2017 RT125 brochure (`saved_rt125_p1.png`).
+
+2. **Root Cause Analysis & Fixes**:
+   - **Client (`my-crm-project/client/src/localEngine.js`)**:
+     - `writeBrochure()` previously omitted the `<img>` tag completely and rendered plain HTML text boxes.
+     - Extracted the exact 367x200 RGB PNG emblem from the original production PDF and created `src/assets/bamLogoBase64.js` (`BAM_LOGO_BASE64`).
+     - Inlined high-res base64 data URI into the header block so brochures render instantly with zero network/CORS dependency across popup windows, offline mode, and print-to-PDF.
+   - **Server / PDF Generator (`HOSTINGER-DEPLOY-PACKAGE`)**:
+     - Added `BAM_PDF_LOGO` definition to `bam_app/inc/brochure_pdf.php`.
+     - Seeded official high-res logo files into:
+       - `bam_app/assets/bam_us_flag_logo.jpg` & `bam-logo.jpg`
+       - `public_html/assets/img/bam-logo.jpg` & `bam-logo.png`
+       - `public_html/inventory/assets/img/bam-logo.jpg` & `bam-logo.png`
+       - `public_html/inventory/cockpit-assets/bam-logo.png` & `bam-logo.jpg`
+     - Added safe fallback `asset()` in `bam_app/inc/brochure.php`.
+
+3. **Rebuild & Verification**:
+   - Recompiled React client via Vite (`dist/assets/index-BU09fihm.js` + `dist/assets/index-DSruH2St.css`).
+   - Synchronized `HOSTINGER-DEPLOY-PACKAGE/public_html/new/app/assets/` and updated `new/app/index.html`.
+   - Updated `cockpit-assets/cockpit.js` and `cockpit-assets/cockpit.css`.
+   - Rebuilt `HOSTINGER-DEPLOY-BAM-CRM.zip` (2.28 MB).
+   - Rendered fresh 2-page test PDFs and PNGs for Stock BAM-RT-1520 (2016 Ditch Witch RT115) via Playwright: verified sharp US-flag logo on top-left, Jacksonville contact info on top-right, `#FFC107` divider rules, unit description narrative, 2-column specs/highlights, price bar, technical spec box, notes/buying cards, and compliant Page 2 CTA box.
