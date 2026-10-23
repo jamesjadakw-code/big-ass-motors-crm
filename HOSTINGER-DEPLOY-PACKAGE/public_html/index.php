@@ -346,7 +346,7 @@ $mePayload = [
       window.BAM_HOSTINGER_BROCHURE_URL = <?= json_encode('/inventory/brochure.php', JSON_UNESCAPED_SLASHES) ?>;
       window.BAM_PDO_STATE = <?= json_encode($state, JSON_UNESCAPED_SLASHES) ?>;
     </script>
-    <script type="module" crossorigin src="/assets/index-AS4v-Iau.js"></script>
+    <script type="module" crossorigin src="/assets/index-BU4Rojeh.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-D3CoVj3h.css">
   </head>
   <body class="bg-ink-950 text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-gold/30 selection:text-gold">

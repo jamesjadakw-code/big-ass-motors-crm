@@ -424,7 +424,7 @@ export default function Brochures({ notify, go }) {
                     <div className="grid grid-cols-2 gap-1.5">
                       <button
                         type="button"
-                        onClick={() => api.openBrochure(u.id)}
+                        onClick={() => api.openBrochure(u.id).catch((e) => notify?.(e.message, true))}
                         className="btn-primary !px-2 !py-1 text-xs font-bold text-center flex items-center justify-center gap-1 shadow-sm"
                       >
                         <span>👁️ View PDF</span>

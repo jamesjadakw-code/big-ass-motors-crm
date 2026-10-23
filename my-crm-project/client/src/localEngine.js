@@ -641,11 +641,13 @@ export async function cacheUnitPhotos(unitId, urls = []) {
 const hasVal = (v) => v !== null && v !== undefined && String(v).trim() !== '';
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-export function openCanonicalBrochure(unitId) {
+export async function openCanonicalBrochure(unitId) {
   const s = loadState();
   const u = s.inventory.find((x) => String(x.id) === String(unitId));
   if (!u) return;
   if (typeof window !== 'undefined' && window.BAM_HOSTINGER_BROCHURE_URL) {
+    // The server brochure refuses Staged (hidden batch) machines and bounces the rep to the old PHP inventory page. Say so here instead.
+    if (u.rawStatus === 'Staged') throw new Error('This machine is Staged (hidden batch), and buyer brochures are never built for hidden machines. Publish it first: Verify & BAM-brand it, or set its status in Units → Edit.');
     window.open(`${window.BAM_HOSTINGER_BROCHURE_URL}?type=unit&ids=${encodeURIComponent(u.id)}`, '_blank');
     return;
   }
