@@ -179,7 +179,7 @@ export function LeadDetail({ id, onClose, onChanged, onEdit, notify, go, docked 
                   <div className="text-sm font-semibold">{unitTitle(m.unit)}</div>
                   <ScoreBadge score={m.score} />
                 </div>
-                <div className="mb-1.5 text-xs text-ink-400">{m.unit.hours != null ? `${m.unit.hours.toLocaleString()} hrs` : 'hours pending'} · {m.unit.city}, {m.unit.state}</div>
+                <div className="mb-1.5 text-xs text-ink-400">{[m.unit.hours != null && `${m.unit.hours.toLocaleString()} hrs`, m.unit.city && `${m.unit.city}, ${m.unit.state}`].filter(Boolean).join(' · ')}</div>
                 <Reasons reasons={m.reasons} />
               </button>
             ))}

@@ -13,6 +13,7 @@ export const FEATURES = [
   // ---- screens (menu items) ----
   { id: 'scr-today', area: 'screens', side: 'local', built: true, name: 'Today screen', desc: 'Overdue and due tasks, never called, hot buyers, today’s play.', where: 'Menu · Today' },
   { id: 'scr-match', area: 'screens', side: 'local', built: true, name: 'Match Inbox screen', desc: 'Units with their top buyers, score rings and buyer-safe pitches.', where: 'Menu · Match Inbox' },
+  { id: 'scr-tasks', area: 'screens', side: 'live', built: true, name: 'My Tasks screen', desc: 'Every open task with lead notes, due dates and quick complete.', where: 'Menu · My Tasks' },
   { id: 'scr-leads', area: 'screens', side: 'local', built: true, name: 'Leads screen', desc: 'Buyer list with search, stages and lead detail.', where: 'Menu · Leads' },
   { id: 'scr-board', area: 'screens', side: 'local', built: true, name: 'Board screen', desc: 'Drag-and-drop pipeline by stage with budget totals.', where: 'Menu · Board' },
   { id: 'scr-inventory', area: 'screens', side: 'local', built: true, name: 'Inventory screen', desc: 'Unit cards with buyer counts, margin and brochure.', where: 'Menu · Inventory' },
@@ -56,11 +57,12 @@ export const FEATURES = [
   { id: 'ingest-photostore', area: 'source', side: 'local', built: true, name: 'Keep our own photo copies', desc: 'Saves listing photos so expiring links can’t break a brochure.', where: 'On save (engine)' },
   { id: 'L-sourcing', area: 'source', side: 'live', built: false, name: 'Sourcing module', desc: 'Track machines to buy.' },
   { id: 'L-sync', area: 'source', side: 'live', built: false, name: 'Auto-sync sources', desc: 'Scheduled pulls from listing sources.' },
-  { id: 'N-desk', area: 'source', side: 'live', built: false, name: '3rd-Party Machines desk', desc: 'Scraped → Matched → BAM-branded → Pitched.' },
+  { id: 'N-desk', area: 'source', side: 'live', built: true, name: '3rd-Party Machines desk', desc: 'Scraped → Matched → BAM-branded → Pitched. Pitching stays locked until a machine is verified and branded.', where: 'Menu · 3rd-Party Machines' },
 
   // ---- matching & outreach ----
   { id: 'match-text', area: 'match', side: 'local', built: true, name: 'Text pitch', desc: 'Opens a text with the buyer-safe pitch.', where: 'Match Inbox' },
   { id: 'match-email', area: 'match', side: 'local', built: true, name: 'E-mail pitch', desc: 'Opens an e-mail with the pitch.', where: 'Match Inbox' },
+  { id: 'match-pitchgen', area: 'match', side: 'local', built: true, name: 'Pitch Generator', desc: 'Generate Pitch button on each matched buyer: editable buyer-safe draft with Copy to Clipboard. Locked until the machine is verified.', where: 'Match Inbox' },
   { id: 'match-spanish', area: 'match', side: 'local', built: true, name: 'English / Spanish pitch toggle', desc: 'Switch the draft language per buyer.', where: 'Match Inbox' },
   { id: 'match-logcall', area: 'match', side: 'local', built: true, name: 'Log call from a match', desc: 'Writes the call and schedules the follow-up.', where: 'Match Inbox' },
   { id: 'match-bulk', area: 'match', side: 'local', built: true, name: 'Bulk pitch → Gmail drafts', desc: 'One personalized draft per ticked buyer, nothing sent.', where: 'Match Inbox' },
@@ -78,14 +80,29 @@ export const FEATURES = [
 export const BY_ID = Object.fromEntries(FEATURES.map((f) => [f.id, f]));
 export const BUILT = FEATURES.filter((f) => f.built && !f.lock);
 
-// Everything built starts on.
-export const DEFAULT_FEATURES = Object.fromEntries(BUILT.map((f) => [f.id, true]));
+// Full catalog of all built features
+export const ALL_BUILT_FEATURES = Object.fromEntries(BUILT.map((f) => [f.id, true]));
+
+// Claude's curated combination (25 active features: focused sales desk, dashboard/hot-buyers/grabber streamlined)
+export const CLAUDE_PICKS = {
+  ...ALL_BUILT_FEATURES,
+  'scr-dashboard': false,
+  'dash-pipeline': false,
+  'dash-margin': false,
+  'today-hot': false,
+  'ingest-grabber': false,
+};
+
+// Default combination for the CRM: starts with Claude's saved picks
+export const DEFAULT_FEATURES = { ...CLAUDE_PICKS };
 
 export const PRESETS = [
-  { name: 'Everything on', features: DEFAULT_FEATURES },
+  { name: "Claude's picks", features: CLAUDE_PICKS },
+  { name: 'Trade show week', features: CLAUDE_PICKS },
+  { name: 'Everything on', features: ALL_BUILT_FEATURES },
   {
     name: 'Lean sales desk',
-    features: { ...DEFAULT_FEATURES, 'scr-dashboard': false, 'scr-users': false, 'dash-pipeline': false, 'dash-margin': false, 'inv-margin': false, 'match-bulk': false, 'today-quicktask': false },
+    features: { ...ALL_BUILT_FEATURES, 'scr-dashboard': false, 'scr-users': false, 'dash-pipeline': false, 'dash-margin': false, 'inv-margin': false, 'match-bulk': false, 'today-quicktask': false },
   },
   {
     name: 'Sourcing only',
@@ -103,7 +120,7 @@ export function resolveFeatures(saved) {
 }
 
 // ---------------- Look & Layout ----------------
-export const TAB_KEYS = ['today', 'match', 'leads', 'board', 'inventory', 'ingest', 'dashboard', 'users', 'settings'];
+export const TAB_KEYS = ['today', 'match', 'desk', 'leads', 'tasks', 'board', 'inventory', 'ingest', 'dashboard', 'users', 'settings'];
 export const GOOGLE_FONTS = ['Orbitron', 'Audiowide', 'Rajdhani', 'Chakra Petch', 'Exo 2', 'Michroma', 'Space Grotesk', 'Inter'];
 export const SELF_HOSTED_FONTS = ['Barlow Condensed', 'Black Ops One', 'IBM Plex Mono', 'Inter'];
 
@@ -113,7 +130,7 @@ export const LOOK_DEFAULT = {
   glow: 'full', // full | soft | off
   grid: true,
   tabFonts: true,
-  fonts: { today: 'Orbitron', match: 'Audiowide', leads: 'Rajdhani', board: 'Chakra Petch', inventory: 'Exo 2', ingest: 'Michroma', dashboard: 'Space Grotesk', users: 'Space Grotesk', settings: 'Space Grotesk' },
+  fonts: { today: 'Orbitron', match: 'Audiowide', desk: 'Exo 2', leads: 'Rajdhani', tasks: 'Rajdhani', board: 'Chakra Petch', inventory: 'Exo 2', ingest: 'Michroma', dashboard: 'Space Grotesk', users: 'Space Grotesk', settings: 'Space Grotesk' },
   mode: 'dark', // team default: dark | white
   perUserMode: true, // each user may switch dark / white for themselves
   phoneBar: true, // phones: scrolling top bar (true) or a Menu button (false)

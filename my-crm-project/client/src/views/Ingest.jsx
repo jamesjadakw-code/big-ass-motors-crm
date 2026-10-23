@@ -75,7 +75,7 @@ export default function Ingest({ notify, go }) {
     <div className="d-page d-stack mx-auto max-w-5xl">
       <header>
         <h1 className="h-display text-4xl font-bold">Add from listing</h1>
-        <p className="text-sm text-ink-400">Grab a third-party listing, and the CRM parses it internally. Specs are extracted, never guessed. Anything missing stays "Pending Inspection". The seller's ask stays internal.</p>
+        <p className="text-sm text-ink-400">Grab a third-party listing, and the CRM parses it internally. Specs are extracted, never guessed. Anything the listing doesn't state is left out. The seller's ask stays internal.</p>
       </header>
 
       {!grabberOn && !pullOn && !pasteOn && (
@@ -109,7 +109,6 @@ export default function Ingest({ notify, go }) {
             <h2 className="h-display text-xl">Review & save</h2>
             {res.fields.media?.length > 0 && <span className="chip bg-bam/20 font-bold text-bam">{res.fields.media.length} photo{res.fields.media.length > 1 ? 's' : ''} captured</span>}
             {res.duplicateOf && <span className="chip bg-gold/20 text-gold">Serial already in inventory as {res.duplicateOf.stock}</span>}
-            {res.pending.map((p) => <span key={p} className="chip bg-gold/10 text-gold">{p}: Pending Inspection</span>)}
           </div>
 
           {res.fields.media?.length > 0 && (
@@ -123,6 +122,18 @@ export default function Ingest({ notify, go }) {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+          {/* Operating weight and dimensions: shown only when the listing states them, otherwise left out completely. */}
+          {(res.fields.weight || res.fields.dimensions) && (
+            <div className="grid gap-3 sm:grid-cols-2" data-testid="weight-dims">
+              {[['Operating weight', res.fields.weight], ['Transport dimensions', res.fields.dimensions]].filter(([, v]) => v).map(([label, v]) => (
+                <div key={label} className="rounded-lg border border-emerald-500/40 bg-emerald-500/5 p-3">
+                  <div className="text-[11px] uppercase tracking-wider text-ink-400">{label}</div>
+                  <div className="mt-0.5 text-sm font-semibold">{v}</div>
+                  <div className="mt-0.5 text-[11px] text-ink-400">Stated in the listing</div>
+                </div>
+              ))}
             </div>
           )}
           {Object.keys(res.oemSpecs).length > 0 && (

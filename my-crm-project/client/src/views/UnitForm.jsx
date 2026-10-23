@@ -16,8 +16,9 @@ export default function UnitForm({ initial = {}, oemSpecs = {}, onSubmit, onCanc
     return o;
   });
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
-  const pend = (k) => f[k] === '' && !oemSpecs[k];
-  const P = (k) => (pend(k) ? 'Pending Inspection' : oemSpecs[k] ? `OEM ref: ${oemSpecs[k]}` : '');
+  const ref = (k) => oemSpecs[k];
+  const pend = (k) => f[k] === '' && !ref(k);
+  const P = (k) => (pend(k) ? '' : ref(k) ? `OEM ref: ${ref(k)}` : '');
 
   function updateMediaText(t) {
     setMediaText(t);
@@ -42,8 +43,8 @@ export default function UnitForm({ initial = {}, oemSpecs = {}, onSubmit, onCanc
         <Field label="Meter hours"><input className="input" type="number" min="0" placeholder={P('hours')} value={f.hours} onChange={set('hours')} /></Field>
         <Field label="Engine"><input className="input" placeholder={oemSpecs.engine ? `OEM ref: ${oemSpecs.engine}` : ''} value={f.engineModel} onChange={set('engineModel')} /></Field>
         <Field label="Power (HP)"><input className="input" type="number" min="0" placeholder={P('hp')} value={f.hp} onChange={set('hp')} /></Field>
-        <Field label="Operating weight"><input className="input" placeholder={P('weight')} value={f.weight} onChange={set('weight')} /></Field>
-        <Field label="Transport dimensions"><input className="input" placeholder={P('dimensions')} value={f.dimensions} onChange={set('dimensions')} /></Field>
+        <Field label="Operating weight"><input className="input" placeholder="Only if stated" value={f.weight} onChange={set('weight')} /></Field>
+        <Field label="Transport dimensions"><input className="input" placeholder="Only if stated" value={f.dimensions} onChange={set('dimensions')} /></Field>
         <Field label="Hydraulic flow"><input className="input" value={f.hydraulicFlow} onChange={set('hydraulicFlow')} /></Field>
         <Field label="Seller status">
           <select className="input" value={f.sellerStatus} onChange={set('sellerStatus')}><option value="" />{['Motivated', 'Fleet upgrade', 'Consignment'].map((s) => <option key={s}>{s}</option>)}</select>

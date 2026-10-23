@@ -44,7 +44,7 @@ Here is where everything lives in this folder (`C:\Users\daley\OneDrive\Desktop\
    * Never introduce an Express/Node background daemon on Hostinger.
 2. **Strict Buyer Safety**:
    * **Never expose wholesale/internal numbers**: `seller_cost_ask`, `buyPrice`, `seller_name`, `seller_contact`, `seller_location`, `unit_location_internal` (city/state), or `known_defects` must NEVER appear in public brochures or buyer-facing email drafts.
-   * **Never fabricate machine specs**: Unconfirmed fields must remain unset and display `Pending Inspection`.
+   * **Never fabricate machine specs; leave unstated specs out entirely** (Daley, 2026-10-22): a spec the listing does not state is not shown at all: no row, no name, no "Pending Inspection" placeholder, in brochures, listings, pitches and screens. If a customer asks, Daley gets it. Only stated values appear.
    * **Brochure Page 2 CTA**: Must read `"Call or text for a walk-around video and inspection details."`
    * Never include the phrase *"Inspection welcome before any deposit."*
 3. **Multi-User Integrity**:

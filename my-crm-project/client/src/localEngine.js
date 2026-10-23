@@ -3,6 +3,9 @@
 // - On Hostinger (/inventory/cockpit.php): hydrates from MySQL PDO (`window.BAM_PDO_STATE`) and syncs writes directly to `cockpit.php` via PHP POST + CSRF.
 // - On PC / Standalone: runs 100% in-browser backed by the same MySQL table schema (`inventory`, `leads`, `users`, `email_drafts`, `crm_audit`, `tw_tasks`, `tw_assign`).
 
+import { extractDimensions, extractWeight } from './specExtract.js';
+import { listingTasks } from './pipeline.js';
+
 export const STAGES = ['New', 'Contacted', 'Qualified', 'Negotiation', 'Won', 'Lost'];
 export const URGENCY = ['Low', 'Medium', 'High'];
 export const UNIT_STATUSES = ['Draft', 'Live', 'Sold'];
@@ -59,7 +62,7 @@ export function scoreMatch(lead, unit) {
   const add = (key, label, weight, frac, ok = frac >= 0.99) => {
     max += weight;
     earned += weight * frac;
-    reasons.push({ key, label, ok, partial: !ok && frac > 0 });
+    if (label) reasons.push({ key, label, ok, partial: !ok && frac > 0 }); // a spec that is not on file is never named
   };
 
   if (w.category) {
@@ -85,12 +88,12 @@ export function scoreMatch(lead, unit) {
   if (lead.maxHours) {
     const h = unit.hours;
     const f = h == null ? 0 : h <= lead.maxHours ? 1 : h <= lead.maxHours * 1.2 ? 0.5 : 0;
-    add('hours', h == null ? 'Hours pending' : f === 1 ? 'Hours OK' : 'Hours slightly over', 10, f, f === 1);
+    add('hours', h == null ? '' : f === 1 ? 'Hours OK' : 'Hours slightly over', 10, f, f === 1);
   }
   if (lead.minHp) {
     const hp = unit.hp ?? unit.oemSpecs?.hp;
     const f = hp == null ? 0 : hp >= lead.minHp ? 1 : 0;
-    add('hp', hp == null ? 'HP pending' : 'HP OK', 10, f, f === 1);
+    add('hp', hp == null ? '' : 'HP OK', 10, f, f === 1);
   }
   if (w.minYear) add('year', 'Year', 5, unit.year && unit.year >= w.minYear ? 1 : 0);
 
@@ -260,7 +263,7 @@ export function parseListingText(raw, url = '') {
   const catFrom = (s) => (CATEGORIES.find(([re]) => re.test(s)) || [])[1];
   const cat = (f.model && catFrom(f.model)) || catFrom(t);
   if (cat) f.category = cat;
-  const hours = t.match(/\b(\d{1,3}(?:,\d{3})+|\d{2,6})\s*(?:hours|hrs|hr)\b/i);
+  const hours = t.match(/\b(\d{1,3}(?:,\d{3})+|\d{2,6})\s*(?:(?:engine|meter|machine|total|actual|working|original)\s+)?(?:hours|hrs|hr)\b/i);
   if (hours) f.hours = Number(hours[1].replace(/,/g, ''));
   const price = t.match(/\$\s?(\d{1,3}(?:,\d{3})+|\d{4,7})/);
   if (price) f.askPrice = Number(price[1].replace(/,/g, ''));
@@ -274,17 +277,23 @@ export function parseListingText(raw, url = '') {
     f.serviceHistory = 'Seller states: serviced (records not verified)';
   }
 
+  const wt = extractWeight(t);
+  if (wt) f.weight = wt;
+  const dm = extractDimensions(t);
+  if (dm) f.dimensions = dm;
+
   const oemSpecs = {};
   if (f.model) {
     const key = f.model.toLowerCase().replace(/[^a-z0-9]/g, '');
     const hit = OEM_BENCHMARKS.find((o) => key.includes(o.match));
     if (hit) {
-      const { match, ...specs } = hit;
+      const { match, operatingWeight, ...specs } = hit; // weight is never filled in from a table: only from the listing
       Object.assign(oemSpecs, specs);
     }
   }
   const pending = ['year', 'make', 'model', 'serial', 'hours'].filter((k) => f[k] == null);
-  for (const k of ['hp', 'weight', 'dimensions']) if (f[k] == null && oemSpecs[k] == null) pending.push(k);
+  if (f.hp == null && oemSpecs.hp == null) pending.push('hp');
+
   if (url) f.sourceUrl = url;
   return { fields: f, oemSpecs, pending };
 }
@@ -508,7 +517,7 @@ export function logoutUser() {
 const REQUIRED = ['year', 'make', 'model', 'serial', 'hours'];
 function pendingOf(u) {
   const missing = REQUIRED.filter((k) => u[k] == null || u[k] === '');
-  for (const k of ['hp', 'weight', 'dimensions']) if (u[k] == null || u[k] === '') missing.push(k);
+  if (u.hp == null || u.hp === '') missing.push('hp'); // weight and dimensions are shown only when stated, never flagged as missing
   return missing;
 }
 
@@ -576,7 +585,6 @@ export async function cacheUnitPhotos(unitId, urls = []) {
 
 const hasVal = (v) => v !== null && v !== undefined && String(v).trim() !== '';
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const PENDING = 'Pending Inspection';
 
 export function openCanonicalBrochure(unitId) {
   const s = loadState();
@@ -597,13 +605,14 @@ function writeBrochure(w, s, u, storedHero) {
   const model = fmtModel(u.model);
   const title = esc([u.year, u.make, model].filter(Boolean).join(' ').toUpperCase() || 'EQUIPMENT UNIT');
   const price = u.listPrice ? '$' + Math.round(u.listPrice).toLocaleString('en-US') : 'CALL FOR PRICE';
-  const hours = hasVal(u.hours) ? Number(u.hours).toLocaleString('en-US') : PENDING;
+  const hours = hasVal(u.hours) ? Number(u.hours).toLocaleString('en-US') : '';
   const oem = u.oemSpecs || {};
   // Missing specs say "Pending Inspection"; an OEM reference value is labeled as one. Nothing is guessed.
-  const engine = esc(hasVal(u.engineModel) ? u.engineModel : hasVal(oem.engine) ? `${oem.engine} (OEM ref.)` : PENDING);
-  const hp = hasVal(u.hp) ? `${esc(u.hp)} HP` : hasVal(oem.hp) ? `${esc(oem.hp)} HP (OEM ref.)` : PENDING;
-  const weight = esc(hasVal(u.weight) ? u.weight : hasVal(oem.operatingWeight) ? `${oem.operatingWeight} (OEM ref.)` : PENDING);
-  const dims = esc(hasVal(u.dimensions) ? u.dimensions : PENDING);
+  const engine = hasVal(u.engineModel) ? esc(u.engineModel) : hasVal(oem.engine) ? `${esc(oem.engine)} (OEM ref.)` : '';
+  const hp = hasVal(u.hp) ? `${esc(u.hp)} HP` : hasVal(oem.hp) ? `${esc(oem.hp)} HP (OEM ref.)` : '';
+  // Operating weight and dimensions appear only when the listing (or the CRM record) states them. Otherwise the row is left out.
+  const weight = hasVal(u.weight) ? esc(u.weight) : hasVal(oem.weight) ? esc(oem.weight) : '';
+  const dims = hasVal(u.dimensions) ? esc(u.dimensions) : hasVal(oem.dimensions) ? esc(oem.dimensions) : '';
   const sub = esc([u.category, u.stock && `Stock ${u.stock}`].filter(Boolean).join('  •  '));
   const band = ['USED', hasVal(u.hours) ? `${hours} Hours` : null, 'Walk-Around Video Available', u.stock ? `Stock ${esc(u.stock)}` : null].filter(Boolean).join(' &nbsp;|&nbsp; ');
   const hero = storedHero || (u.media && u.media[0]) || '';
@@ -722,13 +731,13 @@ function writeBrochure(w, s, u, storedHero) {
     <h2 class="s">Technical Specifications — ${makeModel.toUpperCase()}</h2>
     <div class="specbox">
       <div class="specrow"><b>Year / Model</b><span>${title}</span></div>
-      <div class="specrow"><b>Engine</b><span>${engine}</span></div>
-      <div class="specrow"><b>Hours</b><span>${hours}</span></div>
-      <div class="specrow"><b>Horsepower</b><span>${hp}</span></div>
+      ${engine ? `<div class="specrow"><b>Engine</b><span>${engine}</span></div>` : ''}
+      ${hours ? `<div class="specrow"><b>Hours</b><span>${hours}</span></div>` : ''}
+      ${hp ? `<div class="specrow"><b>Horsepower</b><span>${hp}</span></div>` : ''}
       <div class="specrow"><b>Category</b><span>${esc(u.category || 'Heavy Equipment')}</span></div>
-      <div class="specrow"><b>Operating Weight</b><span>${weight}</span></div>
+      ${weight ? `<div class="specrow"><b>Operating Weight</b><span>${weight}</span></div>` : ''}
       <div class="specrow"><b>Condition</b><span>Used</span></div>
-      <div class="specrow"><b>Dimensions</b><span>${dims}</span></div>
+      ${dims ? `<div class="specrow"><b>Dimensions</b><span>${dims}</span></div>` : ''}
       <div class="specrow"><b>Make / Model</b><span>${makeModel}</span></div>
       <div class="specrow"><b>Stock Number</b><span>${esc(u.stock || 'BAM')}</span></div>
     </div>
@@ -785,7 +794,7 @@ export const localApi = {
     const sameDay = (a, b) => a.toDateString() === b.toDateString();
     const taskNote = (t, lead) => t.note || (t.auto && lead ? [...(lead.interactions || [])].reverse().find((i) => i.type === 'call')?.note : '') || '';
     const withLead = (t) => { const lead = leads.find((l) => l.id === t.leadId) || null; return { ...t, note: taskNote(t, lead), lead }; };
-    const open = s.tasks.filter((t) => !t.done);
+    const open = [...s.tasks.filter((t) => !t.done), ...listingTasks(s.inventory)];
     const overdue = open.filter((t) => new Date(t.due) < now && !sameDay(new Date(t.due), now)).map(withLead);
     const dueToday = open.filter((t) => sameDay(new Date(t.due), now)).map(withLead);
     const upcoming = open.filter((t) => new Date(t.due) > now && !sameDay(new Date(t.due), now)).sort((a, b) => new Date(a.due) - new Date(b.due)).slice(0, 10).map(withLead);
@@ -798,7 +807,7 @@ export const localApi = {
     else if (hot.length) play = `${hot.length} lead${hot.length > 1 ? 's have' : ' has'} an 85+ match. Pitch them before anything else.`;
     else if (neverCalled.length) play = `${neverCalled.length} lead${neverCalled.length > 1 ? 's have' : ' has'} never been called. Qualify model, hours, budget, timing.`;
     return {
-      counts: { overdue: overdue.length, dueToday: dueToday.length, neverCalled: neverCalled.length, hot: hot.length, doneToday },
+      counts: { overdue: overdue.length, dueToday: dueToday.length, neverCalled: neverCalled.length, hot: hot.length, hotPhone: hot.filter((l) => String(l.phone || '').trim()).length, doneToday, newListings: open.filter((t) => t.kind === 'listing').length },
       overdue, dueToday, upcoming,
       neverCalled: neverCalled.slice(0, 8),
       hot: hot.slice(0, 8).map((l) => ({ ...l, bestMatch: unitsForLead(l, s.inventory, { limit: 1, min: 85 })[0] })).map((l) => ({
@@ -1174,12 +1183,13 @@ export const localApi = {
 
   tasks: async () => {
     const s = loadState();
-    return s.tasks
-      .map((t) => {
+    return [
+      ...s.tasks.map((t) => {
         const lead = s.leads.find((l) => String(l.id) === String(t.leadId)) || null;
         return { ...t, lead };
-      })
-      .sort((a, b) => new Date(a.due) - new Date(b.due));
+      }),
+      ...listingTasks(s.inventory),
+    ].sort((a, b) => new Date(a.due) - new Date(b.due));
   },
   createTask: async (b) => {
     const s = loadState();
@@ -1191,6 +1201,14 @@ export const localApi = {
   },
   updateTask: async (id, b) => {
     const s = loadState();
+    if (String(id).startsWith('listing-')) {
+      // A listing task is derived from the machine: ticking it marks the listing as reviewed.
+      const u = s.inventory.find((x) => `listing-${x.id}` === String(id));
+      if (!u) throw new Error('Task not found');
+      u.listingReviewed = !!b.done;
+      saveState('save_unit', u);
+      return { id, done: !!b.done };
+    }
     const t = s.tasks.find((x) => String(x.id) === String(id));
     if (!t) throw new Error('Task not found');
     if (b.done !== undefined) { t.done = !!b.done; t.doneAt = t.done ? nowIso() : undefined; }
@@ -1201,6 +1219,11 @@ export const localApi = {
   },
   deleteTask: async (id) => {
     const s = loadState();
+    if (String(id).startsWith('listing-')) {
+      const u = s.inventory.find((x) => `listing-${x.id}` === String(id));
+      if (u) { u.listingReviewed = true; saveState('save_unit', u); }
+      return { ok: true };
+    }
     s.tasks = s.tasks.filter((x) => String(x.id) !== String(id));
     saveState('delete_task', { id });
     return { ok: true };

@@ -1,0 +1,102 @@
+{
+  "version": "2.2.0",
+  "phase": "Phase 2 - Live Email Drafts Generation",
+  "compliance_and_safety": {
+    "mandatory_cta": "Call or text for a walk-around video and inspection details.",
+    "banned_phrases": [
+      "Inspection welcome before any deposit.",
+      "Hope this email finds you well",
+      "I am reaching out to",
+      "Dear Valued Customer",
+      "Pending Inspection"
+    ],
+    "strictly_redacted_fields": [
+      "seller_cost_ask",
+      "buyPrice",
+      "seller_name",
+      "seller_contact",
+      "seller_location",
+      "unit_location_internal",
+      "source_url",
+      "known_defects"
+    ],
+    "spec_rule": "Daley's Shop Rule: Leave unstated specs out completely. If the record does not state a spec (hours, weight, dimensions, year), omit the line entirely. Never guess, never fabricate, and never display 'Pending Inspection'. No buyer data leaves the CRM."
+  },
+  "lead_parameters": {
+    "firstName": "string - Buyer given name",
+    "lastName": "string - Buyer family name",
+    "company": "string - Buyer company/operation name",
+    "phone": "string - Buyer direct phone number",
+    "email": "string - Buyer email address",
+    "language": "string - 'en' or 'es'",
+    "stage": "string - Lead CRM stage (new, working, qualified, hot)",
+    "urgency": "string - 'urgent', 'hot', 'warm', 'cold'",
+    "wants": {
+      "make": "string - Target equipment brand requested",
+      "model": "string - Target equipment model requested",
+      "category": "string - Equipment category (e.g. Trencher, Excavator)"
+    },
+    "notes": "string - Raw initial message or job site requirements from buyer"
+  },
+  "machine_parameters": {
+    "id": "string - Inventory ID",
+    "stock": "string - Stock number (e.g. BAM-1250)",
+    "year": "integer | null - Manufacturing year",
+    "make": "string - Equipment make",
+    "model": "string - Equipment model",
+    "category": "string - Equipment category",
+    "hours": "integer | null - Machine meter hours",
+    "listPrice": "number | null - Public advertised asking price",
+    "verified": "boolean - Verified status"
+  },
+  "templates": [
+    {
+      "id": "first_look_urgency_en",
+      "name": "First look (English)",
+      "target_language": "en",
+      "description": "Direct pre-market first-look pitch for English-speaking contractors using only confirmed machine specs.",
+      "output_schema": {
+        "subject": "string",
+        "body_text": "string",
+        "urgency_tag": "string"
+      },
+      "sample_output": {
+        "subject": "Pre-Market: {{make}} {{model}} matched for {{company}}",
+        "body_text": "{{firstName}} - we just routed a {{make}} {{model}} into our acquisition pipeline matching your search. Giving you first look before we publish it to broad inventory syndication. Call or text for a walk-around video and inspection details.",
+        "urgency_tag": "PRE_MARKET_EXCLUSIVE"
+      }
+    },
+    {
+      "id": "first_look_urgency_es",
+      "name": "Primera vista (Español)",
+      "target_language": "es",
+      "description": "Bilingual Spanish sales pitch for contractors highlighting priority access using confirmed specs only.",
+      "output_schema": {
+        "subject": "string",
+        "body_text": "string",
+        "urgency_tag": "string"
+      },
+      "sample_output": {
+        "subject": "Acceso Pre-Mercado: {{make}} {{model}} para {{company}}",
+        "body_text": "{{firstName}} - ingresó a nuestro canal una {{make}} {{model}} que coincide con su búsqueda. Se la presento directamente a usted antes de su distribución general. Llame o envíe un mensaje de texto para video de recorrido y detalles de inspección.",
+        "urgency_tag": "PRE_MARKET_EXCLUSIVE"
+      }
+    },
+    {
+      "id": "exact_spec_match_en",
+      "name": "Confirmed Spec Fast Action (English)",
+      "target_language": "en",
+      "description": "High-urgency pitch when verified core specs match contractor requirements.",
+      "output_schema": {
+        "subject": "string",
+        "body_text": "string",
+        "urgency_tag": "string"
+      },
+      "sample_output": {
+        "subject": "{{make}} {{model}} (Stock {{stock}}) - Match for {{firstName}}",
+        "body_text": "{{firstName}} - your requested {{make}} {{model}} is in our intake pipeline with confirmed specifications ready. If you need this unit mobilized to your job site this month, let's lock your queue position now. Call or text for a walk-around video and inspection details.",
+        "urgency_tag": "ACQUISITION_INTAKE"
+      }
+    }
+  ]
+}

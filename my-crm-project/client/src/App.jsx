@@ -7,6 +7,10 @@ import Board from './views/Board.jsx';
 import Inventory from './views/Inventory.jsx';
 import Ingest from './views/Ingest.jsx';
 import Dashboard from './views/Dashboard.jsx';
+import Desk from './views/Desk.jsx';
+import Tasks from './views/Tasks.jsx';
+import TopBar from './TopBar.jsx';
+import { isThirdParty } from './pipeline.js';
 import TeamUsers from './views/TeamUsers.jsx';
 import Settings from './views/Settings.jsx';
 import Login from './views/Login.jsx';
@@ -17,25 +21,30 @@ import { applyGold, cacheTheme, cachedTheme } from './theme.js';
 import { FeatureContext } from './FeatureContext.jsx';
 import { GOOGLE_FONTS, resolveFeatures, resolveLook } from './features.js';
 
-// [route, label, component, neon rgb, feature switch]. Settings has no switch so nobody can lock themselves out.
+// [route, label, component, neon rgb, feature switch, count key]. Settings has no switch so nobody can lock themselves out.
+// ['sec', label] draws a section heading in the menu.
 const NAV = [
-  ['today', 'Today', Today, 'var(--bam-gold-rgb)', 'scr-today'],
-  ['match', 'Match Inbox', MatchInbox, 'var(--bam-gold-rgb)', 'scr-match'],
-  ['leads', 'Leads', Leads, '240 240 240', 'scr-leads'],
+  ['today', 'Today', Today, 'var(--bam-gold-rgb)', 'scr-today', 'today'],
+  ['match', 'Match Inbox', MatchInbox, 'var(--bam-gold-rgb)', 'scr-match', 'match'],
+  ['desk', '3rd-Party Machines', Desk, 'var(--bam-gold-dark-rgb)', 'N-desk', 'desk'],
+  ['leads', 'My Leads', Leads, '240 240 240', 'scr-leads', 'leads'],
+  ['tasks', 'My Tasks', Tasks, '240 240 240', 'scr-tasks', 'tasks'],
   ['board', 'Board', Board, 'var(--bam-gold-light-rgb)', 'scr-board'],
-  ['inventory', 'Inventory', Inventory, 'var(--bam-gold-dark-rgb)', 'scr-inventory'],
-  ['ingest', 'Add From Listing', Ingest, 'var(--bam-gold-rgb)', 'scr-ingest'],
+  ['sec', 'Inventory'],
+  ['inventory', 'Units', Inventory, 'var(--bam-gold-dark-rgb)', 'scr-inventory'],
+  ['ingest', 'Sourcing', Ingest, 'var(--bam-gold-rgb)', 'scr-ingest'],
   ['dashboard', 'Dashboard', Dashboard, '190 196 206', 'scr-dashboard'],
   ['users', 'Users & Audit', TeamUsers, 'var(--bam-gold-rgb)', 'scr-users'],
   ['settings', 'Settings', Settings, '190 196 206', null],
 ];
+const ROUTES = NAV.filter((n) => n[0] !== 'sec');
 
 const GOOGLE_HREF = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@500;700;900&family=Audiowide&family=Rajdhani:wght@500;600;700&family=Chakra+Petch:wght@500;600;700&family=Exo+2:wght@500;600;700;800&family=Michroma&family=Space+Grotesk:wght@500;600;700&display=swap';
 
 function parseHash() {
   const [path, qs] = window.location.hash.replace(/^#\/?/, '').split('?');
   const [route = 'today', param] = path.split('/');
-  return { route: NAV.some((n) => n[0] === route) ? route : 'today', param, query: new URLSearchParams(qs || '') };
+  return { route: ROUTES.some((n) => n[0] === route) ? route : 'today', param, query: new URLSearchParams(qs || '') };
 }
 
 const modeKey = (u) => `bam-mode-${u?.email || 'user'}`;
@@ -49,6 +58,7 @@ export default function App() {
   const [shown, setShown] = useState(() => cachedTheme()); // what is on screen now (saved look, or a live preview)
   const [myMode, setMyMode] = useState(() => readMode(getCurrentUser()));
   const [menuOpen, setMenuOpen] = useState(false);
+  const [counts, setCounts] = useState({});
 
   const showTheme = useCallback((t) => { setShown(t); applyGold(t.goldHex); }, []);
   const remember = useCallback((c) => {
@@ -101,17 +111,42 @@ export default function App() {
 
   useEffect(() => { setMyMode(readMode(user)); }, [user]);
 
+  // Menu badges: open work per screen. Refreshed when the screen changes and every minute.
+  useEffect(() => {
+    if (!user) return undefined;
+    let alive = true;
+    const refresh = async () => {
+      try {
+        const [t, inv, leads, tasks] = await Promise.all([api.today(), api.inventory({}), api.leads({}), api.tasks()]);
+        if (!alive) return;
+        const mine = (l) => String(l.ownerId) === String(user.id);
+        setCounts({
+          today: t.counts.overdue + t.counts.dueToday,
+          match: inv.filter((u) => u.status !== 'Sold' && u.topScore >= 85).length,
+          desk: inv.filter(isThirdParty).length,
+          leads: leads.filter(mine).length,
+          tasks: tasks.filter((x) => !x.done).length,
+        });
+      } catch { /* badges are optional */ }
+    };
+    refresh();
+    const id = setInterval(refresh, 60000);
+    return () => { alive = false; clearInterval(id); };
+  }, [user, loc.route]);
+
   if (!user) {
     return <Login onLogin={(u) => setUser(u)} />;
   }
 
   const visibleNav = NAV.filter(([key, , , , sw]) => {
+    if (key === 'sec') return true;
     if (user.role === 'sales' && (key === 'settings' || key === 'users')) return false;
     if (user.role === 'broker' && key === 'settings') return false;
     return !sw || features[sw] !== false;
-  });
+  }).filter((n, i, a) => n[0] !== 'sec' || (a[i + 1] && a[i + 1][0] !== 'sec')); // drop a heading with nothing under it
+  const screens = visibleNav.filter((n) => n[0] !== 'sec');
   // A switched-off screen can't be opened by link either: fall back to the first screen that is on.
-  const current = visibleNav.find((n) => n[0] === loc.route) || visibleNav[0];
+  const current = screens.find((n) => n[0] === loc.route) || screens[0];
   const View = current[2];
   const route = current[0];
 
@@ -127,8 +162,12 @@ export default function App() {
     setMyMode(next);
   };
 
-  const navButtons = visibleNav.map(([key, label, , rgb]) => {
+  const navButtons = visibleNav.map(([key, label, , rgb, , countKey]) => {
+    if (key === 'sec') {
+      return <div key={`sec-${label}`} className="nav-sec hidden px-1 pt-1 text-[10px] font-bold uppercase tracking-[.2em] text-bam/55 md:block">{label}</div>;
+    }
     const active = route === key;
+    const n = countKey ? counts[countKey] : 0;
     return (
       <button
         key={key}
@@ -140,9 +179,10 @@ export default function App() {
           background: active ? `rgb(${rgb})` : `rgb(${rgb} / .06)`,
           border: `1.5px solid rgb(${rgb} / ${active ? 1 : 0.4})`,
         }}
-        className={`nav-btn ${active ? 'is-active' : ''} block shrink-0 whitespace-nowrap rounded-lg px-3 py-2 text-left text-[13px] font-bold uppercase tracking-wider transition duration-150 hover:-translate-y-px hover:brightness-125`}
+        className={`nav-btn ${active ? 'is-active' : ''} flex w-full shrink-0 items-center justify-between gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-left text-[13px] font-bold uppercase tracking-wider transition duration-150 hover:-translate-y-px hover:brightness-125`}
       >
-        {label}
+        <span>{label}</span>
+        {n > 0 && <span className="rounded-full px-1.5 text-[10px] font-bold leading-4 tracking-normal" style={{ background: active ? '#080808' : '#e5484d', color: active ? 'var(--bam-gold)' : '#fff' }}>{n > 99 ? '99+' : n}</span>}
       </button>
     );
   });
@@ -178,14 +218,15 @@ export default function App() {
   };
 
   const main = (
-    <main className="stage relative min-h-0 min-w-0 flex-1 overflow-y-auto">
+    <main className="stage relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
       {typeof window !== 'undefined' && window.BAM_READ_ONLY && (
         <div role="status" className="relative z-10 border-b border-gold/40 bg-gold/10 px-4 py-1.5 text-center text-[11px] font-semibold text-gold">
           READ-ONLY PREVIEW · live data, nothing you change here is saved
         </div>
       )}
       {look.grid && <div className="stage-grid" />}
-      <div key={route} className="view-enter relative h-full">
+      <TopBar go={go} alerts={counts.today || 0} features={features} />
+      <div key={route} className="view-enter relative min-h-0 flex-1 overflow-y-auto">
         <View param={loc.param} query={loc.query} notify={notify} go={go} settings={settings} onPreview={onPreview} onSaved={onSaved} user={user} />
       </div>
     </main>

@@ -5,6 +5,8 @@
  */
 declare(strict_types=1);
 require_once __DIR__ . '/lib.php';
+// Model-specific OEM reference specs (same knowledge base the live brochures use), only when the app folder has it.
+if (defined('BAM_ROOT') && is_file(BAM_ROOT . '/inc/oem_specs.php')) { require_once BAM_ROOT . '/inc/oem_specs.php'; }
 
 const NEW_MAX_UNITS = 1000;
 const NEW_MAX_LEADS = 3000;
@@ -39,7 +41,12 @@ function new_build_state(array $me): array
             }
         }
         foreach ($rows as $r) {
-            $units[] = new_map_unit($r, $byUnit[(int) $r['id']] ?? [], 'photo_url', $isAdmin);
+            $oem = null;
+            if (function_exists('oem_specs_for_unit')) {
+                try { $oem = oem_specs_for_unit(['make' => $r['make'] ?? '', 'model' => $r['model'] ?? '', 'category' => $r['category'] ?? '', 'title' => $r['title'] ?? '', 'year' => $r['year'] ?? '']); }
+                catch (Throwable $e) { $oem = null; }
+            }
+            $units[] = new_map_unit($r, $byUnit[(int) $r['id']] ?? [], 'photo_url', $isAdmin, $oem);
         }
     } catch (Throwable $e) { error_log('[new] inventory: ' . $e->getMessage()); }
 

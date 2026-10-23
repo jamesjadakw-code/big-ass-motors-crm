@@ -71,15 +71,10 @@ export default function Inventory({ notify, go }) {
             </div>
             <div className="mt-1 text-xs text-ink-400">{[u.category, u.city && `${u.city}, ${u.state || ''}`].filter(Boolean).join(' · ')}</div>
             <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
-              <div><div className="label !mb-0">Hours</div>{u.hours != null ? u.hours.toLocaleString() : <span className="text-gold">Pending</span>}</div>
-              <div><div className="label !mb-0">Ask (int.)</div>{money(u.askPrice)}</div>
+              {u.hours != null && <div><div className="label !mb-0">Hours</div>{u.hours.toLocaleString()}</div>}
+              {u.askPrice != null && <div><div className="label !mb-0">Ask (int.)</div>{money(u.askPrice)}</div>}
               <Gate id="inv-margin"><div><div className="label !mb-0">Margin</div><span className={u.margin > 0 ? 'text-gold' : ''}>{u.margin != null ? money(u.margin) : '—'}</span></div></Gate>
             </div>
-            {u.pendingFields.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1">
-                {u.pendingFields.map((p) => <span key={p} className="chip bg-gold/10 text-gold">{p}: Pending Inspection</span>)}
-              </div>
-            )}
             <div className="mt-auto flex items-center justify-between pt-3">
               <button onClick={() => go('match', u.id)} className="flex items-center gap-2 text-xs text-ink-300 hover:text-white">
                 {u.topScore > 0 ? <ScoreBadge score={u.topScore} /> : <span className="chip bg-ink-700">no buyer</span>}

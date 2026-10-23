@@ -41,16 +41,19 @@ function ImportModal({ onClose, onDone, notify }) {
   );
 }
 
-export default function Leads({ param, notify, go }) {
+export default function Leads({ param, query, notify, go, user }) {
   const [leads, setLeads] = useState([]);
   const [q, setQ] = useState('');
   const [stage, setStage] = useState('');
   const [open, setOpen] = useState(param || null);
-  const [form, setForm] = useState(null); // null | 'new' | lead
+  const [form, setForm] = useState(query?.get('new') ? 'new' : null); // null | 'new' | lead
+  const [scope, setScope] = useState('mine'); // mine | all (sales reps are already limited to their own leads)
   const [importing, setImporting] = useState(false);
 
   const load = useCallback(() => api.leads({ q, stage }).then(setLeads).catch((e) => notify(e.message, true)), [q, stage, notify]);
   useEffect(() => { const t = setTimeout(load, 150); return () => clearTimeout(t); }, [load]);
+  const mine = (l) => !user || String(l.ownerId) === String(user.id);
+  const view = scope === 'mine' ? leads.filter(mine) : leads;
 
   return (
     <div className="flex h-full">
@@ -58,10 +61,17 @@ export default function Leads({ param, notify, go }) {
     <div className="d-page d-stack mx-auto max-w-6xl">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="h-display text-4xl font-bold">Leads</h1>
-          <p className="text-sm text-ink-400">{leads.length} buyer{leads.length === 1 ? '' : 's'} · email is the unique key</p>
+          <h1 className="h-display text-4xl font-bold">{scope === 'mine' ? 'My Leads' : 'All Leads'}</h1>
+          <p className="text-sm text-ink-400">{view.length} buyer{view.length === 1 ? '' : 's'} · email is the unique key</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {user?.role !== 'sales' && (
+            <span className="inline-flex overflow-hidden rounded-full border border-ink-600 text-xs font-bold">
+              {[['mine', 'Mine'], ['all', 'All']].map(([k, l]) => (
+                <button key={k} type="button" onClick={() => setScope(k)} className={`px-3 py-1.5 ${scope === k ? 'bg-bam text-black' : 'text-neutral-300 hover:bg-ink-800'}`}>{l}</button>
+              ))}
+            </span>
+          )}
           <Gate id="leads-import"><button className="btn-ghost" onClick={() => setImporting(true)}>Bulk import</button></Gate>
           <button className="btn-primary" onClick={() => setForm('new')}>+ New lead</button>
         </div>
@@ -82,7 +92,7 @@ export default function Leads({ param, notify, go }) {
             <tr><th className="d-cell">Buyer</th><th className="d-cell">Wants</th><th className="d-cell">Budget</th><th className="d-cell">Best match</th><th className="d-cell">Stage</th></tr>
           </thead>
           <tbody>
-            {leads.map((l) => (
+            {view.map((l) => (
               <tr key={l.id} onClick={() => setOpen(l.id)} tabIndex={0} role="button" aria-label={`Open ${fullName(l)}`}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(l.id); } }}
                 data-selected={open === l.id} className="row-int border-t border-ink-800">
@@ -100,7 +110,7 @@ export default function Leads({ param, notify, go }) {
             ))}
           </tbody>
         </table>
-        {!leads.length && <Empty>No leads found.</Empty>}
+        {!view.length && <Empty>No leads found.</Empty>}
       </div>
 
       {form && (

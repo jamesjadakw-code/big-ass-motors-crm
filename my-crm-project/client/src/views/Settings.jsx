@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import SettingsFeatures from './SettingsFeatures.jsx';
 import SettingsLook from './SettingsLook.jsx';
+import TeamUsers from './TeamUsers.jsx';
 
 // Company fields feed pitch drafts and the PDF brochure.
 const MAIN_FIELDS = [
@@ -16,7 +17,7 @@ const EXTRA_FIELDS = [
   ['Authority line', 'authority'], ['Established line', 'established'], ['Services line', 'services'],
 ];
 const SAVED_KEYS = ['closing', ...MAIN_FIELDS.map(([, k]) => k), ...EXTRA_FIELDS.map(([, k]) => k)];
-const TABS = [['general', 'General'], ['features', 'Features'], ['look', 'Look & Layout']];
+const TABS = [['general', 'General'], ['features', 'Features'], ['look', 'Look & Layout'], ['users', 'Users & roles']];
 
 const Row = ({ label, htmlFor, children }) => (
   <div className="grid items-center gap-x-3 sm:grid-cols-[11rem_1fr]">
@@ -98,6 +99,7 @@ export default function Settings({ notify, settings, onPreview, onSaved, query }
       {tab === 'general' && <General notify={notify} settings={settings} onSaved={onSaved} />}
       {tab === 'features' && <SettingsFeatures settings={settings} onSaved={onSaved} notify={notify} />}
       {tab === 'look' && <SettingsLook settings={settings} onPreview={onPreview} onSaved={onSaved} notify={notify} />}
+      {tab === 'users' && <TeamUsers notify={notify} />}
     </div>
   );
 }

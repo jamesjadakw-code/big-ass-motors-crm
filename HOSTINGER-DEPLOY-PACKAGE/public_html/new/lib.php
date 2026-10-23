@@ -51,10 +51,43 @@ function new_city_state(array $r): array
 }
 
 /**
+ * Label table -> the four spec keys the app uses: engine, hp, weight, dimensions.
+ * Accepts {"specs": {label: value}} or a flat {label: value}; labels are matched loosely and nothing is invented.
+ * @return array<string,string>
+ */
+function new_spec_table(mixed $raw): array
+{
+    if (!is_array($raw)) { return []; }
+    $rows = isset($raw['specs']) && is_array($raw['specs']) ? $raw['specs'] : $raw;
+    $norm = [];
+    foreach ($rows as $label => $val) {
+        if (is_string($label) && is_scalar($val) && trim((string) $val) !== '') { $norm[mb_strtolower(trim($label))] = mb_substr(trim((string) $val), 0, 120); }
+    }
+    $pick = static function (array $names) use ($norm): ?string {
+        foreach ($names as $n) { if (isset($norm[$n])) { return $norm[$n]; } }
+        return null;
+    };
+    $out = [];
+    if (($v = $pick(['engine', 'engine model'])) !== null) { $out['engine'] = $v; }
+    if (($v = $pick(['horsepower', 'hp', 'gross power', 'net horsepower'])) !== null) { $out['hp'] = $v; }
+    if (($v = $pick(['operating weight', 'weight', 'basic unit weight', 'machine weight'])) !== null) { $out['weight'] = $v; }
+    if (($v = $pick(['dimensions', 'transport dimensions'])) !== null) { $out['dimensions'] = $v; }
+    else {
+        $l = $pick(['transport length', 'length', 'overall length']);
+        $w = $pick(['width', 'overall width', 'transport width']);
+        $h = $pick(['height', 'overall height', 'transport height']);
+        $clean = static fn (?string $x): ?string => $x === null ? null : trim((string) preg_replace('/^approx\.?\s*/i', '', $x));
+        [$l, $w, $h] = [$clean($l), $clean($w), $clean($h)];
+        if ($l !== null && $w !== null && $h !== null) { $out['dimensions'] = "L $l x W $w x H $h"; }
+    }
+    return $out;
+}
+
+/**
  * @param array<int,array> $photos rows of inventory_photos for this unit, already ordered primary-first
  * @param callable(array,bool|string):string $photoUrl photo_url() from inc/inventory.php
  */
-function new_map_unit(array $r, array $photos, callable $photoUrl, bool $showCost): array
+function new_map_unit(array $r, array $photos, callable $photoUrl, bool $showCost, ?array $oemFallback = null): array
 {
     $id = (int) $r['id'];
     [$city, $state] = new_city_state($r);
@@ -97,15 +130,18 @@ function new_map_unit(array $r, array $photos, callable $photoUrl, bool $showCos
     foreach (['year' => 'year', 'hours' => 'hours', 'serial' => 'serial'] as $k => $f) {
         if ($unit[$k] === null || $unit[$k] === '') { $unit['pendingFields'][] = $f; }
     }
-    $specs = json_decode((string) ($r['ai_specs'] ?? ''), true);
-    if (is_array($specs)) {
-        foreach (['hp', 'weight', 'dimensions', 'engine'] as $k) {
-            if (isset($specs[$k]) && is_scalar($specs[$k]) && (string) $specs[$k] !== '') { $unit['oemSpecs'][$k] = $specs[$k]; }
+    // Specs the CRM already holds: ai_specs = {"specs": {"Operating Weight": "...", "Horsepower": "..."}, "source": "ai|import|legacy|parser"}.
+    $spec = new_spec_table(json_decode((string) ($r['ai_specs'] ?? ''), true));
+    if ($oemFallback !== null) {
+        $ref = new_spec_table($oemFallback);
+        // A model-specific OEM reference fills gaps only; ranges ("14,500 – 17,500 lb") are category guesses and are skipped.
+        foreach (['engine', 'hp'] as $k) {   // weight and dimensions are never filled in from a reference table
+            if (!isset($spec[$k]) && isset($ref[$k]) && !preg_match('/[–—]|\bto\b/u', (string) $ref[$k])) { $spec[$k] = $ref[$k]; }
         }
     }
-    foreach (['hp', 'weight', 'dimensions'] as $k) {
-        if (!isset($unit['oemSpecs'][$k])) { $unit['pendingFields'][] = $k; }
-    }
+    foreach ($spec as $k => $v) { $unit['oemSpecs'][$k] = $v; }
+    // Weight and dimensions: shown only when the CRM record states them; never listed as pending.
+    if (!isset($unit['oemSpecs']['hp'])) { $unit['pendingFields'][] = 'hp'; }
     if ($showCost) {
         $ask = new_num($r['seller_cost_ask'] ?? null);
         $unit['askPrice'] = $ask;

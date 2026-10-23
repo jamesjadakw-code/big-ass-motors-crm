@@ -3,6 +3,8 @@ import { api, STAGES } from '../api.js';
 import { Badge, Empty, Modal, Reasons, Ring, ScoreBadge, fullName, initials, money, unitTitle } from '../ui.jsx';
 import { Gate, useFeature, useLook } from '../FeatureContext.jsx';
 import { playDialer } from '../features.js';
+import PitchGenerator, { GeneratePitchButton } from '../components/PitchGenerator.jsx';
+import { isThirdParty, sourceName } from '../pipeline.js';
 
 export default function MatchInbox({ param, query, notify, go }) {
   const [checked, setChecked] = useState(() => new Set()); // lead ids ticked for bulk pitching
@@ -20,6 +22,8 @@ export default function MatchInbox({ param, query, notify, go }) {
   const [lang, setLang] = useState('en');
   const [callFor, setCallFor] = useState(null);
   const [callNote, setCallNote] = useState('');
+  const [pitchFor, setPitchFor] = useState(null);          // lead the Pitch Generator is open for
+  const [phoneView, setPhoneView] = useState(param ? 'detail' : 'list'); // phones show the list OR one machine; desktop shows both
 
   const loadUnits = useCallback(async () => {
     const list = await api.inventory({});
@@ -52,6 +56,21 @@ export default function MatchInbox({ param, query, notify, go }) {
 
   const unit = units.find((u) => u.id === selId);
   const buyer = buyers.find((b) => b.lead.id === buyerId);
+  useEffect(() => {
+    const k = (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+      const b = buyers[Number(e.key) - 1];
+      if (['1', '2', '3'].includes(e.key) && b) setBuyerId(b.lead.id);
+    };
+    window.addEventListener('keydown', k);
+    return () => window.removeEventListener('keydown', k);
+  }, [buyers]);
+  // Scraped machines can't be pitched by text or e-mail until they are verified and BAM-branded.
+  const locked = !!unit && isThirdParty(unit) && !unit.verified;
+  async function brand() {
+    if (!window.confirm(`Verify and BAM-brand ${unitTitle(unit)}? Seller details stay internal, the brochure shows Call for Price, and pitching unlocks.`)) return;
+    try { await api.updateUnit(unit.id, { verified: true }); notify('Verified and BAM-branded. Pitching is unlocked.'); loadUnits(); } catch (e) { notify(e.message, true); }
+  }
 
   const toggle = (id) => setChecked((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const selectable = buyers.filter((b) => b.lead.email && b.status !== 'dismissed');
@@ -104,7 +123,7 @@ export default function MatchInbox({ param, query, notify, go }) {
 
   return (
     <div className="flex h-full flex-col md:flex-row">
-      <section className="flex max-h-64 w-full shrink-0 flex-col border-b border-ink-700 md:max-h-none md:w-[22rem] md:border-b-0 md:border-r">
+      <section className={`${phoneView === 'detail' ? 'hidden' : 'flex'} min-h-0 w-full flex-1 flex-col md:flex md:w-[22rem] md:flex-none md:shrink-0 md:border-r md:border-ink-700`}>
         <div className="border-b border-ink-700 p-4">
           <h1 className="h-display text-2xl font-bold">Match Inbox</h1>
           <div className="mt-2 flex flex-wrap gap-1">
@@ -113,13 +132,16 @@ export default function MatchInbox({ param, query, notify, go }) {
             ))}
           </div>
         </div>
+        <div className="flex items-center justify-between border-b border-ink-800 px-4 py-2 text-[10.5px] font-bold uppercase tracking-[.14em] text-ink-400">
+          <span>New ingestions · {shown.length}</span><span>matched on arrival</span>
+        </div>
         <div className="flex-1 overflow-y-auto">
           {shown.map((u) => (
-            <button key={u.id} onClick={() => setSelId(u.id)} data-selected={u.id === selId} className="row-int flex w-full items-center gap-3 d-row border-b border-ink-800 text-left">
+            <button key={u.id} onClick={() => { setSelId(u.id); setPhoneView('detail'); }} data-selected={u.id === selId} className="row-int flex w-full items-center gap-3 d-row border-b border-ink-800 text-left">
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-semibold">{unitTitle(u)}</div>
-                <div className="truncate text-xs text-ink-400">{[u.hours != null ? `${u.hours.toLocaleString()} hrs` : 'hrs pending', u.city && `${u.city}, ${u.state}`].filter(Boolean).join(' · ')}</div>
-                <div className="mt-1 flex gap-1"><Badge value={u.status} />{u.category && <span className="chip bg-ink-700">{u.category}</span>}</div>
+                <div className="truncate text-xs text-ink-400">{[u.category, u.hours != null && `${u.hours.toLocaleString()} hrs`, u.state].filter(Boolean).join(' · ')}</div>
+                {isThirdParty(u) && <div className="truncate text-[11px] text-ink-400">{sourceName(u)}{u.verified ? ' · BAM-branded' : ''}</div>}
               </div>
               {u.topScore > 0 ? <ScoreBadge score={u.topScore} /> : <span className="text-xs text-ink-400">–</span>}
             </button>
@@ -128,23 +150,26 @@ export default function MatchInbox({ param, query, notify, go }) {
         </div>
       </section>
 
-      <section className="d-page min-w-0 flex-1 overflow-y-auto">
+      <section className={`${phoneView === 'list' ? 'hidden md:block' : ''} d-page min-w-0 flex-1 overflow-y-auto`}>
+        <button type="button" onClick={() => setPhoneView('list')} className="btn-ghost mb-3 !px-3 !py-1.5 text-xs md:hidden">← All machines</button>
         {!unit ? <Empty>Add inventory to start matching.</Empty> : (
           <div className="d-stack mx-auto max-w-4xl">
             <div>
-              <div className="flex items-center gap-2 text-xs text-ink-400"><span className="font-bold tracking-wider text-bam">{unit.stock}</span>{unit.category}</div>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-ink-400">
+                <span className="font-bold tracking-wider text-bam">{unit.stock}</span>{unit.category}
+                {isThirdParty(unit) && <span className="chip bg-red-500/15 text-red-300">{unit.verified ? 'BAM-BRANDED' : 'NEW'} · {sourceName(unit)} · matched to {buyers.length} buyer{buyers.length === 1 ? '' : 's'}</span>}
+              </div>
               <h2 className="h-display text-3xl font-bold">{unitTitle(unit)}</h2>
               <div className="mt-3 grid grid-cols-2 gap-x-8 gap-y-1 text-sm md:grid-cols-4">
-                <div><span className="text-ink-400">Hours </span>{unit.hours != null ? unit.hours.toLocaleString() : <span className="text-gold">Pending</span>}</div>
-                <div><span className="text-ink-400">Location </span>{unit.city ? `${unit.city}, ${unit.state}` : '—'}</div>
+                {unit.hours != null && <div><span className="text-ink-400">Hours </span>{unit.hours.toLocaleString()}</div>}
+                {unit.city && <div><span className="text-ink-400">Location </span>{`${unit.city}, ${unit.state}`}</div>}
                 <div><span className="text-ink-400">Public price </span><span className="font-semibold text-bam">{unit.listPrice ? money(unit.listPrice) : 'Call for Price'}</span></div>
-                <div><span className="text-ink-400">Internal ask </span><span className="text-gold">🔒 {money(unit.askPrice)}</span></div>
+                {unit.askPrice != null && <div><span className="text-ink-400">Internal ask </span><span className="text-gold">🔒 {money(unit.askPrice)}</span></div>}
               </div>
-              {unit.pendingFields.length > 0 && <div className="mt-2 flex flex-wrap gap-1">{unit.pendingFields.map((p) => <span key={p} className="chip bg-gold/10 text-gold">{p}: Pending Inspection</span>)}</div>}
             </div>
 
             <div>
-              <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-ink-400">Live deal matching · top buyers</div>
+              <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-ink-400">Top {Math.min(3, buyers.length) || 3} buyers · press 1 · 2 · 3</div>
               {!buyers.length && <div className="card p-6 text-sm text-ink-400">No buyers score 40+ for this unit yet. Add leads with matching criteria.</div>}
               {selectable.length > 1 && (
                 <div className="mb-2 flex items-center gap-3 text-xs text-ink-400">
@@ -177,6 +202,7 @@ export default function MatchInbox({ param, query, notify, go }) {
                         {b.status === 'pitched' && <span className="text-gold">✓ pitched</span>}
                         {b.status === 'drafted' && <span className="text-gold">✎ draft ready</span>}
                       </div>
+                      <Gate id="match-pitchgen"><div className="mt-2"><GeneratePitchButton lead={b.lead} unit={unit} onOpen={setPitchFor} block /></div></Gate>
                     </div>
                   );
                 })}
@@ -188,6 +214,7 @@ export default function MatchInbox({ param, query, notify, go }) {
                       {bulkOn && <input type="checkbox" aria-label={`Select ${fullName(b.lead)} for bulk pitch`} disabled={!b.lead.email || b.status === 'dismissed'} title={b.lead.email ? 'Select for bulk pitch' : 'No email on file'}
                         checked={checked.has(b.lead.id)} onChange={() => toggle(b.lead.id)} className="mr-1.5 h-3.5 w-3.5 cursor-pointer accent-[rgb(var(--accent-rgb))] disabled:opacity-30" />}
                       <button type="button" onClick={() => setBuyerId(b.lead.id)} className="hover:underline">{fullName(b.lead)} · {b.score}{b.status === 'drafted' ? ' ✎' : ''}</button>
+                      <Gate id="match-pitchgen"><span className="ml-1.5"><GeneratePitchButton lead={b.lead} unit={unit} onOpen={setPitchFor} compact /></span></Gate>
                     </span>
                   ))}
                 </div>
@@ -233,17 +260,22 @@ export default function MatchInbox({ param, query, notify, go }) {
                   <textarea className="input" rows={4} value={msg} onChange={(e) => setMsg(e.target.value)} />
                 </div>
 
+                {locked && <div className="rounded-lg border border-gold/30 bg-gold/5 px-3 py-2 text-xs text-gold">🔒 Text and e-mail unlock after this machine is verified and BAM-branded.</div>}
                 <div className="flex flex-wrap gap-2">
-                  <Gate id="match-text"><a className="btn-neon" style={{ '--c': 'var(--bam-gold-rgb)' }} href={phone ? `sms:${phone}?&body=${encodeURIComponent(msg)}` : undefined} onClick={() => { playDialer(look); if (phone) touch('text'); else notify('This lead has no phone', true); }}>💬 Text</a></Gate>
-                  <Gate id="match-email"><a className="btn-neon" style={{ '--c': '235 235 235' }} target="_blank" rel="noreferrer"
-                    href={buyer.lead.email ? `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(buyer.lead.email)}&su=${encodeURIComponent((buyer.pitches?.[lang] || buyer.pitch).subject)}&body=${encodeURIComponent(msg)}` : undefined}
-                    onClick={() => buyer.lead.email ? touch('email') : notify('This lead has no email', true)}>✉️ Email</a></Gate>
+                  <Gate id="match-text"><a className={`btn-neon ${locked ? 'pointer-events-none opacity-40' : ''}`} aria-disabled={locked} style={{ '--c': 'var(--bam-gold-rgb)' }} href={phone && !locked ? `sms:${phone}?&body=${encodeURIComponent(msg)}` : undefined} onClick={() => { if (locked) return; playDialer(look); if (phone) touch('text'); else notify('This lead has no phone', true); }}>💬 Text</a></Gate>
+                  <Gate id="match-email"><a className={`btn-neon ${locked ? 'pointer-events-none opacity-40' : ''}`} aria-disabled={locked} style={{ '--c': '235 235 235' }} target="_blank" rel="noreferrer"
+                    href={buyer.lead.email && !locked ? `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(buyer.lead.email)}&su=${encodeURIComponent((buyer.pitches?.[lang] || buyer.pitch).subject)}&body=${encodeURIComponent(msg)}` : undefined}
+                    onClick={() => { if (locked) return; if (buyer.lead.email) touch('email'); else notify('This lead has no email', true); }}>✉️ Email</a></Gate>
                   <button className="btn-neon" style={{ '--c': '160 160 160' }} onClick={() => { navigator.clipboard?.writeText(msg); notify('Pitch copied'); }}>Copy</button>
                   <Gate id="match-logcall"><button className="btn-neon" style={{ '--c': 'var(--bam-gold-dark-rgb)' }} onClick={() => { playDialer(look); setCallFor(buyer); }}>📞 Log call</button></Gate>
                   <Gate id="inv-brochure"><button type="button" className="btn-neon" style={{ '--c': 'var(--bam-gold-light-rgb)' }} onClick={() => { api.openBrochure(unit.id); touch('brochure'); }}>📄 2-Page Brochure</button></Gate>
+                  {isThirdParty(unit) && !unit.verified && <button type="button" className="btn-neon" style={{ '--c': '52 211 153' }} onClick={brand}>Verify &amp; brand →</button>}
                   <Gate id="match-dismiss"><button className="btn-ghost ml-auto" onClick={async () => { await api.matchStatus({ leadId: buyer.lead.id, unitId: unit.id, status: 'dismissed' }); notify('Dismissed'); loadBuyers(selId); }}>Dismiss</button></Gate>
                 </div>
-                <button className="text-xs text-ink-400 underline" onClick={() => go('leads', buyer.lead.id)}>Open full lead →</button>
+                <div className="flex gap-4 text-xs text-ink-400">
+                  <button className="underline hover:text-white" onClick={() => go('leads', buyer.lead.id)}>Link to lead →</button>
+                  <span>Change stage: use the stage menu above.</span>
+                </div>
               </div>
             )}
           </div>
@@ -287,6 +319,7 @@ export default function MatchInbox({ param, query, notify, go }) {
           </form>
         </Modal>
       )}
+      {pitchFor && unit && <PitchGenerator lead={pitchFor} unit={unit} onClose={() => setPitchFor(null)} notify={notify} />}
     </div>
   );
 }
