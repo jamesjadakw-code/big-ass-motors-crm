@@ -12,7 +12,9 @@ const BASE_MODELS = {
 const SITE_LABEL = Object.fromEntries(SCRAPE_WEBSITES);
 const EMPTY = { id: null, website: 'facebook', manufacturer: '', model: '', keywords: '', year_min: '', year_max: '', price_min: '', price_max: '', active: 1 };
 
-const searchTerm = (c) => (c.keywords || [c.manufacturer, c.model].filter(Boolean).join(' ')).trim();
+// Search words are stored as boxes joined by ' | '. A listing matches when ANY one box fits (all words of that box appear).
+const toPhrases = (kw) => String(kw || '').split(/\s*(?:\||;|,|\n|\s-\s)\s*/).map((x) => x.trim()).filter(Boolean);
+const searchTerm = (c) => (toPhrases(c.keywords).join(' / ') || [c.manufacturer, c.model].filter(Boolean).join(' ')).trim();
 function describe(c) {
   const bits = [searchTerm(c)];
   if (c.year_min || c.year_max) bits.push(c.year_min && c.year_max ? `${c.year_min}–${c.year_max}` : c.year_min ? `${c.year_min} or newer` : `${c.year_max} or older`);
@@ -25,6 +27,7 @@ export default function SourcingConfig({ notify }) {
   const [units, setUnits] = useState([]);
   const [f, setF] = useState(EMPTY);
   const [busy, setBusy] = useState(false);
+  const [draft, setDraft] = useState('');
 
   const load = useCallback(async () => {
     const [cfg, inv] = await Promise.all([api.scrapingConfigs(), api.inventory({})]);
@@ -50,11 +53,21 @@ export default function SourcingConfig({ notify }) {
 
   const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value, ...(k === 'manufacturer' ? { model: '' } : {}) }));
 
+  const boxes = toPhrases(f.keywords);
+  const addBoxes = (text) => {
+    const add = toPhrases(text).filter((p) => !boxes.some((b) => b.toLowerCase() === p.toLowerCase()));
+    if (add.length) setF((x) => ({ ...x, keywords: [...boxes, ...add].join(' | ') }));
+    setDraft('');
+  };
+  const removeBox = (i) => setF((x) => ({ ...x, keywords: boxes.filter((_, j) => j !== i).join(' | ') }));
+
   async function save(e) {
     e.preventDefault();
     setBusy(true);
     try {
-      await api.saveScrapingConfig(f);
+      const pending = toPhrases(draft).filter((p) => !boxes.some((b) => b.toLowerCase() === p.toLowerCase()));
+      await api.saveScrapingConfig({ ...f, keywords: [...boxes, ...pending].join(' | ') });
+      setDraft('');
       notify(f.id ? 'Watchlist updated' : 'Watchlist added');
       setF(EMPTY);
       await load();
@@ -109,9 +122,24 @@ export default function SourcingConfig({ notify }) {
             <Field label="Price from $"><input className="input" type="number" min="0" placeholder="any" value={f.price_min} onChange={set('price_min')} /></Field>
             <Field label="Price to $"><input className="input" type="number" min="0" placeholder="any" value={f.price_max} onChange={set('price_max')} /></Field>
           </div>
-          <Field label="Search words (optional): what to type in the site's search box">
-            <input className="input" placeholder="e.g. Ditch Witch RT trencher" value={f.keywords} onChange={set('keywords')} />
-            <p className="mt-1 text-[11px] text-ink-400">Listings are still checked against the manufacturer and model above. Leave this blank and the CRM fills it in.</p>
+          <Field label="Search boxes (optional): different ways an ad might be worded">
+            <div className="flex flex-wrap gap-1.5 pb-1.5">
+              {boxes.map((b, i) => (
+                <span key={b} className="chip gap-1.5 bg-gold/15 text-gold">
+                  {b}
+                  <button type="button" className="text-gold/70 hover:text-white" aria-label={`Remove ${b}`} onClick={() => removeBox(i)}>✕</button>
+                </span>
+              ))}
+              {!boxes.length && <span className="text-xs text-ink-400">No boxes yet: the manufacturer and model above are used.</span>}
+            </div>
+            <input className="input" placeholder="e.g. RT115 ditch witch  (press Enter to add the box)" value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addBoxes(draft); } }}
+              onBlur={() => draft.trim() && addBoxes(draft)} />
+            <p className="mt-1 text-[11px] text-ink-400">
+              Every box is searched on its own, and an ad matches when <b>any one</b> box fits. Not every ad has all the words, so add the variants,
+              for example <i>RT115 ditch witch</i>, <i>RT115</i>, <i>Ditch Witch</i>. Inside one box, all of its words must appear.
+            </p>
           </Field>
           <label className="flex items-center gap-2 text-sm text-ink-300">
             <input type="checkbox" checked={!!f.active} onChange={(e) => setF((x) => ({ ...x, active: e.target.checked ? 1 : 0 }))} className="h-4 w-4 accent-[rgb(var(--accent-rgb))]" /> Active (the sweep uses it)
