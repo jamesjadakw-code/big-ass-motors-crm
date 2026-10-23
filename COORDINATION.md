@@ -348,3 +348,17 @@ Daley reviewed and gave the green light: *"looks good, upload hostinger with the
    - Updated `cockpit-assets/cockpit.js` and `cockpit-assets/cockpit.css`.
    - Rebuilt `HOSTINGER-DEPLOY-BAM-CRM.zip` (2.28 MB).
    - Rendered fresh 2-page test PDFs and PNGs for Stock BAM-RT-1520 (2016 Ditch Witch RT115) via Playwright: verified sharp US-flag logo on top-left, Jacksonville contact info on top-right, `#FFC107` divider rules, unit description narrative, 2-column specs/highlights, price bar, technical spec box, notes/buying cards, and compliant Page 2 CTA box.
+
+
+### [2026-10-23] Antigravity Update: Complete Photo Pipeline & Zero-Photo Fallbacks Verified 📸
+
+1. **Multi-Photo Rendering & Gallery Standard**:
+   - Upgraded `writeBrochure()` in `my-crm-project/client/src/localEngine.js` to inspect all photo sources (`u.media`, `storedHero`, `u.photos`).
+   - **Page 1**: Displays high-resolution primary machine hero photo.
+   - **Page 2**: Renders a 3-thumbnail walkaround/component gallery (`.ph3`) across the top of Page 2 (matching `saved_rt125_p2.png` and `BAM_2018_DitchWitch_JT20_HDD_Package_Brochure_175000.pdf`).
+   - **Zero-Photo Fallback**: When a listing has no photos, Page 1 cleanly displays `Photos & walk-around video available on request — Call 904-767-5232`, and Page 2 cleanly omits the thumbnail gallery, keeping the technical specifications and notes centered with no empty boxes or broken layout.
+
+2. **Bundle Recompiled & Deployment Package Synced**:
+   - Production Vite bundle built: `dist/assets/index-BMwwGzlD.js` + `dist/assets/index-DSruH2St.css`.
+   - Updated `public_html/new/app/index.html` and synced to `cockpit-assets/`.
+   - Updated `HOSTINGER-DEPLOY-BAM-CRM.zip` (2.53 MB).
