@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Toast } from './ui.jsx';
 import Today from './views/Today.jsx';
 import MatchInbox from './views/MatchInbox.jsx';
+import Brochures from './views/Brochures.jsx';
 import Leads from './views/Leads.jsx';
 import Board from './views/Board.jsx';
 import Inventory from './views/Inventory.jsx';
@@ -22,6 +23,7 @@ import { applyGold, cacheTheme, cachedTheme } from './theme.js';
 import { FeatureContext } from './FeatureContext.jsx';
 import MobileBottomDock from './components/MobileBottomDock.jsx';
 import MobileQuickCamera from './components/MobileQuickCamera.jsx';
+import QuickDealModal from './components/QuickDealModal.jsx';
 import CallDispositionModal from './components/CallDispositionModal.jsx';
 import { GOOGLE_FONTS, resolveFeatures, resolveLook } from './features.js';
 
@@ -30,6 +32,7 @@ import { GOOGLE_FONTS, resolveFeatures, resolveLook } from './features.js';
 const NAV = [
   ['today', 'Today', Today, 'var(--bam-gold-rgb)', 'scr-today', 'today'],
   ['match', 'Match Inbox', MatchInbox, 'var(--bam-gold-rgb)', 'scr-match', 'match'],
+  ['brochures', 'Brochures', Brochures, 'var(--bam-gold-rgb)', 'scr-brochures', 'brochures'],
   ['desk', '3rd-Party Machines', Desk, 'var(--bam-gold-dark-rgb)', 'N-desk', 'desk'],
   ['leads', 'My Leads', Leads, '240 240 240', 'scr-leads', 'leads'],
   ['tasks', 'My Tasks', Tasks, '240 240 240', 'scr-tasks', 'tasks'],
@@ -65,6 +68,7 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [counts, setCounts] = useState({});
   const [quickCameraOpen, setQuickCameraOpen] = useState(false);
+  const [quickDealOpen, setQuickDealOpen] = useState(false);
   const [callLead, setCallLead] = useState(null);
 
   useEffect(() => {
@@ -156,6 +160,7 @@ export default function App() {
         setCounts({
           today: t.counts.overdue + t.counts.dueToday,
           match: inv.filter((u) => u.status !== 'Sold' && u.topScore >= 85).length,
+          brochures: inv.filter((u) => u.status !== 'Archived').length,
           desk: inv.filter(isThirdParty).length,
           leads: leads.filter(mine).length,
           tasks: tasks.filter((x) => !x.done).length,
@@ -298,7 +303,8 @@ export default function App() {
           {main}
         </div>
       )}
-      <MobileBottomDock currentRoute={route} go={go} counts={counts} onOpenQuickCamera={() => setQuickCameraOpen(true)} />
+      <MobileBottomDock currentRoute={route} go={go} counts={counts} onOpenQuickDeal={() => setQuickDealOpen(true)} />
+      <QuickDealModal open={quickDealOpen} onClose={() => setQuickDealOpen(false)} notify={notify} go={go} />
       <MobileQuickCamera open={quickCameraOpen} onClose={() => setQuickCameraOpen(false)} notify={notify} onSaved={() => go('desk')} />
       <CallDispositionModal open={Boolean(callLead)} lead={callLead} onClose={() => setCallLead(null)} notify={notify} />
       <Toast toast={toast} />

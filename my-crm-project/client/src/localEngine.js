@@ -3,7 +3,7 @@
 // - On Hostinger (/inventory/cockpit.php): hydrates from MySQL PDO (`window.BAM_PDO_STATE`) and syncs writes directly to `cockpit.php` via PHP POST + CSRF.
 // - On PC / Standalone: runs 100% in-browser backed by the same MySQL table schema (`inventory`, `leads`, `users`, `email_drafts`, `crm_audit`, `tw_tasks`, `tw_assign`).
 
-import { extractDimensions, extractWeight } from './specExtract.js';
+import { extractDimensions, extractWeight, extractEngine, extractHp, extractDrillSpecs, extractTrencherSpecs, extractSubsystems, extractUndercarriage, extractFullSpecSheet } from './specExtract.js';
 import { isThirdParty, listingTasks } from './pipeline.js';
 import { BAM_LOGO_BASE64 } from './assets/bamLogoBase64.js';
 
@@ -197,12 +197,17 @@ const DEFECT_WORDS = ['leak', 'leaks', 'needs repair', 'needs work', 'broken', '
   'rust', 'cracked', 'as-is', 'as is', 'blown', 'worn', 'damage', 'damaged', 'fault', 'engine knock', 'overheat'];
 
 const OEM_BENCHMARKS = [
-  { match: 'rtx1250', engine: 'Cummins QSB4.5', hp: 130, operatingWeight: '26,500 lbs' },
-  { match: 'rt125', engine: 'Deutz TCD 3.6 L4', hp: 121, operatingWeight: '16,200 lbs' },
-  { match: 'rt115', engine: 'Cummins QSB4.5', hp: 115, operatingWeight: '14,800 lbs' },
-  { match: 'd60x90', engine: 'Cummins QSB6.7', hp: 225, operatingWeight: '29,300 lbs' },
-  { match: 'd40x55', engine: 'John Deere 4045', hp: 140, operatingWeight: '22,500 lbs' },
-  { match: 'd24x40', engine: 'John Deere 4045', hp: 125, operatingWeight: '14,500 lbs' },
+  { match: 'jt2020', engine: 'Cummins B3.3', hp: 65, pullback: '20,000 lbs', torque: '2,000 ft-lbs', mudPump: '25 gpm', operatingWeight: '11,200 lbs' },
+  { match: 'jt20', engine: 'Cummins QSB3.3 / Deutz', hp: 74, pullback: '20,000 lbs', torque: '2,200 ft-lbs', mudPump: '25 gpm @ 750 psi', operatingWeight: '11,800 lbs' },
+  { match: 'd20x22', engine: 'Deutz TD 2.9 / Cat C4.4', hp: 74, pullback: '20,000 lbs', torque: '2,200 ft-lbs', mudPump: '25 gpm @ 750 psi', operatingWeight: '12,500 lbs' },
+  { match: 'd24x40', engine: 'John Deere 4045', hp: 125, pullback: '24,000 lbs', torque: '4,000 ft-lbs', mudPump: '50 gpm', operatingWeight: '20,500 lbs' },
+  { match: 'd40x55', engine: 'John Deere 4045', hp: 140, pullback: '40,000 lbs', torque: '5,500 ft-lbs', mudPump: '70 gpm', operatingWeight: '25,500 lbs' },
+  { match: 'd60x90', engine: 'Cummins QSB6.7', hp: 225, pullback: '60,000 lbs', torque: '9,000 ft-lbs', mudPump: '100 gpm', operatingWeight: '34,500 lbs' },
+  { match: 'rt70', engine: 'Deutz BF4M1011F', hp: 70, digDepth: 'up to 60 in', operatingWeight: '10,500 lbs' },
+  { match: 'rt80', engine: 'Deutz BF4M2012', hp: 83, digDepth: 'up to 72 in', operatingWeight: '12,800 lbs' },
+  { match: 'rt115', engine: 'Cummins QSB4.5', hp: 115, digDepth: 'up to 72 in', operatingWeight: '14,800 lbs' },
+  { match: 'rt125', engine: 'Deutz TCD 3.6 L4', hp: 121, digDepth: 'up to 84 in', operatingWeight: '16,200 lbs' },
+  { match: 'rtx1250', engine: 'Cummins QSB4.5', hp: 130, digDepth: 'up to 84 in', operatingWeight: '26,500 lbs' },
   { match: '320e', engine: 'Cat C6.6 ACERT', hp: 152, operatingWeight: '48,700 lbs' },
 ];
 
@@ -283,12 +288,43 @@ export function parseListingText(raw, url = '') {
   const dm = extractDimensions(t);
   if (dm) f.dimensions = dm;
 
+  // Comprehensive Heavy Equipment / JT20 Standard Spec Extraction
+  const fullSpecs = extractFullSpecSheet(t, f.category, f.make, f.model);
+  if (fullSpecs.weight && !f.weight) f.weight = fullSpecs.weight;
+  if (fullSpecs.dimensions && !f.dimensions) f.dimensions = fullSpecs.dimensions;
+  if (fullSpecs.engine && !f.engineModel) f.engineModel = fullSpecs.engine;
+  if (fullSpecs.hp && !f.hp) f.hp = fullSpecs.hp;
+  if (fullSpecs.pullback) f.pullback = fullSpecs.pullback;
+  if (fullSpecs.thrust) f.thrust = fullSpecs.thrust;
+  if (fullSpecs.torque) f.torque = fullSpecs.torque;
+  if (fullSpecs.mudPump) f.mudPump = fullSpecs.mudPump;
+  if (fullSpecs.pipeCapacity) f.pipeCapacity = fullSpecs.pipeCapacity;
+  if (fullSpecs.spindleSpeed) f.spindleSpeed = fullSpecs.spindleSpeed;
+  if (fullSpecs.digDepth) f.digDepth = fullSpecs.digDepth;
+  if (fullSpecs.cutWidth) f.cutWidth = fullSpecs.cutWidth;
+  if (fullSpecs.chainType) f.chainType = fullSpecs.chainType;
+  if (fullSpecs.plow) f.plow = fullSpecs.plow;
+  if (fullSpecs.blade) f.blade = fullSpecs.blade;
+  if (fullSpecs.undercarriage) f.undercarriage = fullSpecs.undercarriage;
+  if (fullSpecs.subsystems) f.subsystems = fullSpecs.subsystems;
+
+  // Build clean broker work-ready narrative
+  const cleanTitle = [f.year, f.make, f.model].filter(Boolean).join(' ');
+  const inclusions = [];
+  if (f.subsystems?.mudSystem) inclusions.push(f.subsystems.mudSystem);
+  if (f.subsystems?.trailer) inclusions.push(f.subsystems.trailer);
+  if (f.subsystems?.locator) inclusions.push(f.subsystems.locator);
+  if (f.pipeCapacity) inclusions.push(f.pipeCapacity);
+  if (f.plow) inclusions.push(f.plow);
+
+  f.narrative = `${cleanTitle} work-ready commercial package.${f.hours ? ` Low ${f.hours.toLocaleString()} verified hours.` : ''}${inclusions.length ? ` Complete package includes: ${inclusions.join(' • ')}.` : ''} Fully inspected and ready to work. Freight arranged across the US & Mexico by Big Ass Motors.`;
+
   const oemSpecs = {};
   if (f.model) {
     const key = f.model.toLowerCase().replace(/[^a-z0-9]/g, '');
     const hit = OEM_BENCHMARKS.find((o) => key.includes(o.match));
     if (hit) {
-      const { match, operatingWeight, ...specs } = hit; // weight is never filled in from a table: only from the listing
+      const { match, operatingWeight, ...specs } = hit;
       Object.assign(oemSpecs, specs);
     }
   }
@@ -626,6 +662,66 @@ function writeBrochure(w, s, u, storedHero) {
   const desc = esc(u.narrative || `${[u.year, u.make, model].filter(Boolean).join(' ')} offered by Big Ass Motors, Jacksonville, FL. Freight arranged across the US & Mexico.`);
   const makeModel = esc([u.make, model].filter(Boolean).join(' '));
 
+  // Comprehensive JT20-Standard Heavy Equipment Specifications List
+  const pullback = hasVal(u.pullback) ? esc(u.pullback) : hasVal(oem.pullback) ? esc(oem.pullback) : '';
+  const torque = hasVal(u.torque) ? esc(u.torque) : hasVal(oem.torque) ? esc(oem.torque) : '';
+  const mudPump = hasVal(u.mudPump) ? esc(u.mudPump) : hasVal(oem.mudPump) ? esc(oem.mudPump) : '';
+  const pipeCapacity = hasVal(u.pipeCapacity) ? esc(u.pipeCapacity) : hasVal(oem.pipeCapacity) ? esc(oem.pipeCapacity) : '';
+  const spindleSpeed = hasVal(u.spindleSpeed) ? esc(u.spindleSpeed) : hasVal(oem.spindleSpeed) ? esc(oem.spindleSpeed) : '';
+  const digDepth = hasVal(u.digDepth) ? esc(u.digDepth) : hasVal(oem.digDepth) ? esc(oem.digDepth) : '';
+  const cutWidth = hasVal(u.cutWidth) ? esc(u.cutWidth) : hasVal(oem.cutWidth) ? esc(oem.cutWidth) : '';
+  const chainType = hasVal(u.chainType) ? esc(u.chainType) : '';
+  const undercarriage = hasVal(u.undercarriage) ? esc(u.undercarriage) : hasVal(u.tracks) ? esc(u.tracks) : '';
+  const attach = hasVal(u.attachments) ? esc(u.attachments) : hasVal(u.plow) ? esc(u.plow) : hasVal(u.blade) ? esc(u.blade) : '';
+
+  const dynamicSpecs = [
+    ['Year / Model', title],
+    ['Hours', hours ? `${hours} Hours` : ''],
+    ['Category', esc(u.category || 'Heavy Equipment')],
+    ['Condition', 'Used — Work-Ready'],
+    ['Make / Model', makeModel],
+    ['Engine', engine],
+    ['Horsepower', hp],
+    ['Pullback / Thrust', pullback],
+    ['Rotational Torque', torque],
+    ['Mud Pump / Flow', mudPump],
+    ['Drill Pipe / Rods', pipeCapacity],
+    ['Spindle Speed', spindleSpeed],
+    ['Digging Depth', digDepth],
+    ['Trench Width', cutWidth],
+    ['Boom / Chain', chainType],
+    ['Operating Weight', weight],
+    ['Transport Dimensions', dims],
+    ['Undercarriage / Tracks', undercarriage],
+    ['Attachments', attach],
+    ['Stock Number', esc(u.stock || 'BAM')],
+  ].filter(([_, v]) => Boolean(v));
+
+  const specRowsHtml = dynamicSpecs.map(([k, v]) => `<div class="specrow"><b>${k}</b><span>${v}</span></div>`).join('');
+
+  // Dual Sub-System Cards (Mud System & Equipment Trailer)
+  const mudSys = u.subsystems?.mudSystem || u.mudSystem || '';
+  const trailer = u.subsystems?.trailer || u.trailer || '';
+  const locator = u.subsystems?.locator || u.locator || '';
+
+  const subsystemCardsHtml = (mudSys || trailer) ? `
+    <div class="cols" style="margin-bottom:10px">
+      ${mudSys ? `<div>
+        <h2 class="s" style="margin-top:4px">Mud Mixing System</h2>
+        <div class="notebox" style="padding:6px 10px;font-size:9.5px;line-height:1.35">
+          <div style="font-weight:800;color:#111">${esc(mudSys)}</div>
+          <div style="color:#666;font-size:8px">High-yield venturi hopper & fluid transfer setup included.</div>
+        </div>
+      </div>` : ''}
+      ${trailer ? `<div>
+        <h2 class="s" style="margin-top:4px">Equipment Trailer</h2>
+        <div class="notebox" style="padding:6px 10px;font-size:9.5px;line-height:1.35">
+          <div style="font-weight:800;color:#111">${esc(trailer)}</div>
+          <div style="color:#666;font-size:8px">Heavy-duty transport trailer with ramps & brakes included.</div>
+        </div>
+      </div>` : ''}
+    </div>` : '';
+
   const html = `<!doctype html>
 <html><head><meta charset="utf-8"><title>BAM Official 2-Page Brochure — ${title}</title>
 <style>
@@ -735,17 +831,9 @@ function writeBrochure(w, s, u, storedHero) {
     ${morePhotos.length ? `<div class="ph3">${morePhotos.map((ph) => `<div><img src="${esc(ph)}" alt=""></div>`).join('')}</div>` : ''}
     <h2 class="s">Technical Specifications — ${makeModel.toUpperCase()}</h2>
     <div class="specbox">
-      <div class="specrow"><b>Year / Model</b><span>${title}</span></div>
-      ${engine ? `<div class="specrow"><b>Engine</b><span>${engine}</span></div>` : ''}
-      ${hours ? `<div class="specrow"><b>Hours</b><span>${hours}</span></div>` : ''}
-      ${hp ? `<div class="specrow"><b>Horsepower</b><span>${hp}</span></div>` : ''}
-      <div class="specrow"><b>Category</b><span>${esc(u.category || 'Heavy Equipment')}</span></div>
-      ${weight ? `<div class="specrow"><b>Operating Weight</b><span>${weight}</span></div>` : ''}
-      <div class="specrow"><b>Condition</b><span>Used</span></div>
-      ${dims ? `<div class="specrow"><b>Dimensions</b><span>${dims}</span></div>` : ''}
-      <div class="specrow"><b>Make / Model</b><span>${makeModel}</span></div>
-      <div class="specrow"><b>Stock Number</b><span>${esc(u.stock || 'BAM')}</span></div>
+      ${specRowsHtml}
     </div>
+    ${subsystemCardsHtml}
     <div class="cols">
       <div>
         <h2 class="s">Condition &amp; Service Notes</h2>
@@ -1203,7 +1291,7 @@ export const localApi = {
     });
   },
 
-  brochureUrl: (id) => `#brochure-${id}`,
+  brochureUrl: (id) => `${typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'https://bigassmotorscrm.bigassmotors.com'}/inventory/brochure.php?type=unit&ids=${id}`,
 
   matchStatus: async ({ leadId, unitId, status }) => {
     const s = loadState();

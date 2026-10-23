@@ -1,11 +1,11 @@
 import { triggerHaptic } from '../mobileShare.js';
 
-export default function MobileBottomDock({ currentRoute, go, counts = {}, onOpenQuickCamera }) {
+export default function MobileBottomDock({ currentRoute, go, counts = {}, onOpenQuickDeal }) {
   const tabs = [
     { key: 'today', label: 'Today', icon: '🌅', countKey: 'today' },
     { key: 'match', label: 'Matches', icon: '🎯', countKey: 'match' },
-    { key: 'action', label: 'Field Add', icon: '📷', isAction: true },
-    { key: 'desk', label: '3rd-Party', icon: '🚜', countKey: 'desk' },
+    { key: 'action', label: 'Scrape', icon: '⚡', isAction: true },
+    { key: 'brochures', label: 'Brochures', icon: '📁', countKey: 'brochures' },
     { key: 'leads', label: 'Leads', icon: '👥', countKey: 'leads' },
   ];
 
@@ -19,17 +19,17 @@ export default function MobileBottomDock({ currentRoute, go, counts = {}, onOpen
         if (tab.isAction) {
           return (
             <button
-              key="camera-action"
+              key="scrape-action"
               type="button"
               onClick={() => {
                 triggerHaptic('heavy');
-                onOpenQuickCamera?.();
+                onOpenQuickDeal?.();
               }}
               className="relative -mt-5 flex h-13 w-13 flex-col items-center justify-center rounded-full border-2 border-bam bg-gold text-ink-950 shadow-[0_0_20px_rgba(255,193,7,0.5)] active:scale-95 transition"
-              title="Quick Walkaround Camera & Field Add"
+              title="Quick Deal & Scrape Ingest"
             >
-              <span className="text-xl leading-none">📷</span>
-              <span className="text-[8px] font-black uppercase tracking-tight mt-0.5">Field Add</span>
+              <span className="text-xl leading-none">⚡</span>
+              <span className="text-[8px] font-black uppercase tracking-tight mt-0.5">Scrape</span>
             </button>
           );
         }

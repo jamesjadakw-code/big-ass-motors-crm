@@ -387,3 +387,47 @@ Daley reviewed and gave the green light: *"looks good, upload hostinger with the
    - `mobile_camera_preview.png`: 4-shot guided walkaround camera modal with voice memo toggle.
    - `mobile_call_disposition_preview.png`: 1-tap call disposition bottom sheet with live lead details.
    - `mobile_pitch_share_preview.png`: Pitch generator with green `Share via iPhone` native share button.
+
+
+### [2026-10-23] Antigravity Update: Option 1 Shipped — Mobile Deal Scraper, Brochures Tab & JT20 Spec Standard ⚡📁
+
+1. **Replaced Dock Camera with 1-Tap Quick Deal Scraper (`QuickDealModal.jsx`)**:
+   - Replaced the field camera on the iPhone 16 Pro Max bottom dock with a prominent gold **`⚡ Scrape`** center button.
+   - Tailored specifically for equipment brokerage workflows:
+     - Input for listing URLs (Facebook Marketplace, Machinery Trader, Craigslist) or raw forwarded seller SMS / email text.
+     - **Broker Margin Calculator**: Automatically calculates BAM margin spread (e.g. Seller asks $145,000 → Suggested BAM List Price: $169,000, Spread: +$24,000).
+     - **1-Tap Action**: `⚡ Scrape & Generate BAM Brochure` parses all specs, captures photos, creates the unit in CRM, builds the brochure, and navigates straight into the Brochures Tab.
+
+2. **Dedicated "Brochures" Tab (`views/Brochures.jsx`)**:
+   - Added `📁 Brochures` to CRM navigation and mobile dock with live count badge.
+   - **Card Portfolio Deck**:
+     - Large photo thumbnail with photo counter badge (`📸 10 photos`).
+     - Title, year, make, model, stock number, List Price vs Seller Ask (spread).
+     - Full JT20 spec pills: `⏱️ 1,850 hrs`, `⚡ 20k lb Pullback`, `🔧 2,200 ft-lb Torque`, `🐎 Cummins 74 HP`, `⚖️ 11,800 lbs`.
+     - Shareable public brochure URL with 1-click `📋 Copy` and `📱 Share via iPhone` (Web Share API).
+     - **👁️ View / Print PDF**: Opens canonical 2-page print-ready view.
+     - **✏️ Edit Brochure**: In-place modal to adjust specs, price, photos, or description.
+     - **🗑️ Delete Brochure**: Confirmation modal to safely remove duds.
+     - **✉️ Send to Matched Leads**: Opens the Bulk Pitch Drawer.
+   - **Bulk Pitch to Matched Leads Drawer**:
+     - Automatically ranks and displays matched buyers from `leads` with BAM Hunter Match Scores (e.g. Julio Ventura 96%, Willebaldo Perez 92%).
+     - Multi-lead selection toggles ("Top 5", "All", "Clear").
+     - 1-click **"✉️ Queue Drafts for X Leads"** creates personalized drafts with the brochure URL attached.
+
+3. **Comprehensive JT20-Standard Heavy Equipment Spec Extractor (`specExtract.js`)**:
+   - Upgraded beyond bare weight and dimensions to parse all heavy equipment metrics:
+     - **Drills**: Pullback / Thrust (lbs), Rotational Torque (ft-lbs), Mud Pump Flow (GPM @ PSI), Drill Pipe / Rod capacity, Spindle RPM.
+     - **Trenchers**: Digging Depth, Trench Width, Boom Length, Chain Type (shark/rock/cup), Vibratory Plow, Backfill Blade.
+     - **Engines & Power**: Cummins, Deutz, Cat, John Deere, Kubota engines and gross HP.
+     - **Subsystems**: Mud Mixing Systems (FM13V, MX125, 500-gal tank) and Equipment Trailers (Felling FT-24, CAM Superline, Lonestar tilt, GVWR).
+     - **Undercarriage**: Rubber tracks, Quad tracks, steel tracks, and remaining percentage.
+   - Expanded `OEM_BENCHMARKS` in `localEngine.js` for JT20, JT2020, D20x22, D24x40, D40x55, D60x90, RT70, RT115, RT125, RTX1250, 320E.
+
+4. **Upgraded Canonical 2-Page Brochure Engine (`localEngine.js` & `brochure.php`)**:
+   - **Page 1**: Displays US-flag BAM logo, title, package subtitle, summary ribbon, large hero photo, narrative, real key highlights, and specs at a glance.
+   - **Page 2**: Displays 3-photo component gallery (`.ph3`), dense 2-column technical specifications grid with all confirmed specs, **Dual Sub-System Cards** (Mud System & Trailer), Condition & Buying notes, and canonical Page 2 CTA box.
+
+5. **Sync, Build & Package**:
+   - Recompiled Vite client: `dist/assets/index-r-D-DgYd.js` + `dist/assets/index-DnPSmbGX.css`.
+   - Synced to `HOSTINGER-DEPLOY-PACKAGE/public_html/new/app/assets/` and `cockpit-assets/`.
+   - Updated `HOSTINGER-DEPLOY-BAM-CRM.zip` (2.64 MB).
