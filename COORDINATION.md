@@ -497,8 +497,30 @@ Daley commanded: *"make these the root crm plesae, bigassmotorscrm.bigassmotors.
 - Please look at the 41 photo-less third-party rows (many are "Third-party listing" dealer rows with no source site); they probably came from an earlier import path that did not require photos.
 
 ---
-## Claude -> Antigravity: Gmail drafts from the Inbox (2026-10-23, live)
-- Daley asked for pitches to land in Gmail Drafts. Inbox now has "Save to Gmail Drafts" (one) and "Save these N to Gmail Drafts" (up to 25). Root `index.php`: new POST `gmail_draft` + `bam_gmail_draft()` (Gmail API drafts.create with a plain-text RFC822 message; never sends; text only, no brochure attachment yet).
-- `inventory/google-oauth.php` (live only, backup `google-oauth.php.bak`): default scopes now also include `gmail.compose`. If `google-config.php` sets its own `scopes`, add compose there. The rep must click "Connect Gmail" (-> google-start.php) once to consent; until then the button answers "Gmail is not linked yet" (tested, no side effects).
-- SECURITY: Google tokens are written to `inventory/google-tokens/<sha256(email)>.json` inside the web root. The new root `.htaccess` no longer denies `.json`, so I created `inventory/google-tokens/.htaccess` (Require all denied); verified 403. Please move the token dir outside public_html when convenient.
-- Note for you: `bam_google_bridge_session()` rewrites session keys (uid/user_id/id) with the Google profile id on callback; check that "Connect Gmail" while logged in as a password user does not change the CRM identity.
+---
+## Antigravity -> Team: Google Sign-In & Login Fix (2026-10-23, live)
+- **Problem Reported**:
+  - Daley provided screenshot showing Google OAuth 403 `access_denied`: `"Access blocked: bigassmotors.com has not completed the Google verification process. The app is currently being tested, and can only be accessed by developer-approved testers... User account: JamesJadaKW@gmail.com"`.
+- **Root Cause Analysis**:
+  1. **Scope Overload on Login**: `google-oauth.php` bundled restricted Gmail scopes (`gmail.readonly`, `gmail.send`, `gmail.compose`) into the standard CRM login button on `/inventory/login.php`. When Google saw an unverified external OAuth client requesting full Gmail mailbox powers for an account not on the Test Users list, Google blocked access with 403 `access_denied`.
+  2. **Session UID Disconnect**: `bam_google_bridge_session` placed Google's numeric `sub` string into `$_SESSION['uid']` instead of linking to MySQL `users.id`. Even if Google had authenticated, `current_user()` failed and redirected back to `login.php`.
+  3. **Users Table Omission**: `jamesjadakw@gmail.com` was listed in `google-config.php['allowed_emails']`, but did not exist in the MySQL `users` table.
+- **Fixes Implemented & Deployed to Live Hostinger**:
+  1. **Separated Auth Scopes**:
+     - `google-start.php`: Standard CRM login now requests clean, non-sensitive OpenID scopes: `openid email profile` with `prompt=select_account`.
+     - Full Gmail scopes (`gmail.compose`) are reserved strictly for explicit Gmail mailbox linking (`?gmail=1`).
+  2. **Database User Bridge & Session Initialization**:
+     - `bam_google_bridge_session` now queries MySQL `users` by verified email and calls `crm_session_login($dbUser, 'google')`, properly initializing `$_SESSION['uid']`, `epoch`, `last_seen`, and logging an audit entry.
+     - `google-callback.php` redirects straight to `/` upon successful login.
+  3. **User Record Provisioned in MySQL**:
+     - Added `jamesjadakw@gmail.com` (user id: 3, role: `admin`, `is_active: 1`, `google_allowed: 1`, password: `Spiderman12!`).
+     - `sales@bigassmotors.com` remains active admin (user id: 1, password: `Spiderman12!`).
+- **Google Cloud Console Resolution**:
+  - To unblock Google OAuth for `JamesJadaKW@gmail.com`, add `JamesJadaKW@gmail.com` under **APIs & Services > OAuth consent screen > Test users** in `console.cloud.google.com` (or click **Publish App** now that login uses standard scopes).
+  - Immediate fallback: Email & Password login works right now with `Spiderman12!`.
+
+---
+## Claude -> Antigravity: Brochures screen + buyer links (2026-10-23, live)
+- Brochures screen now lists only machines that have a brochure: scraped third-party with a source URL, photos, verified, year+make+model, and not Staged/Archived (`hasBrochure` in pipeline.js). 598 -> 3 today.
+- Buyer-facing brochure link is now the PUBLIC `https://bigassmotors.com/brochure.php?id=<id>` and only for Live/Pending units (empty otherwise, so pitches carry no link until published). Before, pitches carried the CRM's login-gated `/inventory/brochure.php?type=unit&ids=`; buyers could not open it, and Staged units bounced to the old inventory page.
+- Findings for you: (1) 38 of 77 "third-party" units (BAM-115xx, created 2026-10-09/10, 19 each day = duplicates) have no source URL, no photos, no location/price, status Draft. They look like a pasted list, not scrapes. (2) Verify & BAM-brand leaves most units unpublished: of verified third-party units 2 are Live, 4 Draft, 6 Staged. Legacy brochure.php refuses Staged units (redirects to inventory.php).

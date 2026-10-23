@@ -3,6 +3,7 @@ import { api } from '../api.js';
 import { Modal, fullName, ScoreBadge, money } from '../ui.jsx';
 import { sharePitch, triggerHaptic } from '../mobileShare.js';
 import { buildPitch, defaultTemplateFor } from '../pitchTemplates.js';
+import { hasBrochure } from '../pipeline.js';
 
 export default function Brochures({ notify, go }) {
   const [units, setUnits] = useState([]);
@@ -38,7 +39,7 @@ export default function Brochures({ notify, go }) {
 
   // Filter units to those with brochure-ready inventory
   const filteredUnits = useMemo(() => {
-    return units.filter((u) => {
+    return units.filter(hasBrochure).filter((u) => {   // only machines that actually have a brochure: real new listings, verified, with photos
       if (filter === 'drills' && !/drill|hdd/i.test(u.category || '')) return false;
       if (filter === 'trenchers' && !/trencher|plow|rock\s*saw/i.test(u.category || '')) return false;
       if (filter === 'excavators' && !/excavator/i.test(u.category || '')) return false;
@@ -102,7 +103,7 @@ export default function Brochures({ notify, go }) {
       for (const lead of selectedLeads) {
         const tpl = defaultTemplateFor(lead);
         const draft = buildPitch(tpl.id, lead, bulkUnit);
-        const personalizedBody = `${draft.body}\n\nOfficial 2-Page BAM Equipment Brochure:\n${broUrl}`;
+        const personalizedBody = broUrl ? `${draft.body}\n\nOfficial 2-Page BAM Equipment Brochure:\n${broUrl}` : draft.body;   // no link until the machine is published
 
         // Save email draft into CRM
         await api.createTask({
@@ -133,8 +134,8 @@ export default function Brochures({ notify, go }) {
     const title = `${unit.year || ''} ${unit.make || ''} ${unit.model || ''}`;
 
     const text = top
-      ? `Hi ${fullName(top).split(' ')[0]}, James here from Big Ass Motors. I have this work-ready ${title} ready to roll. View the official 2-page spec sheet here: ${broUrl}`
-      : `Big Ass Motors Official 2-Page Spec Sheet for ${title}: ${broUrl}`;
+      ? `Hi ${fullName(top).split(' ')[0]}, James here from Big Ass Motors. I have this work-ready ${title} ready to roll.${broUrl ? ` View the official 2-page spec sheet here: ${broUrl}` : ' Call or text for the 2-page spec sheet.'}`
+      : `Big Ass Motors Official 2-Page Spec Sheet for ${title}${broUrl ? `: ${broUrl}` : '. Call or text for the spec sheet.'}`;
 
     await sharePitch({
       lead: top,
@@ -290,7 +291,7 @@ export default function Brochures({ notify, go }) {
           <div className="text-4xl">📄</div>
           <div className="text-sm font-bold text-white">No brochures found in this view</div>
           <p className="text-xs max-w-md mx-auto text-neutral-500">
-            Tap the center ⚡ button on mobile or go to Sourcing to scrape a listing and generate a new BAM Brochure.
+            A machine gets a brochure once it is a real new listing with photos and you Verify &amp; BAM-brand it (3rd-Party Machines or Match Inbox). Hidden or old batches never show here.
           </p>
         </div>
       ) : (
@@ -403,11 +404,12 @@ export default function Brochures({ notify, go }) {
                   <div className="space-y-2 pt-2 border-t border-neutral-800/80">
                     {/* Shareable Link Box */}
                     <div className="flex items-center gap-1 rounded bg-neutral-950 p-1.5 border border-neutral-800 text-[10px]">
-                      <span className="truncate flex-1 text-neutral-400 font-mono select-all">
-                        {broUrl}
+                      <span className={`truncate flex-1 font-mono select-all ${broUrl ? 'text-neutral-400' : 'text-amber-300'}`}>
+                        {broUrl || 'Not published yet: no public link until it is Live'}
                       </span>
                       <button
                         type="button"
+                        disabled={!broUrl}
                         onClick={() => {
                           navigator.clipboard?.writeText(broUrl);
                           triggerHaptic('light');

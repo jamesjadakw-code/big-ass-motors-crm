@@ -13,7 +13,7 @@ import Desk from './views/Desk.jsx';
 import Tasks from './views/Tasks.jsx';
 import SourcingConfig from './views/SourcingConfig.jsx';
 import TopBar from './TopBar.jsx';
-import { isThirdParty } from './pipeline.js';
+import { hasBrochure, isThirdParty } from './pipeline.js';
 import TeamUsers from './views/TeamUsers.jsx';
 import Settings from './views/Settings.jsx';
 import Login from './views/Login.jsx';
@@ -163,7 +163,7 @@ export default function App() {
           today: t.counts.overdue + t.counts.dueToday,
           match: inv.filter((u) => u.status !== 'Sold' && u.topScore >= 85).length,
           inbox: (drafts || []).filter((d) => (d.status || 'Draft') === 'Draft').length,
-          brochures: inv.filter((u) => u.status !== 'Archived').length,
+          brochures: inv.filter(hasBrochure).length,
           desk: inv.filter(isThirdParty).length,
           leads: leads.filter(mine).length,
           tasks: tasks.filter((x) => !x.done).length,

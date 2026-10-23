@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { api } from '../api.js';
 import { Modal, fullName, unitTitle } from '../ui.jsx';
 import { PITCH_TEMPLATES, TEMPLATE_SOURCE, buildPitch, checkPitch, defaultTemplateFor, sanitize } from '../pitchTemplates.js';
 import { sharePitch, canNativeShare, triggerHaptic } from '../mobileShare.js';
@@ -64,7 +65,7 @@ export default function PitchGenerator({ lead, unit, onClose, notify }) {
       unit,
       subject,
       body,
-      brochureUrl: unit?.id ? `https://bigassmotorscrm.bigassmotors.com/inventory/brochure.php?type=unit&ids=${unit.id}` : undefined,
+      brochureUrl: unit?.id ? (api.brochureUrl(unit.id) || undefined) : undefined,
     });
     if (res.ok) {
       if (res.method === 'native') notify?.('Opened iOS Share Sheet!');

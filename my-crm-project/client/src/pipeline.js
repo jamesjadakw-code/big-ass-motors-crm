@@ -4,6 +4,21 @@
 export const isThirdParty = (u) =>
   !!u && u.status !== 'Sold' && (u.thirdParty === true || (u.thirdParty === undefined && !!String(u.sourceUrl || '').trim()));
 
+/** Live on the public website. Only these have a brochure link buyers can open. */
+export const isPublished = (u) => ['Live', 'Pending'].includes(u?.rawStatus ?? u?.status);
+
+/**
+ * A machine "has a brochure" when it came from a real listing (source URL), has photos, was verified (the official brochure is built
+ * then) and is not part of a hidden / archived old batch.
+ */
+export const hasBrochure = (u) =>
+  isThirdParty(u)
+  && !!String(u.sourceUrl || '').trim()
+  && Array.isArray(u.media) && u.media.some((m) => String(m ?? '').trim() !== '')
+  && !!u.verified
+  && !!(u.year && u.make && u.model)   // the official brochure needs the machine's basic identity
+  && !['Staged', 'Archived'].includes(u.rawStatus);
+
 export const LANES = [
   { key: 'scraped', title: 'Scraped', sub: 'Grabbed or pulled · specs parsed, never guessed', rgb: '255 107 112' },
   { key: 'matched', title: 'Matched', sub: 'Scored at scrape · internal only', rgb: 'var(--bam-gold-rgb)' },

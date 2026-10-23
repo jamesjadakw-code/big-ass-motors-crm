@@ -1332,7 +1332,11 @@ export const localApi = {
     });
   },
 
-  brochureUrl: (id) => `${typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'https://bigassmotorscrm.bigassmotors.com'}/inventory/brochure.php?type=unit&ids=${id}`,
+  // The link a BUYER can open: the public website brochure, which exists only once the machine is Live. The CRM's own brochure page needs a CRM login.
+  brochureUrl: (id) => {
+    const u = loadState().inventory.find((x) => String(x.id) === String(id));
+    return u && ['Live', 'Pending'].includes(u.rawStatus ?? u.status) ? `https://bigassmotors.com/brochure.php?id=${encodeURIComponent(u.serverId ?? u.id)}` : '';
+  },
 
   matchStatus: async ({ leadId, unitId, status }) => {
     const s = loadState();
