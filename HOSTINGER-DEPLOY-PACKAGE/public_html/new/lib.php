@@ -118,7 +118,7 @@ function new_map_unit(array $r, array $photos, callable $photoUrl, bool $showCos
         'verified'      => !empty($r['verified_at']),
         'sourceUrl'     => new_str($r['source_url'] ?? '', 500),
         // Only URL listings (Add from URL / uploader: inventory.url_listing = 1) are third-party machines that may be matched.
-        'thirdParty'    => array_key_exists('url_listing', $r) ? (int) $r['url_listing'] === 1 : trim((string) ($r['source_url'] ?? '')) !== '',
+        'thirdParty'    => ((int) ($r['url_listing'] ?? 0) === 1) || (trim((string) ($r['source_url'] ?? '')) !== '' && ($r['submitted_via'] ?? '') !== 'legacy'),
         'media'         => $media,
         'thumbs'        => $thumbs,
         'oemSpecs'      => [],
