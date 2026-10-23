@@ -1,0 +1,53 @@
+# bigassmotorscrm.bigassmotors.com — Unified Root CRM (React PWA + Hostinger PHP 8.3 PDO)
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{REQUEST_URI} !^/\.well-known/
+RewriteRule (^|/)\. - [F,L]
+
+# Route root and index.html to index.php
+RewriteRule ^$ index.php [L]
+RewriteRule ^index\.html?$ index.php [L]
+
+# Route legacy app.php to index.php
+RewriteRule ^inventory/app\.php$ index.php [L]
+
+# Protected files
+RewriteRule ^data(/|$) - [F,L]
+RewriteRule ^inventory/bam(_locate)?\.php$ - [F,L]
+RewriteRule ^inventory/bam_app_path\.txt$ - [F,L]
+</IfModule>
+
+# Allow PWA manifest and service worker explicitly
+<FilesMatch "^(manifest\.json|sw\.js)$">
+  Require all granted
+</FilesMatch>
+
+# Security: Deny raw config and sensitive file extensions
+<FilesMatch "\.(csv|tsv|xlsx?|xlsm|ods|sql|sqlite|db|zip|gz|tar|7z|rar|bak|old|log|lock|ini|env|md|sh|dist|txt)$">
+  Require all denied
+</FilesMatch>
+<FilesMatch "^(\.env.*|bam_config.*\.php|config\.php|bam(_locate)?\.php)$">
+  Require all denied
+</FilesMatch>
+
+# Caching & Security Headers
+<IfModule mod_headers.c>
+  # Revalidate CRM JS and CSS
+  <FilesMatch "\.(css|js|mjs)$">
+    Header set Cache-Control "private, no-cache, max-age=0, must-revalidate"
+    Header set CDN-Cache-Control "no-store"
+  </FilesMatch>
+
+  # Cache static fonts, audio, and images
+  <FilesMatch "\.(woff2?|ttf|ico|jpe?g|png|webp|gif|svg|mp3)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  Header always set X-Robots-Tag "noindex, nofollow"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "same-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+</IfModule>

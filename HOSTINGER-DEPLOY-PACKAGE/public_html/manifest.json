@@ -2,7 +2,7 @@
   "name": "Big Ass Motors CRM",
   "short_name": "BAM CRM",
   "description": "Heavy Equipment Authority CRM & Hunter Cockpit",
-  "start_url": "/new/",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

@@ -431,3 +431,34 @@ Daley reviewed and gave the green light: *"looks good, upload hostinger with the
    - Recompiled Vite client: `dist/assets/index-r-D-DgYd.js` + `dist/assets/index-DnPSmbGX.css`.
    - Synced to `HOSTINGER-DEPLOY-PACKAGE/public_html/new/app/assets/` and `cockpit-assets/`.
    - Updated `HOSTINGER-DEPLOY-BAM-CRM.zip` (2.64 MB).
+
+
+### [2026-10-23] Antigravity Update: Root CRM Live Deployment Complete 🚀🌐
+
+Daley commanded: *"make these the root crm plesae, bigassmotorscrm.bigassmotors.com"* and *"please update hostinger and overwrite the files to impliment the new crm — one containts the mobile app"*.
+
+1. **Root Entry Point Created (`public_html/index.php`)**:
+   - The modern PWA React app with mobile bottom dock, `⚡ Scrape` button, and Brochures tab is now **THE primary root CRM** at `https://bigassmotorscrm.bigassmotors.com/`.
+   - **Authentication Gate**: Enforced via `crm_boot.php` (`$ME = require_admin(); crm_page_guard($ME);`). Unauthenticated traffic receives HTTP 303 redirect to `/inventory/login.php?next=%2F`.
+   - **Zero-API Serverless Mutations**: `is_post()` handles standard PHP POST actions (`save_unit`, `save_lead`, `save_task`, `save_scraping_config`, `delete_scraping_config`, `verify_unit`, `bulk_pitch`, `audit`) with CSRF check (`csrf_check()`), mutating Hostinger MySQL through PDO directly.
+   - **Full PDO Hydration**: Hydrates `window.BAM_PDO_STATE` (`inventory`, `leads`, `users`, `email_drafts`, `crm_audit`, `scraping_configs`, `tasks`, `matches`), `window.BAM_ME`, `window.BAM_CSRF`, and endpoints on initial page load.
+
+2. **Mobile & PWA Configuration**:
+   - `public_html/manifest.json` updated with `"start_url": "/"` and `"scope": "/"`.
+   - `public_html/sw.js` active with network-first caching for offline speed.
+   - High-res Apple Touch Icons (180x180, 192x192, 512x512) and `apple-mobile-web-app-capable` meta tags active for iPhone 16 Pro Max home screen standalone launch.
+
+3. **Routing & Backward Compatibility**:
+   - `public_html/.htaccess`: Rewrites `/` and `index.html` to `index.php`. Explicitly allows `manifest.json` and `sw.js`. Revalidates JS/CSS while caching static fonts/images.
+   - `public_html/inventory/app.php`: Delegates directly to root `index.php`.
+   - `public_html/inventory/cockpit.php`: Synchronized with latest bundle and state hydration.
+   - `public_html/new/`: Continues to function with the shared login session.
+
+4. **Live Verification (Hostinger PHP 8.3 CLI & HTTP Headers)**:
+   - PHP Syntax (`php -l`): **0 syntax errors** across all root and `bam_app/inc` files.
+   - `GET /`: Returns HTTP 303 redirect to `/inventory/login.php?next=%2F` for unauthenticated requests.
+   - `GET /manifest.json`: Returns HTTP 200 with Content-Type `application/json`.
+   - `GET /assets/index-r-D-DgYd.js` (607 KB): Returns HTTP 200.
+   - `GET /assets/index-DnPSmbGX.css` (57 KB): Returns HTTP 200.
+   - `GET /apple-touch-icon.png`: Returns HTTP 200.
+   - `GET /assets/img/bam-logo.png`: Returns HTTP 200.
