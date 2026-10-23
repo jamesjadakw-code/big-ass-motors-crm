@@ -1,6 +1,8 @@
 // Automatic review tasks for newly scraped machines: grouped by machine type, best-documented listing first.
 // Each row shows the website it was scraped from, how many photos it has and the listing score (10 photos = high).
 
+import { ScoreBadge } from '../ui.jsx';
+
 const TONE = {
   High: 'bg-emerald-400/15 text-emerald-300',
   Good: 'bg-gold/15 text-gold',
@@ -39,8 +41,11 @@ export default function ListingTasks({ tasks, onToggle, go, title = 'New scraped
                 </div>
               </button>
               <div className="flex shrink-0 flex-col items-end gap-1">
-                <span className={`chip ${TONE[t.listing.label]}`}>{t.listing.label} · {t.listing.score}</span>
-                <span className="text-[11px] text-ink-400" title="10 photos is a full photo score">📷 {t.listing.photos}/10</span>
+                <span className="flex items-center gap-1.5" title="Listing score out of 100: up to 60 for photos (10 photos = full) and 40 for stated info">
+                  <span className={`chip ${TONE[t.listing.label]}`}>{t.listing.label}</span>
+                  <ScoreBadge score={t.listing.score} />
+                </span>
+                <span className="text-[11px] text-ink-400" title="10 photos is a full photo score">📷 {t.listing.photos} photo{t.listing.photos === 1 ? '' : 's'}</span>
               </div>
             </div>
           ))}
