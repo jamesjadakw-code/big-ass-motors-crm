@@ -160,7 +160,7 @@ if (is_post()) {
                     $ymax = isset($payload['year_max']) && $payload['year_max'] !== '' && $payload['year_max'] !== null ? (int) $payload['year_max'] : null;
                     $pmin = isset($payload['price_min']) && $payload['price_min'] !== '' && $payload['price_min'] !== null ? (int) $payload['price_min'] : null;
                     $pmax = isset($payload['price_max']) && $payload['price_max'] !== '' && $payload['price_max'] !== null ? (int) $payload['price_max'] : null;
-                    $keywords = trim((string) ($payload['keywords'] ?? '')) ?: null;
+                    $keywords = trim((string) ($payload['keywords'] ?? ''));
                     $active = isset($payload['active']) && ($payload['active'] === 0 || $payload['active'] === false || $payload['active'] === '0') ? 0 : 1;
 
                     if ($cid) {
@@ -168,8 +168,8 @@ if (is_post()) {
                             [$website, $mfg, $model, $ymin, $ymax, $pmin, $pmax, $keywords, $active, $cid]);
                         audit('scraping_config_save', "Updated watchlist #$cid ($mfg $model) on $website", 'scraping_configs', $cid);
                     } else {
-                        q('INSERT INTO scraping_configs (website, manufacturer, model, year_min, year_max, price_min, price_max, keywords, active, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
-                            [$website, $mfg, $model, $ymin, $ymax, $pmin, $pmax, $keywords, $active, $uid]);
+                        q('INSERT INTO scraping_configs (website, manufacturer, model, year_min, year_max, price_min, price_max, keywords, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                            [$website, $mfg, $model, $ymin, $ymax, $pmin, $pmax, $keywords, $active]);
                         $cid = (int) db()->lastInsertId();
                         audit('scraping_config_create', "Created watchlist #$cid ($mfg $model) on $website", 'scraping_configs', $cid);
                     }

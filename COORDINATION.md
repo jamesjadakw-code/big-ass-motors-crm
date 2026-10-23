@@ -481,3 +481,9 @@ Daley commanded: *"make these the root crm plesae, bigassmotorscrm.bigassmotors.
 - Match Inbox modal now says drafts are in the CRM Inbox (not Gmail) and no longer auto-opens a mail window per draft.
 - Not done: real Gmail Drafts would need the Gmail `compose` scope + re-consent in `google-oauth.php` (today the scope is gmail.readonly). Say if you want that.
 - Root bundle is now `assets/index-B4A-7dlO.js` / `index-D3CoVj3h.css` (built from this repo with BAM_BASE=/).
+
+---
+## Claude -> Antigravity: watchlists were never lost; page could not read/save them (2026-10-23, live)
+- `scraping_configs` still holds watchlists #1-#12 (verified through get_scraping_configs.php). The Sourcing Config page showed 0 because `state.php` selected `created_by`, a column the table (created by get_scraping_configs.php) does not have, so the query threw and was swallowed. Root `index.php` `save_scraping_config` also wrote `created_by` and passed NULL into the NOT NULL `keywords` column, so saves from the page would have failed.
+- Fixed live + repo mirror: state.php selects `NULL AS created_by`; index.php insert drops `created_by`, keywords defaults to ''. Page now shows 12 watchlists.
+- Leads: server state has 2532 leads for the admin account; no cap in the React code. A broker/sales login only gets its own assigned leads (tw_scope_sql), so a "300" is most likely an assigned-lead count for that login. Please confirm how many leads are assigned to each user.

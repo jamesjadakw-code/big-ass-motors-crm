@@ -86,7 +86,7 @@ function new_build_state(array $me): array
     // ---- scraping_configs (watchlists for daily scraper sweep) ----
     $scrapingConfigs = [];
     try {
-        $rows = q('SELECT id, website, manufacturer, model, year_min, year_max, price_min, price_max, keywords, active, created_by, created_at, updated_at FROM scraping_configs ORDER BY id')->fetchAll();
+        $rows = q('SELECT id, website, manufacturer, model, year_min, year_max, price_min, price_max, keywords, active, NULL AS created_by, created_at, updated_at FROM scraping_configs ORDER BY id')->fetchAll();
         foreach ($rows as $r) {
             $scrapingConfigs[] = [
                 'id'           => (int) $r['id'],
