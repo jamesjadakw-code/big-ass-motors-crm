@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Toast } from './ui.jsx';
 import Today from './views/Today.jsx';
 import MatchInbox from './views/MatchInbox.jsx';
+import Inbox from './views/Inbox.jsx';
 import Brochures from './views/Brochures.jsx';
 import Leads from './views/Leads.jsx';
 import Board from './views/Board.jsx';
@@ -32,6 +33,7 @@ import { GOOGLE_FONTS, resolveFeatures, resolveLook } from './features.js';
 const NAV = [
   ['today', 'Today', Today, 'var(--bam-gold-rgb)', 'scr-today', 'today'],
   ['match', 'Match Inbox', MatchInbox, 'var(--bam-gold-rgb)', 'scr-match', 'match'],
+  ['inbox', 'Inbox', Inbox, 'var(--bam-gold-rgb)', 'scr-inbox', 'inbox'],
   ['brochures', 'Brochures', Brochures, 'var(--bam-gold-rgb)', 'scr-brochures', 'brochures'],
   ['desk', '3rd-Party Machines', Desk, 'var(--bam-gold-dark-rgb)', 'N-desk', 'desk'],
   ['leads', 'My Leads', Leads, '240 240 240', 'scr-leads', 'leads'],
@@ -154,12 +156,13 @@ export default function App() {
     let alive = true;
     const refresh = async () => {
       try {
-        const [t, inv, leads, tasks] = await Promise.all([api.today(), api.inventory({}), api.leads({}), api.tasks()]);
+        const [t, inv, leads, tasks, drafts] = await Promise.all([api.today(), api.inventory({}), api.leads({}), api.tasks(), api.emailDrafts()]);
         if (!alive) return;
         const mine = (l) => String(l.ownerId) === String(user.id);
         setCounts({
           today: t.counts.overdue + t.counts.dueToday,
           match: inv.filter((u) => u.status !== 'Sold' && u.topScore >= 85).length,
+          inbox: (drafts || []).filter((d) => (d.status || 'Draft') === 'Draft').length,
           brochures: inv.filter((u) => u.status !== 'Archived').length,
           desk: inv.filter(isThirdParty).length,
           leads: leads.filter(mine).length,

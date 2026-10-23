@@ -57,5 +57,7 @@ export const api = {
   assignLeadOwner: (leadId, userId) => localApi.assignLeadOwner(leadId, userId),
   emailDrafts: () => localApi.emailDrafts(),
   updateEmailDraft: (id, status) => localApi.updateEmailDraft(id, status),
+  saveEmailDraft: (draft, fields) => localApi.saveEmailDraft(draft, fields),
+  rebuildDraftText: (draft) => localApi.rebuildDraftText(draft),
   auditLog: () => localApi.auditLog(),
 };

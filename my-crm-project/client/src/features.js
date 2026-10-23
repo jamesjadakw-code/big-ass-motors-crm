@@ -13,6 +13,7 @@ export const FEATURES = [
   // ---- screens (menu items) ----
   { id: 'scr-today', area: 'screens', side: 'local', built: true, name: 'Today screen', desc: 'Overdue and due tasks, never called, hot buyers, today’s play.', where: 'Menu · Today' },
   { id: 'scr-match', area: 'screens', side: 'local', built: true, name: 'Match Inbox screen', desc: 'Units with their top buyers, score rings and buyer-safe pitches.', where: 'Menu · Match Inbox' },
+  { id: 'scr-inbox', area: 'screens', side: 'local', built: true, name: 'Inbox screen', desc: 'E-mails the CRM prepared (buyer pitches, alerts): read, edit, open in your mail app, mark sent. Nothing is sent automatically.', where: 'Menu · Inbox' },
   { id: 'scr-brochures', area: 'screens', side: 'local', built: true, name: 'Brochures screen', desc: 'Canonical 2-page equipment brochures with full JT20 spec standard, editing, and bulk pitch dispatch.', where: 'Menu · Brochures' },
   { id: 'scr-sourcing-config', area: 'screens', side: 'live', built: true, name: 'Sourcing Config screen', desc: 'Watchlists the daily sweep searches: website, manufacturer, model, years and price range.', where: 'Menu · Sourcing Config' },
   { id: 'scr-tasks', area: 'screens', side: 'live', built: true, name: 'My Tasks screen', desc: 'Every open task with lead notes, due dates and quick complete.', where: 'Menu · My Tasks' },
@@ -67,7 +68,7 @@ export const FEATURES = [
   { id: 'match-pitchgen', area: 'match', side: 'local', built: true, name: 'Pitch Generator', desc: 'Generate Pitch button on each matched buyer: editable buyer-safe draft with Copy to Clipboard. Locked until the machine is verified.', where: 'Match Inbox' },
   { id: 'match-spanish', area: 'match', side: 'local', built: true, name: 'English / Spanish pitch toggle', desc: 'Switch the draft language per buyer.', where: 'Match Inbox' },
   { id: 'match-logcall', area: 'match', side: 'local', built: true, name: 'Log call from a match', desc: 'Writes the call and schedules the follow-up.', where: 'Match Inbox' },
-  { id: 'match-bulk', area: 'match', side: 'local', built: true, name: 'Bulk pitch → Gmail drafts', desc: 'One personalized draft per ticked buyer, nothing sent.', where: 'Match Inbox' },
+  { id: 'match-bulk', area: 'match', side: 'local', built: true, name: 'Bulk pitch → Inbox drafts', desc: 'One personalized draft per ticked buyer, saved in the CRM Inbox; nothing sent.', where: 'Match Inbox' },
   { id: 'match-dismiss', area: 'match', side: 'local', built: true, name: 'Dismiss a match', desc: 'Hide a buyer for this unit.', where: 'Match Inbox' },
   { id: 'L-auto', area: 'match', side: 'live', built: false, name: 'Automations (drafts only)', desc: 'Drafted e-mails for new scraped machines.' },
   { id: 'L-outbox', area: 'match', side: 'live', built: false, name: 'Draft e-mails outbox', desc: 'Review and send drafted e-mails.' },

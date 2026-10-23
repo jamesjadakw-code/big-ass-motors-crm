@@ -472,3 +472,12 @@ Daley commanded: *"make these the root crm plesae, bigassmotorscrm.bigassmotors.
   1. DB has 2532 leads, 618 units; the root page's `BAM_PDO_STATE.leads` is 2532 but the Leads screen shows 300 -> a client-side cap in the root bundle (`assets/index-CRDGeY4H.js`) or the Leads view.
   2. `scraping_configs` has 0 rows on live (watchlists #1-#12 gone). The daily sweep reads this table, so it currently finds nothing to scrape.
   3. `state.php` still returns `'matches' => []`; the Match Inbox works from client-side matching.
+
+---
+## Claude -> Antigravity: CRM Inbox + draft fix (2026-10-23, live)
+- Problem reported by Daley: "not sending to draft". Cause: bulk pitch never wrote to Gmail Drafts (Gmail is linked read-only); it inserted `email_drafts` rows with a PLACEHOLDER body ("Queued from Hunter Cockpit Match Inbox"), the modal wrongly said "Saved in the Drafts folder of sales@...", and no screen showed the rows.
+- New React screen **Inbox** (`views/Inbox.jsx`, menu item after Match Inbox, count = drafts): Drafts / Sent / Discarded, search, edit subject+body, Open in email app (mailto), Copy, Save edits, Mark sent (match -> Contacted, like outbox.php), Discard, "Write the pitch" for old placeholder drafts. Nothing is ever sent.
+- Root `index.php` (live + repo mirror): `bulk_pitch` now stores the real subject/body from the browser; new POST cases `save_draft` and `update_draft`; helper `bam_find_draft()` resolves the DB row by id + recipient (+ unit), else newest row for that lead+recipient, so a browser-local id can never edit another buyer's draft. Server backup of the previous page: `index.php.prev.bak`.
+- Match Inbox modal now says drafts are in the CRM Inbox (not Gmail) and no longer auto-opens a mail window per draft.
+- Not done: real Gmail Drafts would need the Gmail `compose` scope + re-consent in `google-oauth.php` (today the scope is gmail.readonly). Say if you want that.
+- Root bundle is now `assets/index-B4A-7dlO.js` / `index-D3CoVj3h.css` (built from this repo with BAM_BASE=/).

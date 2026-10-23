@@ -21,6 +21,25 @@ require_once BAM_ROOT . '/inc/settings.php';
 require_once __DIR__ . '/lib.php';
 require_once __DIR__ . '/state.php';
 
+/** Database id of the email_drafts row a POST means: the id must belong to the same recipient (and unit when given), else the newest matching row. 0 = none. */
+function bam_find_draft(array $p): int
+{
+    $id = (int) ($p['id'] ?? 0);
+    $lead = (int) ($p['lead_id'] ?? 0);
+    $unit = (int) ($p['inventory_id'] ?? 0);
+    $to = trim((string) ($p['to_email'] ?? ''));
+    if ($to === '') { return 0; }
+    if ($id > 0) {
+        $hit = q_val('SELECT id FROM email_drafts WHERE id = ? AND to_email = ?' . ($unit > 0 ? ' AND inventory_id = ?' : ''), $unit > 0 ? [$id, $to, $unit] : [$id, $to]);
+        if ($hit) { return (int) $hit; }
+    }
+    if ($lead > 0) {
+        $hit = q_val('SELECT id FROM email_drafts WHERE lead_id = ? AND to_email = ?' . ($unit > 0 ? ' AND inventory_id = ?' : '') . ' ORDER BY id DESC LIMIT 1', $unit > 0 ? [$lead, $to, $unit] : [$lead, $to]);
+        if ($hit) { return (int) $hit; }
+    }
+    return 0;
+}
+
 // ---------------- Handle Mutations via Standard PHP POST + CSRF ----------------
 if (is_post()) {
     csrf_check();
@@ -115,8 +134,8 @@ if (is_post()) {
                         isset($r['leadId']) && is_numeric($r['leadId']) ? (int) $r['leadId'] : null,
                         (string) ($r['email'] ?? ''),
                         (string) ($r['name'] ?? ''),
-                        'BAM Official 2-Page Equipment Brochure',
-                        'Queued from Hunter Cockpit Match Inbox',
+                        mb_substr(trim((string) ($r['subject'] ?? '')), 0, 250) ?: 'BAM Official 2-Page Equipment Brochure',
+                        mb_substr((string) ($r['body'] ?? ''), 0, 20000) ?: 'Queued from Hunter Cockpit Match Inbox',
                     ]);
                 }
                 audit('cockpit_bulk_pitch', 'Queued email_drafts for unit ' . ($payload['unitId'] ?? ''));
@@ -162,6 +181,28 @@ if (is_post()) {
                     $cid = (int) $payload['id'];
                     q('DELETE FROM scraping_configs WHERE id = ?', [$cid]);
                     audit('scraping_config_delete', "Deleted watchlist #$cid", 'scraping_configs', $cid);
+                }
+                break;
+
+            case 'save_draft':
+            case 'update_draft':
+                $did = bam_find_draft($payload);
+                if ($did > 0) {
+                    if ($do === 'save_draft') {
+                        q("UPDATE email_drafts SET subject = ?, body = ? WHERE id = ? AND status = 'Draft'", [mb_substr(trim((string) ($payload['subject'] ?? '')), 0, 250), mb_substr((string) ($payload['body'] ?? ''), 0, 20000), $did]);
+                        audit('email_draft_edit', 'Edited email draft #' . $did, 'email_drafts', $did);
+                    } else {
+                        $st = (string) ($payload['status'] ?? '');
+                        if ($st === 'Sent') {
+                            q("UPDATE email_drafts SET status = 'Sent', sent_marked_at = NOW() WHERE id = ?", [$did]);
+                            try {
+                                q("UPDATE unit_lead_matches m JOIN email_drafts d ON d.inventory_id = m.inventory_id AND d.lead_id = m.lead_id SET m.status = IF(m.status = 'Saved', 'Contacted', m.status), m.followup = '' WHERE d.id = ?", [$did]);
+                            } catch (Throwable $e) { error_log('[root index.php] match status: ' . $e->getMessage()); }
+                        } elseif (in_array($st, ['Draft', 'Discarded'], true)) {
+                            q('UPDATE email_drafts SET status = ? WHERE id = ?', [$st, $did]);
+                        }
+                        audit('email_draft_status', 'Email draft #' . $did . ' -> ' . $st, 'email_drafts', $did);
+                    }
                 }
                 break;
 
@@ -234,8 +275,8 @@ $mePayload = [
       window.BAM_HOSTINGER_BROCHURE_URL = <?= json_encode('/inventory/brochure.php', JSON_UNESCAPED_SLASHES) ?>;
       window.BAM_PDO_STATE = <?= json_encode($state, JSON_UNESCAPED_SLASHES) ?>;
     </script>
-    <script type="module" crossorigin src="/assets/index-CRDGeY4H.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-CQN8TC04.css">
+    <script type="module" crossorigin src="/assets/index-B4A-7dlO.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-D3CoVj3h.css">
   </head>
   <body class="bg-ink-950 text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-gold/30 selection:text-gold">
     <div id="root"></div>

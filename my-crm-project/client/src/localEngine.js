@@ -1358,6 +1358,8 @@ export const localApi = {
         email: lead.email,
         ok: true,
         draftId: String(draftId),
+        subject: pitch.subject,   // sent to the server so the saved draft holds the real pitch, not a placeholder
+        body: pitch.body,
         composeUrl: `mailto:${encodeURIComponent(lead.email)}?subject=${encodeURIComponent(pitch.subject)}&body=${encodeURIComponent(pitch.body)}`,
         attachment: `${unit.stock || 'BAM'}_2Page_Brochure.pdf`,
       });
@@ -1510,8 +1512,30 @@ export const localApi = {
     const d = (s.email_drafts || []).find((x) => Number(x.id) === Number(id));
     if (!d) throw new Error('Draft not found');
     d.status = status;
-    saveState('update_draft', { id, status });
+    // The id the browser holds can differ from the database id until the next reload, so the server also gets lead, unit and e-mail to find the row.
+    saveState('update_draft', { id, status, lead_id: d.lead_id, inventory_id: d.inventory_id, to_email: d.to_email });
     recordAudit('email_draft_status', `Marked email_draft #${id} (${d.to_email}) as ${status}`, '/inventory/outbox.php');
+    return d;
+  },
+  // The buyer-safe pitch text for a draft's buyer and machine (drafts saved before the Inbox only hold a placeholder line). Not saved until the rep saves it.
+  rebuildDraftText: async (draft) => {
+    const s = loadState();
+    const lead = s.leads.find((l) => String(l.id) === String(draft.lead_id));
+    const unit = s.inventory.find((u) => String(u.id) === String(draft.inventory_id));
+    if (!lead || !unit) throw new Error('The buyer or machine for this draft is no longer in the CRM');
+    const pitch = draftPitch(lead, unit, s.config);
+    return { subject: pitch.subject, body: pitch.body };
+  },
+  // Subject / body edits on a draft that has not been marked sent.
+  saveEmailDraft: async (draft, { subject, body }) => {
+    const s = loadState();
+    const d = (s.email_drafts || []).find((x) => Number(x.id) === Number(draft.id));
+    if (!d) throw new Error('Draft not found');
+    if (d.status !== 'Draft') throw new Error('Only drafts can be edited');
+    d.subject = String(subject || '').slice(0, 250);
+    d.body = String(body || '').slice(0, 20000);
+    saveState('save_draft', { id: d.id, lead_id: d.lead_id, inventory_id: d.inventory_id, to_email: d.to_email, subject: d.subject, body: d.body });
+    recordAudit('email_draft_edit', `Edited email_draft #${d.id} (${d.to_email})`, '/inventory/outbox.php');
     return d;
   },
   auditLog: async () => loadState().crm_audit || [],

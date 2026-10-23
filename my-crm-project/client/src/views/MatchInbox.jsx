@@ -82,13 +82,8 @@ export default function MatchInbox({ param, query, notify, go }) {
     setBulkBusy(true);
     try {
       const r = await api.bulkPitch({ unitId: unit.id, leadIds: ids });
-      // Try to pop every draft open. Browsers may allow only the first pop-up per click, so the report below always offers links too.
-      let blocked = 0;
-      for (const x of r.results.filter((y) => y.ok)) {
-        const w = window.open(x.composeUrl, '_blank');
-        if (w) w.opener = null; else blocked++;
-      }
-      setReport({ ...r, blocked });
+      // The drafts are saved in the CRM Inbox; the report below links to each one (and to the rep's mail app).
+      setReport({ ...r, blocked: 0 });
       setChecked(new Set(r.results.filter((x) => !x.ok).map((x) => x.leadId)));
       loadBuyers(selId);
     } catch (e) {
@@ -330,13 +325,8 @@ export default function MatchInbox({ param, query, notify, go }) {
       {report && (
         <Modal title={`${report.created} draft${report.created === 1 ? '' : 's'} ready${report.failed ? ` · ${report.failed} failed` : ''}`} onClose={() => setReport(null)}>
           <p className="mb-3 text-sm text-ink-300">
-            Saved in the Drafts folder of <b className="text-white">{report.sender}</b> with a personalized feature sheet attached to each. <b className="text-white">Nothing has been sent.</b>
+            Saved in the CRM Inbox under Drafts, each one naming its feature sheet. It is not in the Gmail Drafts folder of <b className="text-white">{report.sender}</b>: open it from the Inbox, send it from your mail app, then mark it sent. <b className="text-white">Nothing has been sent.</b>
           </p>
-          {report.blocked > 0 && (
-            <div className="mb-3 rounded-lg border border-bam/40 bg-bam/10 p-3 text-xs text-ink-300">
-              Your browser blocked {report.blocked} pop-up{report.blocked === 1 ? '' : 's'}. Use the links below, or allow pop-ups for this site and use "Open all".
-            </div>
-          )}
           <ul className="max-h-72 space-y-2 overflow-y-auto">
             {report.results.map((x) => (
               <li key={x.leadId} className="flex items-center justify-between gap-3 rounded-lg bg-ink-800 px-3 py-2 text-sm">
@@ -344,13 +334,18 @@ export default function MatchInbox({ param, query, notify, go }) {
                   <div className="truncate font-semibold">{x.ok ? '✓' : '✗'} {x.name}</div>
                   <div className="truncate text-xs text-ink-400">{x.ok ? `${x.email} · ${x.attachment}` : x.reason}</div>
                 </div>
-                {x.ok && <a className="btn-neon shrink-0 whitespace-nowrap !py-1 text-xs" href={x.composeUrl} target="_blank" rel="noreferrer">Open draft ↗</a>}
+                {x.ok && (
+                  <div className="flex shrink-0 gap-2">
+                    <button type="button" className="btn-neon whitespace-nowrap !py-1 text-xs" onClick={() => { setReport(null); go('inbox', x.draftId); }}>Open in Inbox</button>
+                    <a className="btn-ghost whitespace-nowrap !py-1 text-xs" href={x.composeUrl} target="_blank" rel="noreferrer">Email app ↗</a>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
           <div className="mt-4 flex justify-end gap-2">
             <button className="btn-ghost" onClick={() => setReport(null)}>Close</button>
-            {report.created > 1 && <button className="btn-primary" onClick={() => report.results.filter((x) => x.ok).forEach((x) => window.open(x.composeUrl, '_blank'))}>Open all drafts</button>}
+            {report.created > 0 && <button className="btn-primary" onClick={() => { setReport(null); go('inbox'); }}>Open Inbox</button>}
           </div>
         </Modal>
       )}
