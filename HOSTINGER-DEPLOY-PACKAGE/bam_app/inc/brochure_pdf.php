@@ -27,6 +27,9 @@ require_once BAM_ROOT . '/inc/pdf.php';
 require_once BAM_ROOT . '/inc/brochure.php';
 
 const BRO_PDF_VERSION = 'bro-pdf-6';                                    // brochure_10: max 10 photos, always exactly 2 pages
+if (!defined('BAM_PDF_LOGO')) {
+    define('BAM_PDF_LOGO', defined('BAM_ROOT') ? BAM_ROOT . '/assets/bam_us_flag_logo.jpg' : __DIR__ . '/../assets/bam_us_flag_logo.jpg');
+}
 const BRO_PDF_PHONES  = BAM_PHONE . ' | ' . BAM_PHONE2;                 // 904-767-5232 | 904-729-1051 (never +1)
 const BRO_OFFICIAL_PREFIX = 'official_brochure_';                     // update_hub4: saved OFFICIAL BROCHURE in storage/files/<id>/
 const BRO_FETCH_BUDGET = 90;                                           // seconds of external photo fetching per brochure (parallel prefetch first, then cached)

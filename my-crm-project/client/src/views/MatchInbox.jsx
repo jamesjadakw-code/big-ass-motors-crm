@@ -199,6 +199,17 @@ export default function MatchInbox({ param, query, notify, go }) {
                       <div className="mt-3"><Reasons reasons={b.reasons} /></div>
                       <div className="mt-3 flex items-center justify-between text-xs">
                         <Badge value={b.lead.stage} />
+                        {b.lead.phone && (
+                          <a
+                            href={`tel:${b.lead.phone}`}
+                            data-lead={JSON.stringify({ id: b.lead.id, firstName: b.lead.firstName, lastName: b.lead.lastName, phone: b.lead.phone, company: b.lead.company, stage: b.lead.stage })}
+                            onClick={(e) => e.stopPropagation()}
+                            className="rounded bg-emerald-500/20 px-2 py-0.5 text-[11px] font-bold text-emerald-400 hover:bg-emerald-500/30"
+                            title="Call buyer"
+                          >
+                            📞 Call
+                          </a>
+                        )}
                         {b.status === 'pitched' && <span className="text-gold">✓ pitched</span>}
                         {b.status === 'drafted' && <span className="text-gold">✎ draft ready</span>}
                       </div>

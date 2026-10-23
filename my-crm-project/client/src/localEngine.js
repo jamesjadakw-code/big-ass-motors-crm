@@ -5,6 +5,7 @@
 
 import { extractDimensions, extractWeight } from './specExtract.js';
 import { isThirdParty, listingTasks } from './pipeline.js';
+import { BAM_LOGO_BASE64 } from './assets/bamLogoBase64.js';
 
 export const STAGES = ['New', 'Contacted', 'Qualified', 'Negotiation', 'Won', 'Lost'];
 export const URGENCY = ['Low', 'Medium', 'High'];
@@ -615,7 +616,13 @@ function writeBrochure(w, s, u, storedHero) {
   const dims = hasVal(u.dimensions) ? esc(u.dimensions) : hasVal(oem.dimensions) ? esc(oem.dimensions) : '';
   const sub = esc([u.category, u.stock && `Stock ${u.stock}`].filter(Boolean).join('  •  '));
   const band = ['USED', hasVal(u.hours) ? `${hours} Hours` : null, 'Walk-Around Video Available', u.stock ? `Stock ${esc(u.stock)}` : null].filter(Boolean).join(' &nbsp;|&nbsp; ');
-  const hero = storedHero || (u.media && u.media[0]) || '';
+  const allPhotos = [
+    ...(storedHero ? [storedHero] : []),
+    ...(Array.isArray(u.media) ? u.media : typeof u.media === 'string' ? u.media.split('\n') : []),
+    ...(Array.isArray(u.photos) ? u.photos.map((p) => typeof p === 'string' ? p : (p.url || p.file_path || '')) : [])
+  ].map((x) => String(x || '').trim()).filter(Boolean);
+  const hero = allPhotos[0] || '';
+  const morePhotos = allPhotos.slice(1, 4);
   const desc = esc(u.narrative || `${[u.year, u.make, model].filter(Boolean).join(' ')} offered by Big Ass Motors, Jacksonville, FL. Freight arranged across the US & Mexico.`);
   const makeModel = esc([u.make, model].filter(Boolean).join(' '));
 
@@ -628,11 +635,10 @@ function writeBrochure(w, s, u, storedHero) {
   .toolbar { position: sticky; top: 0; z-index: 20; background: #111; color: #fff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #FFC107; }
   .toolbar button { background: #FFC107; color: #111; border: 0; padding: 8px 16px; font-weight: 800; border-radius: 4px; cursor: pointer; text-transform: uppercase; }
   .page { width: 8.5in; height: 11in; margin: 18px auto; background: #fff; padding: 0.45in 0.55in 0.55in; position: relative; page-break-after: always; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,.5); }
-  .head { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 8px; border-bottom: 3px solid #FFC107; }
-  .brand-box { font-weight: 900; font-size: 22px; letter-spacing: 2px; color: #111; }
-  .brand-sub { font-size: 10px; font-weight: 700; color: #444; margin-top: 3px; }
-  .letterhead { text-align: right; font-size: 8.5px; font-weight: 700; line-height: 1.38; color: #141414; }
-  .letterhead .co { font-size: 15px; font-weight: 900; letter-spacing: 2px; margin-bottom: 2px; }
+  .head { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; border-bottom: 3px solid #FFC107; }
+  .logo { width: 2.3in; height: auto; display: block; }
+  .letterhead { text-align: right; font-size: 8.5px; font-weight: 700; line-height: 1.42; color: #141414; }
+  .letterhead .co { font-size: 16px; font-weight: 900; letter-spacing: 2.5px; margin-bottom: 2px; }
   h1.t { text-align: center; font-size: 23px; font-weight: 900; margin: 12px 0 3px; letter-spacing: .5px; }
   .st { text-align: center; font-size: 12px; color: #555; margin-bottom: 8px; }
   .band { background: #111; color: #fff; text-align: center; font-weight: 800; font-size: 10.5px; padding: 7px 10px; letter-spacing: .6px; margin-bottom: 12px; }
@@ -645,6 +651,9 @@ function writeBrochure(w, s, u, storedHero) {
   .pricebar { position: absolute; left: 0.55in; right: 0.55in; bottom: 0.52in; background: #111; border: 2px solid #FFC107; color: #FFC107; text-align: center; font-weight: 900; font-size: 14px; padding: 9px; letter-spacing: .5px; }
   .foot { position: absolute; left: 0; right: 0; bottom: 0; height: 0.34in; background: #111; color: #eee; font-size: 8.5px; display: flex; justify-content: space-between; align-items: center; padding: 0 0.55in; }
   .t2 { text-align: center; font-weight: 900; font-size: 15px; padding: 7px 0; border-top: 2px solid #FFC107; border-bottom: 2px solid #FFC107; margin: 10px 0 14px; }
+  .ph3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 10px 0 12px; }
+  .ph3 div { border: 1px solid #ccc; height: 1.5in; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f4f4f4; }
+  .ph3 img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .specbox { background: #FFF7D6; border: 2px solid #FFC107; padding: 10px 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 22px; font-size: 10px; margin-bottom: 14px; }
   .specrow { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,.06); padding: 3px 0; }
   .specrow b { color: #111; }
@@ -665,10 +674,7 @@ function writeBrochure(w, s, u, storedHero) {
   <!-- PAGE 1 -->
   <section class="page">
     <div class="head">
-      <div>
-        <div class="brand-box">BIG ASS MOTORS</div>
-        <div class="brand-sub">HEAVY EQUIPMENT BROKERAGE · US &amp; MX</div>
-      </div>
+      <img class="logo" src="${BAM_LOGO_BASE64}" alt="Big Ass Motors">
       <div class="letterhead">
         <div class="co">BIG ASS MOTORS</div>
         <div>${cfg.authority}</div>
@@ -714,10 +720,7 @@ function writeBrochure(w, s, u, storedHero) {
   <!-- PAGE 2 -->
   <section class="page">
     <div class="head">
-      <div>
-        <div class="brand-box">BIG ASS MOTORS</div>
-        <div class="brand-sub">OFFICIAL SPECIFICATION SHEET</div>
-      </div>
+      <img class="logo" src="${BAM_LOGO_BASE64}" alt="Big Ass Motors">
       <div class="letterhead">
         <div class="co">BIG ASS MOTORS</div>
         <div>${cfg.authority}</div>
@@ -725,9 +728,11 @@ function writeBrochure(w, s, u, storedHero) {
         <div>${cfg.address}</div>
         <div>PHONE ${cfg.phone} · MOBILE ${cfg.mobile}</div>
         <div>EMAIL ${cfg.email} · WEB ${cfg.web}</div>
+        <div>OFFICIAL SPECIFICATION SHEET</div>
       </div>
     </div>
     <div class="t2">${title} &nbsp;•&nbsp; ${esc((u.category || 'HEAVY EQUIPMENT').toUpperCase())}</div>
+    ${morePhotos.length ? `<div class="ph3">${morePhotos.map((ph) => `<div><img src="${esc(ph)}" alt=""></div>`).join('')}</div>` : ''}
     <h2 class="s">Technical Specifications — ${makeModel.toUpperCase()}</h2>
     <div class="specbox">
       <div class="specrow"><b>Year / Model</b><span>${title}</span></div>

@@ -2,13 +2,20 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>BAM CRM</title>
+    <!-- iOS Web App & Standalone PWA Support (iPhone 16 Pro Max Optimized) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="BAM CRM" />
+    <meta name="theme-color" content="#0b0f19" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- Google Fonts are added by App.jsx unless Settings → Look & Layout → Self-hosted fonts is on -->
   </head>
-  <body class="bg-ink-950 text-slate-100 font-sans antialiased">
+  <body class="bg-ink-950 text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-gold/30 selection:text-gold">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

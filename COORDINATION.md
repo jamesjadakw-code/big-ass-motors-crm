@@ -362,3 +362,28 @@ Daley reviewed and gave the green light: *"looks good, upload hostinger with the
    - Production Vite bundle built: `dist/assets/index-BMwwGzlD.js` + `dist/assets/index-DSruH2St.css`.
    - Updated `public_html/new/app/index.html` and synced to `cockpit-assets/`.
    - Updated `HOSTINGER-DEPLOY-BAM-CRM.zip` (2.53 MB).
+
+
+### [2026-10-23] Antigravity Update: iPhone 16 Pro Max Mobile Command Center Verified 📱⚡
+
+1. **Features Shipped (100% Zero-API, Hostinger PHP 8.3 + React PWA)**:
+   - **Standalone PWA & iOS Icons**: `manifest.json`, Apple Touch Icons (180x180, 192x192, 512x512) generated from official BAM logo, `apple-mobile-web-app-capable`, `black-translucent` status bar, `viewport-fit=cover` (iPhone 16 Pro Max 440x956 pt Dynamic Island & home bar safe areas), and `sw.js` offline caching.
+   - **Thumb-Zone Bottom Navigation Dock** (`MobileBottomDock.jsx`): Fixed bottom bar with 5 tactile touch targets (Today, Matches, Field Add `+`, 3rd-Party Machines, Leads) with BAM neon gold active glow and live notification counters.
+   - **Yard Walkaround & Field Camera Modal** (`MobileQuickCamera.jsx`): Direct back-facing environment camera launcher (`capture="environment"`), 4-shot guided walkaround checklist (Hero Front-3/4, Hour Meter & Serial, Engine & Undercarriage, Tooling & Attachments), client-side Canvas auto-compression to 1600px JPEG (<500KB), and voice dictation notes.
+   - **Click-to-Call + Automated Call Disposition Sheet** (`CallDispositionModal.jsx`): Tapping any lead phone number launches iOS Phone dialer via `tel:` and captures app return intent via `visibilitychange`, instantly presenting a 1-tap outcome logger:
+     - `Spoke / Interested Buyer` (advances lead stage to Contacted)
+     - `Left Voicemail` (logs call stamp, keeps stage active)
+     - `Follow Up Tomorrow Morning` (creates High priority task for 10:00 AM next day)
+     - `Not in Market / Bad Number` (marks stage Lost)
+   - **Native iOS Web Share API** (`mobileShare.js` & `PitchGenerator.jsx`): Native 1-tap system share sheet button (`📱 Share via iPhone`) in Pitch Generator to dispatch buyer-safe pitch drafts directly into iMessage, WhatsApp, Mail, or AirDrop with clipboard fallback and vibration haptics (`triggerHaptic`).
+
+2. **Rebuild & Deployment Sync**:
+   - Production Vite bundle compiled: `dist/assets/index-DIdyoeIx.js` + `dist/assets/index-BwwuIDuJ.css`.
+   - Synced to `HOSTINGER-DEPLOY-PACKAGE/public_html/new/app/assets/` and `cockpit-assets/`.
+   - Updated `HOSTINGER-DEPLOY-BAM-CRM.zip` (3.39 MB).
+
+3. **Visual Verification (Playwright on iPhone 16 Pro Max Viewport 440x956 @ 3x DPR)**:
+   - `mobile_dock_preview.png`: Cockpit / Today dashboard with sticky bottom dock & safe area padding.
+   - `mobile_camera_preview.png`: 4-shot guided walkaround camera modal with voice memo toggle.
+   - `mobile_call_disposition_preview.png`: 1-tap call disposition bottom sheet with live lead details.
+   - `mobile_pitch_share_preview.png`: Pitch generator with green `Share via iPhone` native share button.

@@ -120,6 +120,12 @@ function brochure_doc_close(): void
     echo '</body></html>';
 }
 
+if (!function_exists('asset')) {
+    function asset(string $path): string {
+        return (defined('BAM_BASE_URL') ? BAM_BASE_URL : '') . '/inventory/assets/' . ltrim($path, '/');
+    }
+}
+
 function brochure_head_block(): string
 {
     return '<div class="bh"><img src="' . h(asset('img/bam-logo.jpg')) . '" alt="Big Ass Motors"><div class="ct"><div class="nm">BIG ASS MOTORS</div>'

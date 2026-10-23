@@ -1,0 +1,25 @@
+{
+  "name": "Big Ass Motors CRM",
+  "short_name": "BAM CRM",
+  "description": "Heavy Equipment Authority CRM & Hunter Cockpit",
+  "start_url": "/new/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0f19",
+  "theme_color": "#FFC107",
+  "icons": [
+    {
+      "src": "/assets/bam-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/bam-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

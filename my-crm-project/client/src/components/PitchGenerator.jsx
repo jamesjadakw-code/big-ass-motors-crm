@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Modal, fullName, unitTitle } from '../ui.jsx';
 import { PITCH_TEMPLATES, TEMPLATE_SOURCE, buildPitch, checkPitch, defaultTemplateFor, sanitize } from '../pitchTemplates.js';
+import { sharePitch, canNativeShare, triggerHaptic } from '../mobileShare.js';
 
 // Pitching stays locked until the scraped machine has been verified and BAM-branded.
 export const pitchLocked = (unit) => !unit?.verified;
@@ -50,10 +51,29 @@ export default function PitchGenerator({ lead, unit, onClose, notify }) {
   }
   async function copy() {
     if (issues.length) return;
+    triggerHaptic('light');
     const ok = await copyText(`Subject: ${subject}\n\n${body}`);
     setCopied(ok);
-    notify(ok ? 'Pitch copied. Paste it into your e-mail or text.' : 'Could not copy. Select the text and press Ctrl+C.', !ok);
+    notify?.(ok ? 'Pitch copied. Paste it into your e-mail or text.' : 'Could not copy. Select the text and press Ctrl+C.', !ok);
   }
+
+  async function handleShare() {
+    if (issues.length) return;
+    const res = await sharePitch({
+      lead,
+      unit,
+      subject,
+      body,
+      brochureUrl: unit?.id ? `https://bigassmotorscrm.bigassmotors.com/inventory/brochure.php?type=unit&ids=${unit.id}` : undefined,
+    });
+    if (res.ok) {
+      if (res.method === 'native') notify?.('Opened iOS Share Sheet!');
+      else notify?.('Pitch & brochure link copied to clipboard!');
+    } else if (!res.aborted) {
+      notify?.(res.error || 'Share failed', true);
+    }
+  }
+
   useEffect(() => {
     const h = (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); copy(); } };
     window.addEventListener('keydown', h);
@@ -102,6 +122,20 @@ export default function PitchGenerator({ lead, unit, onClose, notify }) {
           {issues.length > 0 && <button type="button" className="btn-ghost" onClick={fix}>Fix automatically</button>}
           {edited && <button type="button" className="btn-ghost" onClick={() => { setSubject(draft.subject); setBody(draft.body); }}>Reset draft</button>}
           <span className="ml-auto text-[11px] text-ink-400">Ctrl+Enter copies · nothing is sent or saved</span>
+          
+          {/* iOS Native Share Button */}
+          {canNativeShare() && (
+            <button
+              type="button"
+              className="btn-gold !bg-emerald-500 !text-black hover:!bg-emerald-400 flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+              disabled={issues.length > 0}
+              onClick={handleShare}
+            >
+              <span>📱</span>
+              <span>Share via iPhone</span>
+            </button>
+          )}
+
           <button type="button" className="btn-gold" disabled={issues.length > 0} onClick={copy}>{copied ? '✓ Copied' : '📋 Copy to Clipboard'}</button>
         </div>
         <p className="text-[10px] text-ink-400">Templates: {TEMPLATE_SOURCE}. Written from confirmed fields only; no outside AI.</p>

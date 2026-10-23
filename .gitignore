@@ -12,3 +12,5 @@ BACKUP-*.zip
 bam_config.php
 google-config.php
 node_modules/
+*.png
+

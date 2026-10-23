@@ -124,7 +124,22 @@ export function LeadDetail({ id, onClose, onChanged, onEdit, notify, go, docked 
           <div className="text-sm text-ink-300">
             {lead.company && <div className="font-medium text-white">{lead.company}</div>}
             <div>{[lead.city, lead.state].filter(Boolean).join(', ')}</div>
-            <div>{lead.phone} {lead.email && <>· {lead.email}</>}</div>
+            <div className="flex flex-wrap items-center gap-2 pt-0.5">
+              {lead.phone ? (
+                <a
+                  href={`tel:${lead.phone}`}
+                  data-lead={JSON.stringify({ id: lead.id, firstName: lead.firstName, lastName: lead.lastName, phone: lead.phone, company: lead.company, stage: lead.stage })}
+                  className="inline-flex items-center gap-1.5 font-bold text-emerald-400 hover:text-emerald-300 underline"
+                  title="Tap to call lead"
+                >
+                  <span>📞</span>
+                  <span>{lead.phone}</span>
+                </a>
+              ) : (
+                <span className="text-ink-400">No direct phone</span>
+              )}
+              {lead.email && <span className="text-ink-400">· {lead.email}</span>}
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <select className="input !w-auto !py-1" value={lead.stage} onChange={(e) => stage(e.target.value)}>{STAGES.map((s) => <option key={s}>{s}</option>)}</select>

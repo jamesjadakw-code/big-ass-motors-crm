@@ -161,10 +161,23 @@ export default function Today({ notify, go }) {
             <h2 className="h-display border-b border-ink-700 d-row text-lg">Never called</h2>
             {!d.neverCalled.length && <Empty>Everyone has been touched.</Empty>}
             {d.neverCalled.map((l) => (
-              <button key={l.id} onClick={() => go('leads', l.id)} className="row-int block w-full border-b border-ink-800 d-row text-left last:border-0">
-                <div className="text-sm font-medium">{fullName(l)}</div>
-                <div className="text-xs text-ink-400">{l.company}{l.phone ? ` · ${l.phone}` : ''}</div>
-              </button>
+              <div key={l.id} className="row-int flex items-center justify-between border-b border-ink-800 d-row text-left last:border-0">
+                <button type="button" onClick={() => go('leads', l.id)} className="min-w-0 text-left flex-1">
+                  <div className="text-sm font-medium">{fullName(l)}</div>
+                  <div className="text-xs text-ink-400">{l.company || 'Direct Buyer'}</div>
+                </button>
+                {l.phone && (
+                  <a
+                    href={`tel:${l.phone}`}
+                    data-lead={JSON.stringify({ id: l.id, firstName: l.firstName, lastName: l.lastName, phone: l.phone, company: l.company, stage: l.stage })}
+                    className="ml-2 flex items-center gap-1 rounded bg-emerald-500/20 px-2.5 py-1 text-xs font-bold text-emerald-400 hover:bg-emerald-500/30 active:scale-95 transition"
+                    title="Call buyer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span>📞 Call</span>
+                  </a>
+                )}
+              </div>
             ))}
           </section>}
         </div>

@@ -20,6 +20,9 @@ import { api } from './api.js';
 import { getCurrentUser, logoutUser } from './localEngine.js';
 import { applyGold, cacheTheme, cachedTheme } from './theme.js';
 import { FeatureContext } from './FeatureContext.jsx';
+import MobileBottomDock from './components/MobileBottomDock.jsx';
+import MobileQuickCamera from './components/MobileQuickCamera.jsx';
+import CallDispositionModal from './components/CallDispositionModal.jsx';
 import { GOOGLE_FONTS, resolveFeatures, resolveLook } from './features.js';
 
 // [route, label, component, neon rgb, feature switch, count key]. Settings has no switch so nobody can lock themselves out.
@@ -61,6 +64,34 @@ export default function App() {
   const [myMode, setMyMode] = useState(() => readMode(getCurrentUser()));
   const [menuOpen, setMenuOpen] = useState(false);
   const [counts, setCounts] = useState({});
+  const [quickCameraOpen, setQuickCameraOpen] = useState(false);
+  const [callLead, setCallLead] = useState(null);
+
+  useEffect(() => {
+    let callingLead = null;
+    const onCallIntent = (e) => {
+      const telLink = e.target.closest('a[href^="tel:"]');
+      if (telLink) {
+        const leadEl = telLink.closest('[data-lead]');
+        if (leadEl) {
+          try { callingLead = JSON.parse(leadEl.getAttribute('data-lead')); } catch {}
+        }
+      }
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible' && callingLead) {
+        const leadToPrompt = callingLead;
+        callingLead = null;
+        setTimeout(() => setCallLead(leadToPrompt), 400);
+      }
+    };
+    document.addEventListener('click', onCallIntent, true);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('click', onCallIntent, true);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
 
   const showTheme = useCallback((t) => { setShown(t); applyGold(t.goldHex); }, []);
   const remember = useCallback((c) => {
@@ -229,7 +260,7 @@ export default function App() {
       )}
       {look.grid && <div className="stage-grid" />}
       <TopBar go={go} alerts={counts.today || 0} features={features} />
-      <div key={route} className="view-enter relative min-h-0 flex-1 overflow-y-auto">
+      <div key={route} className="view-enter relative min-h-0 flex-1 overflow-y-auto pb-24 md:pb-0">
         <View param={loc.param} query={loc.query} notify={notify} go={go} settings={settings} onPreview={onPreview} onSaved={onSaved} user={user} />
       </div>
     </main>
@@ -267,6 +298,9 @@ export default function App() {
           {main}
         </div>
       )}
+      <MobileBottomDock currentRoute={route} go={go} counts={counts} onOpenQuickCamera={() => setQuickCameraOpen(true)} />
+      <MobileQuickCamera open={quickCameraOpen} onClose={() => setQuickCameraOpen(false)} notify={notify} onSaved={() => go('desk')} />
+      <CallDispositionModal open={Boolean(callLead)} lead={callLead} onClose={() => setCallLead(null)} notify={notify} />
       <Toast toast={toast} />
     </FeatureContext.Provider>
   );
