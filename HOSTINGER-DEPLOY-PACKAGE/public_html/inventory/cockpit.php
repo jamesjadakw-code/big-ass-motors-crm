@@ -142,6 +142,49 @@ if (is_post()) {
                     audit('user_deleted', 'Deleted user #' . (int) $payload['id'] . ' (' . ($payload['email'] ?? '') . ')');
                 }
                 break;
+
+            case 'save_scraping_config':
+                if (crm_can('admin', $ME)) {
+                    $cid = isset($payload['id']) && is_numeric($payload['id']) && (int) $payload['id'] > 0 ? (int) $payload['id'] : null;
+                    $website = trim((string) ($payload['website'] ?? 'facebook'));
+                    $mfg = trim((string) ($payload['manufacturer'] ?? ''));
+                    $model = trim((string) ($payload['model'] ?? ''));
+                    $ymin = isset($payload['year_min']) && $payload['year_min'] !== '' && $payload['year_min'] !== null ? (int) $payload['year_min'] : null;
+                    $ymax = isset($payload['year_max']) && $payload['year_max'] !== '' && $payload['year_max'] !== null ? (int) $payload['year_max'] : null;
+                    $pmin = isset($payload['price_min']) && $payload['price_min'] !== '' && $payload['price_min'] !== null ? (int) $payload['price_min'] : null;
+                    $pmax = isset($payload['price_max']) && $payload['price_max'] !== '' && $payload['price_max'] !== null ? (int) $payload['price_max'] : null;
+                    $keywords = trim((string) ($payload['keywords'] ?? '')) ?: null;
+                    $active = isset($payload['active']) && ($payload['active'] === 0 || $payload['active'] === false || $payload['active'] === '0') ? 0 : 1;
+
+                    if ($cid) {
+                        q('UPDATE scraping_configs SET website = ?, manufacturer = ?, model = ?, year_min = ?, year_max = ?, price_min = ?, price_max = ?, keywords = ?, active = ?, updated_at = NOW() WHERE id = ?',
+                            [$website, $mfg, $model, $ymin, $ymax, $pmin, $pmax, $keywords, $active, $cid]);
+                        audit('scraping_config_save', "Updated watchlist #$cid ($mfg $model) on $website", 'scraping_configs', $cid);
+                    } else {
+                        q('INSERT INTO scraping_configs (website, manufacturer, model, year_min, year_max, price_min, price_max, keywords, active, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
+                            [$website, $mfg, $model, $ymin, $ymax, $pmin, $pmax, $keywords, $active, $uid]);
+                        $cid = (int) db()->lastInsertId();
+                        audit('scraping_config_create', "Created watchlist #$cid ($mfg $model) on $website", 'scraping_configs', $cid);
+                    }
+                }
+                break;
+
+            case 'delete_scraping_config':
+                if (crm_can('admin', $ME) && !empty($payload['id'])) {
+                    $cid = (int) $payload['id'];
+                    q('DELETE FROM scraping_configs WHERE id = ?', [$cid]);
+                    audit('scraping_config_delete', "Deleted watchlist #$cid", 'scraping_configs', $cid);
+                }
+                break;
+
+            case 'verify_unit':
+                $vUnitId = isset($payload['id']) && is_numeric($payload['id']) ? (int) $payload['id'] : 0;
+                if ($vUnitId > 0 && crm_can('admin', $ME)) {
+                    require_once BAM_ROOT . '/inc/verify_publish.php';
+                    $r = bam_verify_publish($vUnitId, $ME);
+                    json_out(['ok' => true] + $r);
+                }
+                break;
         }
     } catch (Throwable $e) {
         error_log('cockpit POST error: ' . $e->getMessage());
@@ -241,14 +284,20 @@ try {
     }
 } catch (Throwable) {}
 
+$pdoScrapingConfigs = [];
+try {
+    $pdoScrapingConfigs = q('SELECT id, website, manufacturer, model, year_min, year_max, price_min, price_max, keywords, active, created_by, created_at, updated_at FROM scraping_configs ORDER BY id')->fetchAll();
+} catch (Throwable) {}
+
 $pdoState = [
-    'inventory'    => $pdoUnits,
-    'leads'        => $pdoLeads,
-    'users'        => $pdoUsers,
-    'email_drafts' => $pdoDrafts,
-    'crm_audit'    => $pdoAudit,
-    'tasks'        => [],
-    'matches'      => [],
+    'inventory'        => $pdoUnits,
+    'leads'            => $pdoLeads,
+    'users'            => $pdoUsers,
+    'email_drafts'     => $pdoDrafts,
+    'crm_audit'        => $pdoAudit,
+    'scraping_configs' => $pdoScrapingConfigs,
+    'tasks'            => [],
+    'matches'          => [],
 ];
 ?><!doctype html>
 <html lang="en" class="dark">

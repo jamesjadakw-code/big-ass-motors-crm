@@ -8,6 +8,7 @@ csrf_check();
 
 $id = (int) ($_POST['id'] ?? 0);
 $verify = !empty($_POST['verify']);
+$publish = null;
 
 if ($verify) {
     q('UPDATE inventory SET verified_at = NOW(), verified_by = ?, updated_at = NOW() WHERE id = ?', [(int) $ME['id'], $id]);
@@ -21,6 +22,11 @@ if ($verify) {
         require_once BAM_ROOT . '/inc/hunter_hook.php';
         bam_hunter_on_unit_changed($id);
     }
+    // Third-party machines: official brochure, publish (admin only) and buyer matching. See inc/verify_publish.php.
+    try {
+        require_once BAM_ROOT . '/inc/verify_publish.php';
+        $publish = bam_verify_publish($id, $ME);
+    } catch (Throwable) {}
 } else {
     q('UPDATE inventory SET verified_at = NULL, verified_by = NULL, status = IF(status IN ("Live", "Pending"), "Draft", status), updated_at = NOW() WHERE id = ?', [$id]);
     q("INSERT INTO crm_audit (user_id, email, role, event, detail, path, ip, ua) VALUES (?, ?, ?, 'unverify_unit', ?, '', ?, '')",
@@ -30,4 +36,4 @@ if ($verify) {
 require_once BAM_ROOT . '/inc/live.php';
 live_bump('inventory');
 
-json_out(['ok' => true]);
+json_out(['ok' => true] + ($publish ? ['publish' => $publish] : []));

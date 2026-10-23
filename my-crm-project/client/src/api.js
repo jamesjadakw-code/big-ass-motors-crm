@@ -8,6 +8,7 @@ import { localApi, openCanonicalBrochure, STAGES as ENGINE_STAGES, UNIT_STATUSES
 export const STAGES = ENGINE_STAGES;
 export const UNIT_STATUSES = ENGINE_STATUSES;
 export { openCanonicalBrochure };
+export { SCRAPE_WEBSITES } from './localEngine.js';
 
 export const api = {
   today: () => localApi.today(),
@@ -38,6 +39,11 @@ export const api = {
 
   parseListing: (b) => localApi.parseListing(b),
   pullListing: (url) => localApi.pullListing(url),
+
+  scrapingConfigs: () => localApi.scrapingConfigs(),
+  saveScrapingConfig: (b) => localApi.saveScrapingConfig(b),
+  deleteScrapingConfig: (id) => localApi.deleteScrapingConfig(id),
+  verifyUnit: (id) => localApi.verifyUnit(id),
 
   tasks: () => localApi.tasks(),
   createTask: (b) => localApi.createTask(b),

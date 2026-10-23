@@ -68,8 +68,8 @@ export default function MatchInbox({ param, query, notify, go }) {
   // Scraped machines can't be pitched by text or e-mail until they are verified and BAM-branded.
   const locked = !!unit && isThirdParty(unit) && !unit.verified;
   async function brand() {
-    if (!window.confirm(`Verify and BAM-brand ${unitTitle(unit)}? Seller details stay internal, the brochure shows Call for Price, and pitching unlocks.`)) return;
-    try { await api.updateUnit(unit.id, { verified: true }); notify('Verified and BAM-branded. Pitching is unlocked.'); loadUnits(); } catch (e) { notify(e.message, true); }
+    if (!window.confirm(`Verify and BAM-brand ${unitTitle(unit)}?\n\n• Buyers are matched\n• The official BAM brochure is built (unstated specs are left out)\n• The machine is PUBLISHED to the website\n• Seller details stay internal`)) return;
+    try { const r = await api.verifyUnit(unit.id); notify(`${unitTitle(unit)} verified: ${r.matches} buyer${r.matches === 1 ? '' : 's'} matched, brochure ${r.brochure ? 'ready' : 'NOT built (needs year, make and model)'}, ${r.published ? 'published to the website' : 'not published'}`, !r.published); loadUnits(); loadBuyers(unit.id); } catch (e) { notify(e.message, true); }
   }
 
   const toggle = (id) => setChecked((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });

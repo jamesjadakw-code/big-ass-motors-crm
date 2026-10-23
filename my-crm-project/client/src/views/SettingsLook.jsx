@@ -5,7 +5,7 @@ import { GOOGLE_FONTS, LOOK_DEFAULT, SELF_HOSTED_FONTS, SOUNDS, TAB_KEYS, playDi
 // Settings → Look & Layout: every look option as its own control. Changes preview on screen at once;
 // "Save & apply" makes them the team look. The previous saved look is kept for "Undo last save".
 const SWATCHES = ['#FFC400', '#FFB000', '#FFD54A', '#E8A317', '#F5F5F5'];
-const TAB_LABELS = { today: 'Today', match: 'Match Inbox', desk: '3rd-Party Machines', leads: 'My Leads', tasks: 'My Tasks', board: 'Board', inventory: 'Units', ingest: 'Sourcing', dashboard: 'Dashboard', users: 'Users & Audit', settings: 'Settings' };
+const TAB_LABELS = { today: 'Today', match: 'Match Inbox', desk: '3rd-Party Machines', leads: 'My Leads', tasks: 'My Tasks', board: 'Board', inventory: 'Units', ingest: 'Sourcing', 'sourcing-config': 'Sourcing Config', dashboard: 'Dashboard', users: 'Users & Audit', settings: 'Settings' };
 
 const Seg = ({ value, options, onChange, label }) => (
   <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={label}>

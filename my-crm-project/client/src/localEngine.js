@@ -4,7 +4,7 @@
 // - On PC / Standalone: runs 100% in-browser backed by the same MySQL table schema (`inventory`, `leads`, `users`, `email_drafts`, `crm_audit`, `tw_tasks`, `tw_assign`).
 
 import { extractDimensions, extractWeight } from './specExtract.js';
-import { listingTasks } from './pipeline.js';
+import { isThirdParty, listingTasks } from './pipeline.js';
 
 export const STAGES = ['New', 'Contacted', 'Qualified', 'Negotiation', 'Won', 'Lost'];
 export const URGENCY = ['Low', 'Medium', 'High'];
@@ -774,7 +774,120 @@ function writeBrochure(w, s, u, storedHero) {
 }
 
 // ---------------- Zero-API Service Methods ----------------
+// ---------------- Sourcing watchlists (table `scraping_configs`) ----------------
+// website is a machine key; the daily sweep script reads these rows from get_scraping_configs.php.
+export const SCRAPE_WEBSITES = [['all', 'All websites'], ['facebook', 'Facebook Marketplace'], ['hdd_broker', 'HDD Broker'], ['direct_tech', 'Direct Tech']];
+
+// On the live site (/new/) the watchlists live in MySQL behind get_scraping_configs.php (JSON, signed-in session). Locally they live in the browser.
+const scrapingApiUrl = () => (typeof window !== 'undefined' && (window.BAM_SCRAPING_CONFIGS_URL || (window.location.pathname.startsWith('/new') ? '/inventory/api/get_scraping_configs.php' : null))) || null;
+async function scrapingCall(url, method, body) {
+  const r = await fetch(url, { method, credentials: 'same-origin', headers: body ? { 'Content-Type': 'application/json' } : undefined, body: body ? JSON.stringify(body) : undefined });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || j.ok === false) throw new Error(j.error || `The CRM answered HTTP ${r.status}.`);
+  return j;
+}
+
+function seedScrapingConfigs() {
+  // Starting watchlists: the Ditch Witch RT lineup Daley asked for, on Facebook Marketplace.
+  return ['RT45', 'RT80', 'RT125', 'RT120', 'RT115'].map((model, i) => ({
+    id: i + 1, website: 'facebook', manufacturer: 'Ditch Witch', model, year_min: null, year_max: null, price_min: null, price_max: null,
+    keywords: null, active: 1, created_by: 1, created_at: nowIso(), updated_at: nowIso(),
+  })).concat([{
+    id: 6, website: 'facebook', manufacturer: 'Ditch Witch', model: '', year_min: null, year_max: null, price_min: null, price_max: null,
+    keywords: 'Ditch Witch RT trencher', active: 1, created_by: 1, created_at: nowIso(), updated_at: nowIso(),
+  }]);
+}
+const configRows = (s) => { if (!Array.isArray(s.scraping_configs)) s.scraping_configs = seedScrapingConfigs(); return s.scraping_configs; };
+
+function cleanScrapingConfig(b) {
+  const website = String(b.website || '');
+  if (!SCRAPE_WEBSITES.some(([k]) => k === website)) throw new Error('Choose a website.');
+  const text = (v, max) => String(v ?? '').trim().slice(0, max);
+  const num = (v, lo, hi, label) => {
+    if (v === '' || v === null || v === undefined) return null;
+    const n = Math.round(Number(v));
+    if (!Number.isFinite(n) || n < lo || n > hi) throw new Error(`${label} must be between ${lo} and ${hi}.`);
+    return n;
+  };
+  const nextYear = new Date().getFullYear() + 1;
+  const out = {
+    website, manufacturer: text(b.manufacturer, 80), model: text(b.model, 80), keywords: text(b.keywords, 160) || null,
+    year_min: num(b.year_min, 1950, nextYear, 'Year'), year_max: num(b.year_max, 1950, nextYear, 'Year'),
+    price_min: num(b.price_min, 0, 100000000, 'Price'), price_max: num(b.price_max, 0, 100000000, 'Price'),
+    active: b.active === 0 || b.active === false ? 0 : 1,
+  };
+  if (!out.manufacturer && !out.model && !out.keywords) throw new Error('Pick a manufacturer, a model or type a keyword.');
+  if (out.year_min && out.year_max && out.year_min > out.year_max) throw new Error('Year from is after year to.');
+  if (out.price_min != null && out.price_max != null && out.price_min > out.price_max) throw new Error('Price from is above price to.');
+  return out;
+}
+
 export const localApi = {
+  // ---------------- Sourcing watchlists ----------------
+  scrapingConfigs: async () => {
+    const url = scrapingApiUrl();
+    if (url) return (await scrapingCall(`${url}?all=1`, 'GET')).configs || [];
+    return [...configRows(loadState())].sort((a, b) => a.id - b.id);
+  },
+  saveScrapingConfig: async (b) => {
+    const url = scrapingApiUrl();
+    if (url) {
+      const clean = cleanScrapingConfig(b);
+      const j = await scrapingCall(url, 'POST', { action: 'save', ...(b.id ? { id: b.id } : {}), ...clean });
+      return { ...clean, id: b.id || j.created || j.updated };
+    }
+    const s = loadState();
+    const rows = configRows(s);
+    const clean = cleanScrapingConfig(b);
+    let row;
+    if (b.id) {
+      row = rows.find((r) => Number(r.id) === Number(b.id));
+      if (!row) throw new Error('Watchlist not found.');
+      Object.assign(row, clean, { updated_at: nowIso() });
+    } else {
+      row = { id: Math.max(0, ...rows.map((r) => Number(r.id) || 0)) + 1, ...clean, created_by: getCurrentUser()?.id ?? null, created_at: nowIso(), updated_at: nowIso() };
+      rows.push(row);
+    }
+    saveState('save_scraping_config', row);
+    recordAudit('scraping_config_saved', `Watchlist #${row.id}: ${[row.manufacturer, row.model, row.keywords].filter(Boolean).join(' ')} on ${row.website}`);
+    return row;
+  },
+  deleteScrapingConfig: async (id) => {
+    const url = scrapingApiUrl();
+    if (url) { await scrapingCall(url, 'POST', { action: 'delete', id }); return { ok: true }; }
+    const s = loadState();
+    const rows = configRows(s);
+    const i = rows.findIndex((r) => Number(r.id) === Number(id));
+    if (i === -1) throw new Error('Watchlist not found.');
+    const [gone] = rows.splice(i, 1);
+    saveState('delete_scraping_config', { id: gone.id });
+    recordAudit('scraping_config_deleted', `Deleted watchlist #${gone.id}`);
+    return { ok: true };
+  },
+
+  // ---------------- Verify -> match -> official brochure -> publish ----------------
+  // Mirrors bam_app/inc/verify_publish.php. Only scraped (third-party) machines. Publishing happens only after the brochure step succeeds.
+  verifyUnit: async (id) => {
+    const s = loadState();
+    const u = s.inventory.find((x) => String(x.id) === String(id));
+    if (!u) throw new Error('Unit not found');
+    if (!isThirdParty(u)) throw new Error('Only scraped third-party machines go through verify and publish.');
+    const me = getCurrentUser();
+    u.verified = true;
+    u.verifiedAt = nowIso();
+    u.verifiedBy = me?.id ?? null;
+    const matches = topBuyers(u, visibleLeadsForUser(s.leads), { limit: 25, min: 40 }).length;
+    // Official brochure: needs the machine's basic identity. Unstated specs are simply left out of it, never filled in.
+    const brochureOk = !!(u.year && u.make && u.model);
+    u.brochureReady = brochureOk;
+    if (brochureOk) u.brochureAt = nowIso();
+    const published = brochureOk;
+    if (published) { u.isPublic = 1; u.status = 'Live'; }
+    saveState('save_unit', u);
+    recordAudit('verify_unit', `Verified ${u.stock || u.id}: ${matches} buyer match${matches === 1 ? '' : 'es'}, brochure ${brochureOk ? 'ready' : 'NOT built (missing year/make/model)'}, ${published ? 'published to website' : 'not published'}`);
+    return { unit: withDerived(u), matches, brochure: brochureOk, published };
+  },
+
   config: async () => {
     const s = loadState();
     return { ...s.config, stages: STAGES };

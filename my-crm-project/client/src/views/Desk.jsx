@@ -73,8 +73,8 @@ export default function Desk({ notify, go, user }) {
   useEffect(() => { load().catch((e) => notify(e.message, true)); }, [load, notify]);
 
   async function brand(u) {
-    if (!window.confirm(`Verify and BAM-brand ${unitTitle(u)}? Seller details stay internal, the brochure shows Call for Price, and pitching unlocks.`)) return;
-    try { await api.updateUnit(u.id, { verified: true }); notify(`${unitTitle(u)} verified and BAM-branded`); load(); } catch (e) { notify(e.message, true); }
+    if (!window.confirm(`Verify and BAM-brand ${unitTitle(u)}?\n\n• Buyers are matched\n• The official BAM brochure is built (unstated specs are left out)\n• The machine is PUBLISHED to the website\n• Seller details stay internal`)) return;
+    try { const r = await api.verifyUnit(u.id); notify(`${unitTitle(u)} verified: ${r.matches} buyer${r.matches === 1 ? '' : 's'} matched, brochure ${r.brochure ? 'ready' : 'NOT built (needs year, make and model)'}, ${r.published ? 'published to the website' : 'not published'}`, !r.published); load(); } catch (e) { notify(e.message, true); }
   }
 
   if (!units) return <Empty>Loading…</Empty>;

@@ -83,11 +83,34 @@ function new_build_state(array $me): array
         if (is_array($v)) { $config[$k] = $v; }
     }
 
+    // ---- scraping_configs (watchlists for daily scraper sweep) ----
+    $scrapingConfigs = [];
+    try {
+        $rows = q('SELECT id, website, manufacturer, model, year_min, year_max, price_min, price_max, keywords, active, created_by, created_at, updated_at FROM scraping_configs ORDER BY id')->fetchAll();
+        foreach ($rows as $r) {
+            $scrapingConfigs[] = [
+                'id'           => (int) $r['id'],
+                'website'      => (string) $r['website'],
+                'manufacturer' => (string) ($r['manufacturer'] ?? ''),
+                'model'        => (string) ($r['model'] ?? ''),
+                'year_min'     => $r['year_min'] !== null ? (int) $r['year_min'] : null,
+                'year_max'     => $r['year_max'] !== null ? (int) $r['year_max'] : null,
+                'price_min'    => $r['price_min'] !== null ? (int) $r['price_min'] : null,
+                'price_max'    => $r['price_max'] !== null ? (int) $r['price_max'] : null,
+                'keywords'     => $r['keywords'] !== null ? (string) $r['keywords'] : null,
+                'active'       => (int) $r['active'],
+                'created_by'   => $r['created_by'] !== null ? (int) $r['created_by'] : null,
+                'created_at'   => (string) $r['created_at'],
+                'updated_at'   => (string) $r['updated_at'],
+            ];
+        }
+    } catch (Throwable $e) { error_log('[new] scraping_configs: ' . $e->getMessage()); }
+
     return [
         'state'  => [
             'config' => $config, 'users' => $users, 'leads' => $leads, 'inventory' => $units,
-            'tasks' => $tasks, 'matches' => [], 'email_drafts' => [], 'crm_audit' => [],
+            'tasks' => $tasks, 'scraping_configs' => $scrapingConfigs, 'matches' => [], 'email_drafts' => [], 'crm_audit' => [],
         ],
-        'counts' => ['units' => count($units), 'leads' => count($leads), 'tasks' => count($tasks), 'users' => count($users)],
+        'counts' => ['units' => count($units), 'leads' => count($leads), 'tasks' => count($tasks), 'users' => count($users), 'watchlists' => count($scrapingConfigs)],
     ];
 }

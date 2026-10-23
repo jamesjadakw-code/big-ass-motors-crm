@@ -13,6 +13,7 @@ export const FEATURES = [
   // ---- screens (menu items) ----
   { id: 'scr-today', area: 'screens', side: 'local', built: true, name: 'Today screen', desc: 'Overdue and due tasks, never called, hot buyers, today’s play.', where: 'Menu · Today' },
   { id: 'scr-match', area: 'screens', side: 'local', built: true, name: 'Match Inbox screen', desc: 'Units with their top buyers, score rings and buyer-safe pitches.', where: 'Menu · Match Inbox' },
+  { id: 'scr-sourcing-config', area: 'screens', side: 'live', built: true, name: 'Sourcing Config screen', desc: 'Watchlists the daily sweep searches: website, manufacturer, model, years and price range.', where: 'Menu · Sourcing Config' },
   { id: 'scr-tasks', area: 'screens', side: 'live', built: true, name: 'My Tasks screen', desc: 'Every open task with lead notes, due dates and quick complete.', where: 'Menu · My Tasks' },
   { id: 'scr-leads', area: 'screens', side: 'local', built: true, name: 'Leads screen', desc: 'Buyer list with search, stages and lead detail.', where: 'Menu · Leads' },
   { id: 'scr-board', area: 'screens', side: 'local', built: true, name: 'Board screen', desc: 'Drag-and-drop pipeline by stage with budget totals.', where: 'Menu · Board' },
@@ -120,7 +121,7 @@ export function resolveFeatures(saved) {
 }
 
 // ---------------- Look & Layout ----------------
-export const TAB_KEYS = ['today', 'match', 'desk', 'leads', 'tasks', 'board', 'inventory', 'ingest', 'dashboard', 'users', 'settings'];
+export const TAB_KEYS = ['today', 'match', 'desk', 'leads', 'tasks', 'board', 'inventory', 'ingest', 'sourcing-config', 'dashboard', 'users', 'settings'];
 export const GOOGLE_FONTS = ['Orbitron', 'Audiowide', 'Rajdhani', 'Chakra Petch', 'Exo 2', 'Michroma', 'Space Grotesk', 'Inter'];
 export const SELF_HOSTED_FONTS = ['Barlow Condensed', 'Black Ops One', 'IBM Plex Mono', 'Inter'];
 
@@ -130,7 +131,7 @@ export const LOOK_DEFAULT = {
   glow: 'full', // full | soft | off
   grid: true,
   tabFonts: true,
-  fonts: { today: 'Orbitron', match: 'Audiowide', desk: 'Exo 2', leads: 'Rajdhani', tasks: 'Rajdhani', board: 'Chakra Petch', inventory: 'Exo 2', ingest: 'Michroma', dashboard: 'Space Grotesk', users: 'Space Grotesk', settings: 'Space Grotesk' },
+  fonts: { today: 'Orbitron', match: 'Audiowide', desk: 'Exo 2', leads: 'Rajdhani', tasks: 'Rajdhani', board: 'Chakra Petch', inventory: 'Exo 2', ingest: 'Michroma', 'sourcing-config': 'Michroma', dashboard: 'Space Grotesk', users: 'Space Grotesk', settings: 'Space Grotesk' },
   mode: 'dark', // team default: dark | white
   perUserMode: true, // each user may switch dark / white for themselves
   phoneBar: true, // phones: scrolling top bar (true) or a Menu button (false)

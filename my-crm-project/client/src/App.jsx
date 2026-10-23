@@ -9,6 +9,7 @@ import Ingest from './views/Ingest.jsx';
 import Dashboard from './views/Dashboard.jsx';
 import Desk from './views/Desk.jsx';
 import Tasks from './views/Tasks.jsx';
+import SourcingConfig from './views/SourcingConfig.jsx';
 import TopBar from './TopBar.jsx';
 import { isThirdParty } from './pipeline.js';
 import TeamUsers from './views/TeamUsers.jsx';
@@ -33,6 +34,7 @@ const NAV = [
   ['sec', 'Inventory'],
   ['inventory', 'Units', Inventory, 'var(--bam-gold-dark-rgb)', 'scr-inventory'],
   ['ingest', 'Sourcing', Ingest, 'var(--bam-gold-rgb)', 'scr-ingest'],
+  ['sourcing-config', 'Sourcing Config', SourcingConfig, 'var(--bam-gold-rgb)', 'scr-sourcing-config'],
   ['dashboard', 'Dashboard', Dashboard, '190 196 206', 'scr-dashboard'],
   ['users', 'Users & Audit', TeamUsers, 'var(--bam-gold-rgb)', 'scr-users'],
   ['settings', 'Settings', Settings, '190 196 206', null],
@@ -140,6 +142,7 @@ export default function App() {
 
   const visibleNav = NAV.filter(([key, , , , sw]) => {
     if (key === 'sec') return true;
+    if (key === 'sourcing-config' && user.role !== 'admin') return false;
     if (user.role === 'sales' && (key === 'settings' || key === 'users')) return false;
     if (user.role === 'broker' && key === 'settings') return false;
     return !sw || features[sw] !== false;
