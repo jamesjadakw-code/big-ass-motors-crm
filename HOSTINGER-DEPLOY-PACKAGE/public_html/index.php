@@ -40,6 +40,43 @@ function bam_find_draft(array $p): int
     return 0;
 }
 
+/**
+ * Saves one e-mail as a DRAFT in the signed-in rep's own Gmail (never sends). Needs the rep to have signed in with Google once
+ * (tokens: inventory/google-tokens/, with the gmail.compose permission). Returns ['ok' => bool, 'url'|'error', 'needsLink'].
+ * @param string[] $emails mailboxes to try, in order
+ */
+function bam_gmail_draft(array $emails, string $to, string $subject, string $body): array
+{
+    require_once __DIR__ . '/inventory/google-oauth.php';
+    $access = null;
+    foreach ($emails as $em) {
+        if ($em !== '' && ($access = bam_google_valid_access_token($em))) { break; }
+    }
+    if (!$access) {
+        return ['ok' => false, 'needsLink' => true, 'error' => 'Gmail is not linked yet. Sign in with Google once to link it.'];
+    }
+    $line = static fn (string $v): string => trim((string) preg_replace('/[\r\n]+/', ' ', $v));
+    $raw = 'To: ' . $line($to) . "\r\n"
+         . 'Subject: =?UTF-8?B?' . base64_encode($line($subject)) . "?=\r\n"
+         . "MIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n"
+         . preg_replace('/\r\n|\r|\n/', "\r\n", $body);
+    $res = bam_google_http('https://gmail.googleapis.com/gmail/v1/users/me/drafts', [
+        'method'  => 'POST',
+        'headers' => ['Authorization: Bearer ' . $access, 'Content-Type: application/json'],
+        'body'    => json_encode(['message' => ['raw' => rtrim(strtr(base64_encode($raw), '+/', '-_'), '=')]]),
+    ]);
+    $code = (int) ($res['code'] ?? 0);
+    if ($code >= 200 && $code < 300 && !empty($res['json']['id'])) {
+        $mid = (string) ($res['json']['message']['id'] ?? '');
+        return ['ok' => true, 'url' => 'https://mail.google.com/mail/u/0/#drafts' . ($mid !== '' ? '?compose=' . rawurlencode($mid) : '')];
+    }
+    $perm = in_array($code, [401, 403], true);
+    error_log('[root index.php] gmail draft HTTP ' . $code);
+    return ['ok' => false, 'needsLink' => $perm, 'error' => $perm
+        ? 'Gmail did not allow drafts for this sign-in. Sign in with Google again and accept the Gmail draft permission.'
+        : 'Gmail answered with an error (' . $code . '). Try again.'];
+}
+
 // ---------------- Handle Mutations via Standard PHP POST + CSRF ----------------
 if (is_post()) {
     csrf_check();
@@ -228,6 +265,18 @@ if (is_post()) {
                 json_out(['ok' => $okP > 0, 'added' => $okP, 'errors' => array_map('strval', $errP), 'media' => $pMedia, 'thumbs' => $pThumbs, 'error' => $okP > 0 ? null : (string) ($errP[0] ?? 'No photo was accepted')]);
                 break;
 
+            case 'gmail_draft':
+                $did = bam_find_draft($payload);
+                $row = $did > 0 ? q_one('SELECT id, to_email, subject, body FROM email_drafts WHERE id = ?', [$did]) : null;
+                if (!$row) { json_out(['ok' => false, 'error' => 'Draft not found'], 404); }
+                $gSubject = trim((string) ($payload['subject'] ?? '')) !== '' ? (string) $payload['subject'] : (string) $row['subject'];   // the rep's unsaved edits win
+                $gBody = trim((string) ($payload['body'] ?? '')) !== '' ? (string) $payload['body'] : (string) $row['body'];
+                $gEmails = array_values(array_unique(array_filter([strtolower(trim((string) ($_SESSION['gmail_tokens_email'] ?? ''))), strtolower(trim((string) ($ME['email'] ?? '')))])));
+                $g = bam_gmail_draft($gEmails, (string) $row['to_email'], $gSubject, $gBody);
+                if (!empty($g['ok'])) { audit('email_draft_gmail', 'Saved email draft #' . $did . ' to Gmail Drafts', 'email_drafts', $did); }
+                json_out($g);
+                break;
+
             case 'verify_unit':
                 $vUnitId = isset($payload['id']) && is_numeric($payload['id']) ? (int) $payload['id'] : 0;
                 if ($vUnitId > 0 && crm_can('admin', $ME)) {
@@ -297,7 +346,7 @@ $mePayload = [
       window.BAM_HOSTINGER_BROCHURE_URL = <?= json_encode('/inventory/brochure.php', JSON_UNESCAPED_SLASHES) ?>;
       window.BAM_PDO_STATE = <?= json_encode($state, JSON_UNESCAPED_SLASHES) ?>;
     </script>
-    <script type="module" crossorigin src="/assets/index-DH1ykdj_.js"></script>
+    <script type="module" crossorigin src="/assets/index-AS4v-Iau.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-D3CoVj3h.css">
   </head>
   <body class="bg-ink-950 text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-gold/30 selection:text-gold">

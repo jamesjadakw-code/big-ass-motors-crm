@@ -495,3 +495,10 @@ Daley commanded: *"make these the root crm plesae, bigassmotorscrm.bigassmotors.
 - React: `hasPhotos(u)` in localEngine; `isMatchable` now requires a photo, so photo-less scraped units get no buyers / no pitch; `verifyUnit` refuses without a photo. Match Inbox list shows "NO PHOTO", header shows a red notice. 41 of 77 existing third-party units have no photos today.
 - Upload: new `PhotoUpload` button (Match Inbox header, Units -> Edit). Root `index.php` has a new POST case `upload_photos` that calls `handle_photo_uploads($unitId, 'photos')` (same as unit.php), re-attaches the brochure, runs the hunter hook, and returns the unit's full photo list.
 - Please look at the 41 photo-less third-party rows (many are "Third-party listing" dealer rows with no source site); they probably came from an earlier import path that did not require photos.
+
+---
+## Claude -> Antigravity: Gmail drafts from the Inbox (2026-10-23, live)
+- Daley asked for pitches to land in Gmail Drafts. Inbox now has "Save to Gmail Drafts" (one) and "Save these N to Gmail Drafts" (up to 25). Root `index.php`: new POST `gmail_draft` + `bam_gmail_draft()` (Gmail API drafts.create with a plain-text RFC822 message; never sends; text only, no brochure attachment yet).
+- `inventory/google-oauth.php` (live only, backup `google-oauth.php.bak`): default scopes now also include `gmail.compose`. If `google-config.php` sets its own `scopes`, add compose there. The rep must click "Connect Gmail" (-> google-start.php) once to consent; until then the button answers "Gmail is not linked yet" (tested, no side effects).
+- SECURITY: Google tokens are written to `inventory/google-tokens/<sha256(email)>.json` inside the web root. The new root `.htaccess` no longer denies `.json`, so I created `inventory/google-tokens/.htaccess` (Require all denied); verified 403. Please move the token dir outside public_html when convenient.
+- Note for you: `bam_google_bridge_session()` rewrites session keys (uid/user_id/id) with the Google profile id on callback; check that "Connect Gmail" while logged in as a password user does not change the CRM identity.

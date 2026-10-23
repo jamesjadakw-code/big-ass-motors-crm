@@ -67,6 +67,26 @@ export default function Inbox({ param, notify, go }) {
   const rebuild = async () => {
     try { const t = await api.rebuildDraftText(sel); setSubject(t.subject); setBody(t.body); notify('Pitch written below. Read it, then Save edits.'); } catch (e) { notify(e.message, true); }
   };
+  const [needsLink, setNeedsLink] = useState('');
+  const gmailOne = async (d, fields) => {
+    const r = await api.gmailDraft(d, fields);
+    if (!r.ok && r.needsLink) setNeedsLink(r.error);
+    return r;
+  };
+  const toGmail = () => run(async () => {
+    const r = await gmailOne(sel, { subject, body });
+    if (r.ok) { window.open(r.url, '_blank', 'noopener'); notify('Saved to your Gmail Drafts. Nothing was sent.'); } else if (!r.needsLink) { throw new Error(r.error || 'Gmail draft failed'); }
+  });
+  const allToGmail = () => run(async () => {
+    const batch = list.slice(0, 25);
+    let ok = 0;
+    for (const d of batch) {
+      const r = await gmailOne(d, { subject: d.subject, body: d.body });
+      if (!r.ok) { if (!r.needsLink) throw new Error(r.error || 'Gmail draft failed'); return; }
+      ok++;
+    }
+    notify(`${ok} draft${ok === 1 ? '' : 's'} saved to your Gmail Drafts. Nothing was sent.${list.length > batch.length ? ` ${list.length - batch.length} more are still here: run it again.` : ''}`);
+  });
   const copy = async () => {
     try { await navigator.clipboard.writeText(`${subject}\n\n${body}`); notify('Copied'); } catch { notify('Copy failed. Select the text and copy it by hand.', true); }
   };
@@ -82,8 +102,17 @@ export default function Inbox({ param, notify, go }) {
             {TAB_LABEL[t]} · {counts[t]}
           </button>
         ))}
+        {tab === 'Draft' && list.length > 0 && <button type="button" className="btn-ghost !py-1 text-xs" disabled={busy} onClick={allToGmail}>Save these {Math.min(list.length, 25)} to Gmail Drafts</button>}
         <input className="input ml-auto w-full sm:w-72" placeholder="Search name, e-mail, subject…" value={q} onChange={(e) => setQ(e.target.value)} />
       </div>
+
+      {needsLink && (
+        <div className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-gold/40 bg-gold/10 p-3 text-sm text-ink-300">
+          <span>{needsLink}</span>
+          <a className="btn-neon !py-1 text-xs" href="/inventory/google-start.php?next=%2F" target="_blank" rel="noreferrer">Connect Gmail</a>
+          <button type="button" className="text-xs underline" onClick={() => setNeedsLink('')}>Dismiss</button>
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-[22rem_1fr]">
         <section className="card max-h-[70vh] overflow-y-auto">
@@ -128,7 +157,8 @@ export default function Inbox({ param, notify, go }) {
               <div className="flex flex-wrap gap-2">
                 {isDraft ? (
                   <>
-                    <a className="btn-primary" href={mailto}>Open in email app</a>
+                    <button type="button" className="btn-primary" disabled={busy} onClick={toGmail}>Save to Gmail Drafts</button>
+                    <a className="btn-ghost" href={mailto}>Open in email app</a>
                     <button type="button" className="btn-ghost" onClick={copy}>Copy</button>
                     <button type="button" className="btn-ghost" disabled={busy || !edited} onClick={save}>Save edits</button>
                     <button type="button" className="btn-neon" disabled={busy} onClick={() => setStatus('Sent', 'Marked sent. The match moved to Contacted.')}>Mark sent</button>

@@ -1541,6 +1541,19 @@ export const localApi = {
     recordAudit('email_draft_status', `Marked email_draft #${id} (${d.to_email}) as ${status}`, '/inventory/outbox.php');
     return d;
   },
+  // Saves the draft as a DRAFT in the rep's own Gmail (never sends). Answers { ok, url } or { ok: false, needsLink, error }.
+  gmailDraft: async (draft, { subject, body } = {}) => {
+    if (typeof window === 'undefined' || !window.BAM_PHP_ENDPOINT) throw new Error('Gmail drafts work on the live CRM.');
+    const fd = new FormData();
+    fd.append('_csrf', window.BAM_CSRF || '');
+    fd.append('do', 'gmail_draft');
+    fd.append('payload', JSON.stringify({ id: draft.id, lead_id: draft.lead_id, inventory_id: draft.inventory_id, to_email: draft.to_email, subject, body }));
+    const res = await fetch(window.BAM_PHP_ENDPOINT, { method: 'POST', body: fd, credentials: 'same-origin' });
+    const data = await res.json().catch(() => null);
+    if (!data) throw new Error('The CRM did not answer. Try again.');
+    if (data.ok) recordAudit('email_draft_gmail', `Saved email_draft #${draft.id} (${draft.to_email}) to Gmail Drafts`, '/inventory/outbox.php');
+    return data;
+  },
   // The buyer-safe pitch text for a draft's buyer and machine (drafts saved before the Inbox only hold a placeholder line). Not saved until the rep saves it.
   rebuildDraftText: async (draft) => {
     const s = loadState();

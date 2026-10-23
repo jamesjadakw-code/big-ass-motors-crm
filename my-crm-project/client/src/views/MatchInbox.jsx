@@ -334,7 +334,7 @@ export default function MatchInbox({ param, query, notify, go }) {
       {report && (
         <Modal title={`${report.created} draft${report.created === 1 ? '' : 's'} ready${report.failed ? ` · ${report.failed} failed` : ''}`} onClose={() => setReport(null)}>
           <p className="mb-3 text-sm text-ink-300">
-            Saved in the CRM Inbox under Drafts, each one naming its feature sheet. It is not in the Gmail Drafts folder of <b className="text-white">{report.sender}</b>: open it from the Inbox, send it from your mail app, then mark it sent. <b className="text-white">Nothing has been sent.</b>
+            Saved in the CRM Inbox under Drafts, each one naming its feature sheet. Open the Inbox to save each one to the Gmail Drafts of <b className="text-white">{report.sender}</b> (or open it in your mail app), send it yourself, then mark it sent. <b className="text-white">Nothing has been sent.</b>
           </p>
           <ul className="max-h-72 space-y-2 overflow-y-auto">
             {report.results.map((x) => (

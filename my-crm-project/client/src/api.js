@@ -60,5 +60,6 @@ export const api = {
   uploadUnitPhotos: (unitId, files) => localApi.uploadUnitPhotos(unitId, files),
   saveEmailDraft: (draft, fields) => localApi.saveEmailDraft(draft, fields),
   rebuildDraftText: (draft) => localApi.rebuildDraftText(draft),
+  gmailDraft: (draft, fields) => localApi.gmailDraft(draft, fields),
   auditLog: () => localApi.auditLog(),
 };
