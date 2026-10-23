@@ -138,6 +138,13 @@ export default function MatchInbox({ param, query, notify, go }) {
         <div className="flex-1 overflow-y-auto">
           {shown.map((u) => (
             <button key={u.id} onClick={() => { setSelId(u.id); setPhoneView('detail'); }} data-selected={u.id === selId} className="row-int flex w-full items-center gap-3 d-row border-b border-ink-800 text-left">
+              <div className="relative h-12 w-14 shrink-0 overflow-hidden rounded border border-ink-700 bg-ink-900">
+                {u.media && u.media[0] ? (
+                  <img src={u.media[0]} alt="" className="h-full w-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-[10px] font-bold text-ink-500">BAM</div>
+                )}
+              </div>
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-semibold">{unitTitle(u)}</div>
                 <div className="truncate text-xs text-ink-400">{[u.category, u.hours != null && `${u.hours.toLocaleString()} hrs`, u.state].filter(Boolean).join(' · ')}</div>
@@ -166,6 +173,33 @@ export default function MatchInbox({ param, query, notify, go }) {
                 <div><span className="text-ink-400">Public price </span><span className="font-semibold text-bam">{unit.listPrice ? money(unit.listPrice) : 'Call for Price'}</span></div>
                 {unit.askPrice != null && <div><span className="text-ink-400">Internal ask </span><span className="text-gold">🔒 {money(unit.askPrice)}</span></div>}
               </div>
+
+              {/* Machine Photo Gallery Preview */}
+              {unit.media && unit.media.length > 0 && (
+                <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
+                  <div className="relative h-48 w-72 shrink-0 overflow-hidden rounded-lg border border-gold/40 bg-ink-900 shadow-md">
+                    <img
+                      src={unit.media[0]}
+                      alt={unitTitle(unit)}
+                      className="h-full w-full object-cover"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                    <span className="absolute bottom-2 right-2 rounded bg-black/80 px-2 py-0.5 text-[11px] font-bold text-gold backdrop-blur-sm">
+                      📸 {unit.media.length} photo{unit.media.length === 1 ? '' : 's'}
+                    </span>
+                  </div>
+                  {unit.media.slice(1, 8).map((imgUrl, idx) => (
+                    <div key={idx} className="relative h-48 w-44 shrink-0 overflow-hidden rounded-lg border border-ink-800 bg-ink-900">
+                      <img
+                        src={imgUrl}
+                        alt={`${unitTitle(unit)} photo ${idx + 2}`}
+                        className="h-full w-full object-cover transition-transform hover:scale-105"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div>

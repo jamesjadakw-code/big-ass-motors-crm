@@ -46,6 +46,17 @@ const offsetIso = (days = 0, hour = 10) => {
 
 // ---------------- Matching Engine (0-100 Rule-Based Scoring) ----------------
 const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const cleanModel = (s, make = '') => {
+  let str = String(s || '').toLowerCase();
+  str = str.replace(/\b(19|20)\d{2}\b/g, ''); // strip years like 2014, 2022
+  if (make) {
+    const cleanMake = String(make).toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (cleanMake) {
+      str = str.replace(new RegExp(cleanMake, 'g'), '');
+    }
+  }
+  return norm(str);
+};
 const FAMILIES = [['trencher', (n) => /trencher|rocksaw|plow/.test(n) && !/snow/.test(n)]];
 const family = (cat) => {
   const n = norm(cat).replace(/s$/, '');
@@ -74,11 +85,15 @@ export function scoreMatch(lead, unit) {
   }
   if (w.make) add('make', 'Brand', 15, norm(w.make) === norm(unit.make) ? 1 : 0);
   if (w.model) {
-    const a = norm(w.model);
-    const b = norm(unit.model);
+    const a = cleanModel(w.model, w.make);
+    const b = cleanModel(unit.model, unit.make);
+    const rawA = norm(w.model);
+    const rawB = norm(unit.model);
     let f = 0;
     if (a && b && (b.includes(a) || a.includes(b))) f = 1;
+    else if (rawA && rawB && (rawB.includes(rawA) || rawA.includes(rawB))) f = 1;
     else if (series(a) && series(a) === series(b)) f = 0.7;
+    else if (series(rawA) && series(rawA) === series(rawB)) f = 0.7;
     add('model', f === 1 ? 'Model' : 'Same series', 20, f, f === 1);
   }
   if (lead.budgetMax) {
