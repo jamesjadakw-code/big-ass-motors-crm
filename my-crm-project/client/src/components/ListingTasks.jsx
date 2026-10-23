@@ -45,7 +45,9 @@ export default function ListingTasks({ tasks, onToggle, go, title = 'New scraped
                   <span className={`chip ${TONE[t.listing.label]}`}>{t.listing.label}</span>
                   <ScoreBadge score={t.listing.score} />
                 </span>
-                <span className="text-[11px] text-ink-400" title="10 photos is a full photo score">📷 {t.listing.photos} photo{t.listing.photos === 1 ? '' : 's'}</span>
+                <span className={`text-[11px] ${t.listing.photos ? 'text-ink-400' : 'font-bold text-red-300'}`} title="10 photos is a full photo score. No photos = not matched or pitched.">
+                  {t.listing.photos ? `📷 ${t.listing.photos} photo${t.listing.photos === 1 ? '' : 's'}` : '📷 NO PHOTOS · add photos'}
+                </span>
               </div>
             </div>
           ))}

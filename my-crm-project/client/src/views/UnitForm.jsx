@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { UNIT_STATUSES } from '../api.js';
 import { Field } from '../ui.jsx';
+import PhotoUpload from '../components/PhotoUpload.jsx';
 
 const FIELDS = ['year', 'make', 'model', 'category', 'serial', 'hours', 'engineModel', 'hp', 'weight', 'dimensions',
   'attachments', 'hydraulicFlow', 'serviceHistory', 'inspectionNotes', 'sellerStatus', 'city', 'state', 'askPrice',
   'listPrice', 'buyPrice', 'sourceUrl', 'narrative', 'knownDefects', 'status'];
 
-export default function UnitForm({ initial = {}, oemSpecs = {}, onSubmit, onCancel, submitLabel = 'Save unit', busy, extraActions }) {
+export default function UnitForm({ initial = {}, oemSpecs = {}, onSubmit, onCancel, submitLabel = 'Save unit', busy, extraActions, unitId, notify }) {
   const [media, setMedia] = useState(() => (Array.isArray(initial.media) ? initial.media : []));
   const [mediaText, setMediaText] = useState(() => (Array.isArray(initial.media) ? initial.media.join('\n') : ''));
   const [f, setF] = useState(() => {
@@ -23,7 +24,7 @@ export default function UnitForm({ initial = {}, oemSpecs = {}, onSubmit, onCanc
   function updateMediaText(t) {
     setMediaText(t);
     const urls = t.split('\n').map((x) => x.trim()).filter((x) => /^https?:\/\//i.test(x));
-    setMedia(urls);
+    setMedia([...media.filter((m) => !/^https?:\/\//i.test(m)), ...urls]);   // photos already stored on the server (site paths) stay
   }
 
   function removePhoto(idx) {
@@ -75,7 +76,10 @@ export default function UnitForm({ initial = {}, oemSpecs = {}, onSubmit, onCanc
       <div className="rounded-lg border border-neutral-700 bg-black/40 p-3 space-y-2.5">
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold uppercase tracking-wider text-amber-400">Photos &amp; Media ({media.length})</label>
-          <span className="text-[11px] text-neutral-400">Captured by BAM Grabber / URL Puller</span>
+          {unitId
+            ? <PhotoUpload unitId={unitId} notify={notify} label="Upload from my computer" className="btn-neon !py-1 text-xs"
+                onAdded={(r) => { setMedia(r.media); setMediaText(r.media.filter((m) => /^https?:\/\//i.test(m)).join('\n')); }} />
+            : <span className="text-[11px] text-neutral-400">Captured by BAM Grabber / URL Puller</span>}
         </div>
         {media.length > 0 && (
           <div className="flex gap-2 overflow-x-auto pb-1">

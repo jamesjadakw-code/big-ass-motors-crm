@@ -206,6 +206,28 @@ if (is_post()) {
                 }
                 break;
 
+            case 'upload_photos':
+                // Photos picked by a rep from their own computer/phone: saved through the CRM's normal photo store ($_FILES['photos']).
+                $pUnit = isset($payload['unitId']) && is_numeric($payload['unitId']) ? (int) $payload['unitId'] : 0;
+                if ($pUnit <= 0 || !q_one('SELECT id FROM inventory WHERE id = ?', [$pUnit])) { json_out(['ok' => false, 'error' => 'Unit not found'], 404); }
+                require_once BAM_ROOT . '/inc/images.php';
+                [$okP, $errP] = handle_photo_uploads($pUnit, 'photos');
+                if ($okP > 0) {
+                    try { require_once BAM_ROOT . '/inc/brochure.php'; brochure_attach_to_unit($pUnit, $ME['name'] ?? 'admin'); } catch (Throwable $e) { error_log('[root index.php] brochure after upload: ' . $e->getMessage()); }
+                    if (is_file(BAM_ROOT . '/inc/hunter_hook.php')) {
+                        try { require_once BAM_ROOT . '/inc/hunter_hook.php'; bam_hunter_on_unit_changed($pUnit); } catch (Throwable $e) { error_log('[root index.php] hunter after upload: ' . $e->getMessage()); }
+                    }
+                    audit('unit_photos_added', 'Added ' . $okP . ' photo(s) to unit #' . $pUnit, 'unit', $pUnit);
+                }
+                $pMedia = []; $pThumbs = [];
+                foreach (q('SELECT inventory_id, filename, thumb, external_url, is_primary, sort_order FROM inventory_photos WHERE inventory_id = ? AND mirror_failed = 0 ORDER BY is_primary DESC, sort_order, id', [$pUnit])->fetchAll() as $pp) {
+                    $full = photo_url($pp, false);
+                    if ($full === '' || !preg_match('~^(https?://|/)~i', $full)) { continue; }
+                    $pMedia[] = $full; $pThumbs[] = photo_url($pp, true) ?: $full;
+                }
+                json_out(['ok' => $okP > 0, 'added' => $okP, 'errors' => array_map('strval', $errP), 'media' => $pMedia, 'thumbs' => $pThumbs, 'error' => $okP > 0 ? null : (string) ($errP[0] ?? 'No photo was accepted')]);
+                break;
+
             case 'verify_unit':
                 $vUnitId = isset($payload['id']) && is_numeric($payload['id']) ? (int) $payload['id'] : 0;
                 if ($vUnitId > 0 && crm_can('admin', $ME)) {
@@ -275,7 +297,7 @@ $mePayload = [
       window.BAM_HOSTINGER_BROCHURE_URL = <?= json_encode('/inventory/brochure.php', JSON_UNESCAPED_SLASHES) ?>;
       window.BAM_PDO_STATE = <?= json_encode($state, JSON_UNESCAPED_SLASHES) ?>;
     </script>
-    <script type="module" crossorigin src="/assets/index-B4A-7dlO.js"></script>
+    <script type="module" crossorigin src="/assets/index-DH1ykdj_.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-D3CoVj3h.css">
   </head>
   <body class="bg-ink-950 text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-gold/30 selection:text-gold">

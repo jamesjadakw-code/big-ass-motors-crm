@@ -93,6 +93,7 @@ export default function Inventory({ notify, go }) {
       {editing && (
         <Modal title={editing === 'new' ? 'Add machine' : `Edit ${editing.stock}`} wide onClose={() => setEditing(null)}>
           <UnitForm
+            unitId={editing === 'new' ? null : editing.id} notify={notify}
             initial={editing === 'new' ? {} : editing}
             oemSpecs={editing === 'new' ? {} : editing.oemSpecs || {}}
             onSubmit={save} onCancel={() => setEditing(null)} busy={busy}

@@ -5,6 +5,8 @@ import { Gate, useFeature, useLook } from '../FeatureContext.jsx';
 import { playDialer } from '../features.js';
 import PitchGenerator, { GeneratePitchButton } from '../components/PitchGenerator.jsx';
 import { isThirdParty, sourceName } from '../pipeline.js';
+import { hasPhotos } from '../localEngine.js';
+import PhotoUpload from '../components/PhotoUpload.jsx';
 
 export default function MatchInbox({ param, query, notify, go }) {
   const [checked, setChecked] = useState(() => new Set()); // lead ids ticked for bulk pitching
@@ -137,7 +139,7 @@ export default function MatchInbox({ param, query, notify, go }) {
                 {u.media && u.media[0] ? (
                   <img src={u.media[0]} alt="" className="h-full w-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-[10px] font-bold text-ink-500">BAM</div>
+                  <div className="flex h-full w-full items-center justify-center px-1 text-center text-[9px] font-bold leading-tight text-red-300">NO PHOTO</div>
                 )}
               </div>
               <div className="min-w-0 flex-1">
@@ -162,6 +164,13 @@ export default function MatchInbox({ param, query, notify, go }) {
                 {isThirdParty(unit) && <span className="chip bg-red-500/15 text-red-300">{unit.verified ? 'BAM-BRANDED' : 'NEW'} · {sourceName(unit)} · matched to {buyers.length} buyer{buyers.length === 1 ? '' : 's'}</span>}
               </div>
               <h2 className="h-display text-3xl font-bold">{unitTitle(unit)}</h2>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {!hasPhotos(unit) && (
+                  <span className="chip bg-red-500/15 text-red-300">NO PHOTOS · not matched or pitched until it has photos</span>
+                )}
+                <PhotoUpload unitId={unit.id} notify={notify} label={hasPhotos(unit) ? 'Add more photos' : 'Add photos'} className={hasPhotos(unit) ? 'btn-ghost !py-1 text-xs' : 'btn-primary'}
+                  onAdded={() => { loadUnits(); loadBuyers(unit.id); }} />
+              </div>
               <div className="mt-3 grid grid-cols-2 gap-x-8 gap-y-1 text-sm md:grid-cols-4">
                 {unit.hours != null && <div><span className="text-ink-400">Hours </span>{unit.hours.toLocaleString()}</div>}
                 {unit.city && <div><span className="text-ink-400">Location </span>{`${unit.city}, ${unit.state}`}</div>}

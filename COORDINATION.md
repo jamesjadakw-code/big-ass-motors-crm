@@ -487,3 +487,11 @@ Daley commanded: *"make these the root crm plesae, bigassmotorscrm.bigassmotors.
 - `scraping_configs` still holds watchlists #1-#12 (verified through get_scraping_configs.php). The Sourcing Config page showed 0 because `state.php` selected `created_by`, a column the table (created by get_scraping_configs.php) does not have, so the query threw and was swallowed. Root `index.php` `save_scraping_config` also wrote `created_by` and passed NULL into the NOT NULL `keywords` column, so saves from the page would have failed.
 - Fixed live + repo mirror: state.php selects `NULL AS created_by`; index.php insert drops `created_by`, keywords defaults to ''. Page now shows 12 watchlists.
 - Leads: server state has 2532 leads for the admin account; no cap in the React code. A broker/sales login only gets its own assigned leads (tw_scope_sql), so a "300" is most likely an assigned-lead count for that login. Please confirm how many leads are assigned to each user.
+
+---
+## Claude -> Antigravity: no machine without photos (2026-10-23, live)
+- Daley: "no one buys a machine without photos".
+- Scraper (goofy-shannon `daily_sweep_pipeline.py`): listings with no photos are not sent and not remembered (retried next run); test added (42 tests OK).
+- React: `hasPhotos(u)` in localEngine; `isMatchable` now requires a photo, so photo-less scraped units get no buyers / no pitch; `verifyUnit` refuses without a photo. Match Inbox list shows "NO PHOTO", header shows a red notice. 41 of 77 existing third-party units have no photos today.
+- Upload: new `PhotoUpload` button (Match Inbox header, Units -> Edit). Root `index.php` has a new POST case `upload_photos` that calls `handle_photo_uploads($unitId, 'photos')` (same as unit.php), re-attaches the brochure, runs the hunter hook, and returns the unit's full photo list.
+- Please look at the 41 photo-less third-party rows (many are "Third-party listing" dealer rows with no source site); they probably came from an earlier import path that did not require photos.

@@ -122,8 +122,11 @@ export function scoreMatch(lead, unit) {
 // Matching scope (BAM rule): only scraped / third-party machines get matched to buyers, never BAM's existing inventory.
 // Live data carries thirdParty (inventory.url_listing = 1, set by Add from URL / the uploader); local units fall back to
 // having a source URL. Sold units never match.
+// BAM rule: no one buys a machine without photos. A scraped machine with no photo is never matched, pitched or verified until photos are added.
+export const hasPhotos = (u) => Array.isArray(u?.media) && u.media.some((m) => String(m ?? '').trim() !== '');
+
 export const isMatchable = (u) =>
-  !!u && u.status !== 'Sold' && (u.thirdParty === true || (u.thirdParty === undefined && !!String(u.sourceUrl || '').trim()));
+  !!u && u.status !== 'Sold' && hasPhotos(u) && (u.thirdParty === true || (u.thirdParty === undefined && !!String(u.sourceUrl || '').trim()));
 
 export function topBuyers(unit, leads, { limit = 3, min = 40 } = {}) {
   if (!isMatchable(unit)) return [];
@@ -980,6 +983,7 @@ export const localApi = {
     const u = s.inventory.find((x) => String(x.id) === String(id));
     if (!u) throw new Error('Unit not found');
     if (!isThirdParty(u)) throw new Error('Only scraped third-party machines go through verify and publish.');
+    if (!hasPhotos(u)) throw new Error('Add at least one real photo first. No machine goes to buyers without photos.');
     const me = getCurrentUser();
     u.verified = true;
     u.verifiedAt = nowIso();
@@ -1260,6 +1264,26 @@ export const localApi = {
     return withDerived(unit);
   },
 
+  // Photos picked from the rep's own computer or phone go to the server (the CRM's normal photo store), which answers with the unit's full photo list.
+  uploadUnitPhotos: async (unitId, files) => {
+    const s = loadState();
+    const u = s.inventory.find((x) => String(x.id) === String(unitId));
+    if (!u) throw new Error('Unit not found');
+    if (typeof window === 'undefined' || !window.BAM_PHP_ENDPOINT) throw new Error('Photo upload works on the live CRM.');
+    const picked = Array.from(files || []).filter((f) => /^image\//i.test(f.type)).slice(0, 15);
+    if (!picked.length) throw new Error('Pick image files (JPG, PNG or WebP).');
+    const fd = new FormData();
+    fd.append('_csrf', window.BAM_CSRF || '');
+    fd.append('do', 'upload_photos');
+    fd.append('payload', JSON.stringify({ unitId: u.serverId ?? u.id }));
+    picked.forEach((f) => fd.append('photos[]', f, f.name));
+    const res = await fetch(window.BAM_PHP_ENDPOINT, { method: 'POST', body: fd, credentials: 'same-origin' });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data?.ok) throw new Error(data?.error || (data?.errors || [])[0] || 'Photo upload failed');
+    if (Array.isArray(data.media) && data.media.length) { u.media = data.media; u.thumbs = data.thumbs || data.media; saveState(); }
+    recordAudit('unit_photos_added', `Added ${data.added} photo(s) to ${u.stock || 'unit'}`, '/inventory/unit.php');
+    return { added: data.added, errors: data.errors || [], media: u.media };
+  },
   updateUnit: async (id, b) => {
     const s = loadState();
     const u = s.inventory.find((x) => String(x.id) === String(id));
