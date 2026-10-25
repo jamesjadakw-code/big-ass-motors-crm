@@ -307,7 +307,12 @@ $pdoState = [
   <meta name="robots" content="noindex, nofollow">
   <title>Hunter Cockpit · BAM CRM</title>
   <link rel="icon" href="<?= h(asset('img/favicon.png')) ?>">
-  <link rel="stylesheet" href="<?= h(url('cockpit-assets/cockpit.css')) ?>">
+  <?php
+    $bamJsPath = __DIR__ . '/cockpit-assets/cockpit.js';
+    $bamCssPath = __DIR__ . '/cockpit-assets/cockpit.css';
+    $bamV = '?v=' . (@file_exists($bamJsPath) ? filemtime($bamJsPath) : time());
+  ?>
+  <link rel="stylesheet" href="<?= h(url('cockpit-assets/cockpit.css' . $bamV)) ?>">
   <script>
     window.BAM_ME = <?= json_encode([
         'id'    => (int) ($ME['id'] ?? 1),
@@ -322,7 +327,7 @@ $pdoState = [
     window.BAM_HOSTINGER_BROCHURE_URL = <?= json_encode(url('brochure.php'), JSON_UNESCAPED_SLASHES) ?>;
     window.BAM_PDO_STATE = <?= json_encode($pdoState, JSON_UNESCAPED_SLASHES) ?>;
   </script>
-  <script type="module" crossorigin src="<?= h(url('cockpit-assets/cockpit.js')) ?>"></script>
+  <script type="module" crossorigin src="<?= h(url('cockpit-assets/cockpit.js' . $bamV)) ?>"></script>
 </head>
 <body class="bg-ink-900 text-neutral-100 antialiased selection:bg-bam selection:text-black">
   <div id="root"></div>
