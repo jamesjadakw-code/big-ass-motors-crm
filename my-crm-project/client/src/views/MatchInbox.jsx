@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api, STAGES } from '../api.js';
-import { Badge, Empty, Modal, Reasons, Ring, ScoreBadge, fullName, initials, money, unitTitle } from '../ui.jsx';
+import { Badge, Empty, Modal, Reasons, Ring, ScoreBadge, fullName, initials, money, unitTitle, FreshnessBadge } from '../ui.jsx';
 import { Gate, useFeature, useLook } from '../FeatureContext.jsx';
 import { playDialer } from '../features.js';
 import PitchGenerator, { GeneratePitchButton } from '../components/PitchGenerator.jsx';
 import { isThirdParty, sourceName } from '../pipeline.js';
 import { hasPhotos } from '../localEngine.js';
 import PhotoUpload from '../components/PhotoUpload.jsx';
+import { Pager, usePaged } from '../components/Pager.jsx';
+import { formatListingDate } from '../components/ListingTasks.jsx';
 
 export default function MatchInbox({ param, query, notify, go }) {
   const [checked, setChecked] = useState(() => new Set()); // lead ids ticked for bulk pitching
@@ -20,6 +22,7 @@ export default function MatchInbox({ param, query, notify, go }) {
   const [buyers, setBuyers] = useState([]);
   const [buyerId, setBuyerId] = useState(null);
   const [filter, setFilter] = useState('');
+  const [category, setCategory] = useState('');
   const [msg, setMsg] = useState('');
   const [lang, setLang] = useState('en');
   const [callFor, setCallFor] = useState(null);
@@ -99,8 +102,31 @@ export default function MatchInbox({ param, query, notify, go }) {
   useEffect(() => { setLang(buyer?.lead.language === 'es' ? 'es' : 'en'); }, [buyer?.lead.id, selId]); // eslint-disable-line
   useEffect(() => { setMsg(buyer?.pitches?.[lang]?.sms || buyer?.pitch.sms || ''); }, [buyer?.lead.id, selId, lang]); // eslint-disable-line
 
-  const categories = [...new Set(units.map((u) => u.category).filter(Boolean))];
-  const shown = units.filter((u) => (!filter ? true : filter === '85' ? u.topScore >= 85 : u.category === filter));
+  const categoriesWithCounts = useMemo(() => {
+    const map = {};
+    for (const u of units) {
+      if (isThirdParty(u) && u.category) {
+        map[u.category] = (map[u.category] || 0) + 1;
+      }
+    }
+    return Object.entries(map)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count]) => ({ name, count }));
+  }, [units]);
+
+  // Only scraped third-party machines are matched (BAM's own stock never is), so only they are listed; a machine opened by link is kept.
+  const shown = units.filter((u) => {
+    const isSelected = String(u.id) === String(selId);
+    if (!isThirdParty(u) && !isSelected) return false;
+    if (category && u.category !== category) return false;
+    if (!filter) return true;
+    if (filter === '85') return u.topScore >= 85;
+    if (filter === 'fresh') return u.ageLevel === 'fresh';
+    if (filter === 'aging') return u.ageLevel === 'aging';
+    if (filter === 'stale') return u.ageLevel === 'stale';
+    return true;
+  });
+  const paged = usePaged(shown, 20, `${filter}|${category}`);   // 20 machines per page
 
   async function touch(type, extra = {}) {
     await api.logTouch(buyer.lead.id, { type, unitId: unit.id, note: `${type === 'brochure' ? 'Sent brochure' : type === 'text' ? 'Texted pitch' : 'Emailed pitch'} for ${unitTitle(unit)}`, ...extra });
@@ -121,36 +147,109 @@ export default function MatchInbox({ param, query, notify, go }) {
   return (
     <div className="flex h-full flex-col md:flex-row">
       <section className={`${phoneView === 'detail' ? 'hidden' : 'flex'} min-h-0 w-full flex-1 flex-col md:flex md:w-[22rem] md:flex-none md:shrink-0 md:border-r md:border-ink-700`}>
-        <div className="border-b border-ink-700 p-4">
-          <h1 className="h-display text-2xl font-bold">Match Inbox</h1>
-          <div className="mt-2 flex flex-wrap gap-1">
-            {[['', 'All'], ['85', 'Score ≥ 85'], ...categories.map((c) => [c, c])].map(([k, label]) => (
-              <button key={k || 'all'} onClick={() => setFilter(k)} className={`rounded-full px-2.5 py-0.5 text-xs ${filter === k ? 'bg-bam font-semibold text-black' : 'bg-ink-800 text-neutral-300 hover:bg-ink-700'}`}>{label}</button>
-            ))}
+        <div className="border-b border-ink-700 p-3">
+          <div className="flex items-center justify-between gap-2">
+            <h1 className="h-display text-xl sm:text-2xl font-bold">Match Inbox</h1>
+            <span className="text-xs text-ink-400 font-medium">{shown.length} machine{shown.length === 1 ? '' : 's'}</span>
+          </div>
+
+          {/* Top Row: Signals for Time Passed + Score 85 */}
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setFilter('')}
+              className={`rounded-full px-3 py-1 text-xs font-semibold transition-all ${
+                !filter ? 'bg-bam font-bold text-black shadow-sm' : 'bg-ink-800 text-neutral-300 hover:bg-ink-700'
+              }`}
+            >
+              All
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilter(filter === 'fresh' ? '' : 'fresh')}
+              className={`rounded-full px-3 py-1 text-xs font-semibold transition-all ${
+                filter === 'fresh' ? 'bg-bam font-bold text-black shadow-sm' : 'bg-ink-800 text-neutral-300 hover:bg-ink-700'
+              }`}
+            >
+              🟢 Fresh (&lt;7d)
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilter(filter === 'aging' ? '' : 'aging')}
+              className={`rounded-full px-3 py-1 text-xs font-semibold transition-all ${
+                filter === 'aging' ? 'bg-bam font-bold text-black shadow-sm' : 'bg-ink-800 text-neutral-300 hover:bg-ink-700'
+              }`}
+            >
+              🟡 Aging (8-21d)
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilter(filter === 'stale' ? '' : 'stale')}
+              className={`rounded-full px-3 py-1 text-xs font-semibold transition-all ${
+                filter === 'stale' ? 'bg-bam font-bold text-black shadow-sm' : 'bg-ink-800 text-neutral-300 hover:bg-ink-700'
+              }`}
+            >
+              🔴 Stale (22d+)
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilter(filter === '85' ? '' : '85')}
+              className={`rounded-full px-3 py-1 text-xs font-semibold transition-all ${
+                filter === '85' ? 'bg-bam font-bold text-black shadow-sm' : 'bg-ink-800 text-neutral-300 hover:bg-ink-700'
+              }`}
+            >
+              Score ≥ 85
+            </button>
+          </div>
+
+          {/* Reduced Machine Types in Dropdown Menu */}
+          <div className="mt-2">
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full rounded-lg border border-ink-700 bg-ink-900 py-1.5 pl-2.5 pr-8 text-xs font-medium text-neutral-200 outline-none focus:border-bam transition-colors cursor-pointer"
+            >
+              <option value="">All Machine Types ({categoriesWithCounts.reduce((acc, c) => acc + c.count, 0)})</option>
+              {categoriesWithCounts.map(({ name, count }) => (
+                <option key={name} value={name}>
+                  {name} ({count})
+                </option>
+              ))}
+            </select>
           </div>
         </div>
         <div className="flex items-center justify-between border-b border-ink-800 px-4 py-2 text-[10.5px] font-bold uppercase tracking-[.14em] text-ink-400">
           <span>New ingestions · {shown.length}</span><span>matched on arrival</span>
         </div>
         <div className="flex-1 overflow-y-auto">
-          {shown.map((u) => (
+          {paged.items.map((u) => (
             <button key={u.id} onClick={() => { setSelId(u.id); setPhoneView('detail'); }} data-selected={u.id === selId} className="row-int flex w-full items-center gap-3 d-row border-b border-ink-800 text-left">
               <div className="relative h-12 w-14 shrink-0 overflow-hidden rounded border border-ink-700 bg-ink-900">
                 {u.media && u.media[0] ? (
-                  <img src={u.media[0]} alt="" className="h-full w-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                  <img src={u.media[0]} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center px-1 text-center text-[9px] font-bold leading-tight text-red-300">NO PHOTO</div>
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-semibold">{unitTitle(u)}</div>
+                <div className="flex items-center gap-1.5 truncate text-sm font-semibold">
+                  <span className="truncate">{unitTitle(u)}</span>
+                  <FreshnessBadge unit={u} compact />
+                </div>
                 <div className="truncate text-xs text-ink-400">{[u.category, u.hours != null && `${u.hours.toLocaleString()} hrs`, u.state].filter(Boolean).join(' · ')}</div>
-                {isThirdParty(u) && <div className="truncate text-[11px] text-ink-400">{sourceName(u)}{u.verified ? ' · BAM-branded' : ''}</div>}
+                {isThirdParty(u) && (
+                  <div className="truncate text-[11px] text-ink-400 mt-0.5 flex items-center gap-1">
+                    <span className="text-amber-400 font-medium">📅 {formatListingDate(u.createdAt || u.created_at || u.foundAt)}</span>
+                    <span>·</span>
+                    <span className="truncate">{sourceName(u)}{u.verified ? ' · BAM-branded' : ''}</span>
+                  </div>
+                )}
               </div>
               {u.topScore > 0 ? <ScoreBadge score={u.topScore} /> : <span className="text-xs text-ink-400">–</span>}
             </button>
           ))}
           {!shown.length && <Empty>No units.</Empty>}
+          <Pager {...paged} noun="machines" className="border-t border-ink-800" />
         </div>
       </section>
 
@@ -161,9 +260,51 @@ export default function MatchInbox({ param, query, notify, go }) {
             <div>
               <div className="flex flex-wrap items-center gap-2 text-xs text-ink-400">
                 <span className="font-bold tracking-wider text-bam">{unit.stock}</span>{unit.category}
-                {isThirdParty(unit) && <span className="chip bg-red-500/15 text-red-300">{unit.verified ? 'BAM-BRANDED' : 'NEW'} · {sourceName(unit)} · matched to {buyers.length} buyer{buyers.length === 1 ? '' : 's'}</span>}
+                <FreshnessBadge unit={unit} />
+                {isThirdParty(unit) && <span className="chip bg-red-500/15 text-red-300">{unit.verified ? 'BAM-BRANDED' : 'NEW'} · {sourceName(unit)} · Uploaded {formatListingDate(unit.createdAt || unit.created_at || unit.foundAt)} · matched to {buyers.length} buyer{buyers.length === 1 ? '' : 's'}</span>}
               </div>
-              <h2 className="h-display text-3xl font-bold">{unitTitle(unit)}</h2>
+              <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
+                <h2 className="h-display text-3xl font-bold">{unitTitle(unit)}</h2>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {unit.sourceUrl && (
+                    <a
+                      href={unit.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 rounded-lg border border-neutral-600 bg-ink-800 px-3 py-1.5 text-xs font-semibold text-neutral-200 hover:border-bam hover:text-white hover:bg-ink-700 shadow-sm transition-all"
+                      title="Inspect original listing in a new tab"
+                    >
+                      🔗 Inspect Source
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await api.updateUnit(unit.id, { verified_at: new Date().toISOString(), confirm_active: true });
+                      notify(`${unitTitle(unit)} confirmed active! Freshness renewed.`);
+                      loadUnits();
+                    }}
+                    className="inline-flex items-center gap-1 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20 transition-all"
+                    title="Confirm this listing is still active today"
+                  >
+                    ✓ Still Active
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!window.confirm(`Mark ${unitTitle(unit)} as SOLD / Taken Down?\n\nThis will remove it from active matching immediately.`)) return;
+                      await api.updateUnit(unit.id, { status: 'Sold' });
+                      notify(`${unitTitle(unit)} marked as Sold and removed.`);
+                      loadUnits();
+                      loadBuyers(null);
+                    }}
+                    className="inline-flex items-center gap-1 rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-1.5 text-xs font-bold text-rose-400 hover:bg-rose-500/20 transition-all"
+                    title="Mark listing as sold or removed by seller"
+                  >
+                    ✕ Mark Sold
+                  </button>
+                </div>
+              </div>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 {!hasPhotos(unit) && (
                   <span className="chip bg-red-500/15 text-red-300">NO PHOTOS · not matched or pitched until it has photos</span>
@@ -177,6 +318,22 @@ export default function MatchInbox({ param, query, notify, go }) {
                 <div><span className="text-ink-400">Public price </span><span className="font-semibold text-bam">{unit.listPrice ? money(unit.listPrice) : 'Call for Price'}</span></div>
                 {unit.askPrice != null && <div><span className="text-ink-400">Internal ask </span><span className="text-gold">🔒 {money(unit.askPrice)}</span></div>}
               </div>
+
+              {unit.ageLevel === 'stale' && (
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 text-xs text-amber-200">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">⚠️</span>
+                    <div>
+                      <b>Aging Listing Alert:</b> This machine was scraped {unit.ageDays} days ago. Sellers often sell without updating the ad. Tap <b>Inspect Source</b> to verify before pitching to buyers.
+                    </div>
+                  </div>
+                  {unit.sourceUrl && (
+                    <a href={unit.sourceUrl} target="_blank" rel="noreferrer" className="shrink-0 rounded bg-amber-500/20 px-2.5 py-1 text-xs font-bold text-amber-300 hover:bg-amber-500/30">
+                      Check Live Ad →
+                    </a>
+                  )}
+                </div>
+              )}
 
               {/* Machine Photo Gallery Preview */}
               {unit.media && unit.media.length > 0 && (

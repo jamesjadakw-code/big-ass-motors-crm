@@ -75,11 +75,24 @@ export function listingTasks(units) {
     const sc = listingScore(u);
     const title = [u.year, u.make, u.model].filter(Boolean).join(' ') || 'Unit';
     const source = sourceName(u);
+    const dateStr = u.createdAt || u.created_at || u.foundAt || u.found_at || u.updatedAt || u.updated_at || '';
     return {
       id: `listing-${u.id}`, kind: 'listing', unitId: u.id, title: `Review new listing: ${title}`,
-      due: at5pm(u.createdAt).toISOString(), done: false, priority: sc.score >= 75 ? 'high' : 'normal', auto: true, lead: null,
+      due: at5pm(dateStr).toISOString(), done: false, priority: sc.score >= 75 ? 'high' : 'normal', auto: true, lead: null,
       note: `${source} · ${sc.photos} photo${sc.photos === 1 ? '' : 's'} · listing score ${sc.score}`,
-      listing: { title, type: u.category || 'Other', source, score: sc.score, label: sc.label, photos: sc.photos, city: u.city, state: u.state },
+      listing: {
+        title,
+        type: u.category || 'Other',
+        source,
+        score: sc.score,
+        label: sc.label,
+        photos: sc.photos,
+        city: u.city,
+        state: u.state,
+        createdAt: dateStr,
+        uploadedAt: dateStr,
+        foundAt: u.foundAt || u.found_at || dateStr,
+      },
     };
   });
 }
