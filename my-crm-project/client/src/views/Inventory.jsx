@@ -30,20 +30,29 @@ export default function Inventory({ param, notify, go }) {
     }
   }, [param, units]);
 
+  const closeEditing = () => {
+    setEditing(null);
+    try {
+      if (window.location.hash.startsWith('#/inventory')) {
+        window.history.replaceState(null, '', '#/inventory');
+      }
+    } catch {}
+  };
+
   async function save(data) {
     setBusy(true);
     try {
       if (editing === 'new') await api.createUnit(data);
       else await api.updateUnit(editing.id, data);
       notify('Unit saved');
-      setEditing(null);
+      closeEditing();
       load();
     } catch (e) { notify(e.message, true); } finally { setBusy(false); }
   }
   async function remove(u) {
     if (!window.confirm(`Delete ${unitTitle(u)}?`)) return;
     await api.deleteUnit(u.id);
-    setEditing(null);
+    closeEditing();
     load();
   }
 
@@ -198,7 +207,7 @@ export default function Inventory({ param, notify, go }) {
                 {u.topScore > 0 ? <ScoreBadge score={u.topScore} /> : <span className="chip bg-ink-700">no buyer</span>}
                 {u.buyerCount} buyer{u.buyerCount === 1 ? '' : 's'}
               </button>
-              <div className="flex gap-1.5">
+              <div className="flex gap-1.5 items-center">
                 <button
                   type="button"
                   className="btn-primary !px-2.5 !py-1 text-xs font-bold"
@@ -207,6 +216,20 @@ export default function Inventory({ param, notify, go }) {
                 >
                   ✏️ Edit Machine
                 </button>
+                {u.status !== 'Live' && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await api.updateUnit(u.id, { status: 'Live', verified: true, verified_at: new Date().toISOString() });
+                      notify(`🚀 ${u.stock} listed to public site and published live!`);
+                      load();
+                    }}
+                    className="rounded bg-emerald-500/20 border border-emerald-500/40 px-2 py-1 text-xs font-bold text-emerald-400 hover:bg-emerald-500 hover:text-black transition shadow-sm"
+                    title="Publish directly to public site & activate brochure"
+                  >
+                    🚀 List
+                  </button>
+                )}
                 <Gate id="inv-brochure">
                   <button
                     type="button"
@@ -226,12 +249,13 @@ export default function Inventory({ param, notify, go }) {
       <Pager {...paged} noun="machines" className="card" />
 
       {editing && (
-        <Modal title={editing === 'new' ? 'Add machine' : `Edit ${editing.stock}`} wide onClose={() => setEditing(null)}>
+        <Modal title={editing === 'new' ? 'Add machine' : `Edit ${editing.stock}`} wide onClose={closeEditing}>
           <UnitForm
             unitId={editing === 'new' ? null : editing.id} notify={notify}
             initial={editing === 'new' ? {} : editing}
             oemSpecs={editing === 'new' ? {} : editing.oemSpecs || {}}
-            onSubmit={save} onCancel={() => setEditing(null)} busy={busy}
+            onSubmit={save} onCancel={closeEditing}
+            go={go} busy={busy}
             extraActions={editing !== 'new' && <button type="button" className="btn-danger" onClick={() => remove(editing)}>Delete</button>}
           />
         </Modal>

@@ -316,6 +316,34 @@ export default function MatchInbox({ param, query, notify, go }) {
                   >
                     ✏️ Edit Machine
                   </button>
+                  {unit.status !== 'Live' ? (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await api.updateUnit(unit.id, { status: 'Live', verified: true, verified_at: new Date().toISOString() });
+                        notify(`🚀 ${unit.stock || unitTitle(unit)} listed to public site and published live!`);
+                        loadUnits();
+                      }}
+                      className="inline-flex items-center gap-1 rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-black text-black shadow-md hover:bg-emerald-400 active:scale-95 transition"
+                      title="Publish machine to public website and activate live brochure"
+                    >
+                      🚀 List to Site
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!window.confirm(`Unlist ${unitTitle(unit)}? Status will revert to Draft.`)) return;
+                        await api.updateUnit(unit.id, { status: 'Draft' });
+                        notify(`${unitTitle(unit)} unlisted and reverted to Draft.`);
+                        loadUnits();
+                      }}
+                      className="inline-flex items-center gap-1 rounded-lg border border-emerald-500/50 bg-emerald-500/20 px-2.5 py-1.5 text-xs font-bold text-emerald-300 hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/40 transition"
+                      title="Live on site · Click to unlist / revert to Draft"
+                    >
+                      ✓ Live on Site
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => api.openBrochure(unit.id).catch((e) => notify(e.message, true))}
@@ -594,6 +622,7 @@ export default function MatchInbox({ param, query, notify, go }) {
             busy={editBusy}
             unitId={unit.id}
             notify={notify}
+            go={go}
             extraActions={
               <button type="button" className="btn-ghost !text-rose-400" onClick={() => handleDeleteUnit(unit)}>
                 Delete machine

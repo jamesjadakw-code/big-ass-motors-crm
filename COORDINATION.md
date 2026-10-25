@@ -620,3 +620,45 @@ Daley commanded: *"make these the root crm plesae, bigassmotorscrm.bigassmotors.
   - Synced to `HOSTINGER-DEPLOY-PACKAGE/public_html/assets/` and `cockpit-assets/` (`cockpit.js`, `cockpit.css`).
   - Updated root `HOSTINGER-DEPLOY-PACKAGE/public_html/index.php`.
   - Rebuilt production deployment archive `HOSTINGER-DEPLOY-BAM-CRM.zip` (7.54 MB).
+
+
+---
+## Antigravity -> Team: BAM In-App Photo Studio, Hero Drag-and-Drop Queue & "List to Site" Engine (2026-10-25)
+- **Objective**: Implement interactive drag-and-drop photo queue with Hero cover banner, full in-app BAM Photo Studio (Crop, Flip Horizontal, Rotate, Smart Magic Pop, Watermark Eraser, and Compare), 1-click "List to Site" publishing, sticky top Save with `Ctrl+Enter`, and fullscreen gridded editing.
+- **Completed Implementations**:
+  1. **BAM In-App Photo Studio (`PhotoEditorModal.jsx`)**:
+     - Built comprehensive in-browser HTML5 Canvas Photo Studio:
+       - **Maximize View**: Full-resolution image canvas with zoom and pan.
+       - **Flip Horizontally**: 1-click mirror flip (`ctx.scale(-1, 1)`).
+       - **Rotate 90°**: 1-click clockwise orientation adjustment.
+       - **Aspect Ratio Crop**: Presets for 4:3 (Brochure Standard), 16:9 (Wide), 1:1 (Square), and Custom draggable crop box.
+       - **✨ Smart Magic Color Pop**: 1-click showroom enhancement that boosts saturation (+35%), contrast (+18%), brightness (+5%), and warmth so dirt-lot and overcast equipment photos pop with showroom clarity.
+       - **🩹 Watermark / Stamp Eraser (Inpainting Healing Brush)**: Interactive brush tool with adjustable size that samples surrounding background pixels to erase dealer phone numbers, corner watermarks, and auction stamps cleanly—100% in-browser with zero paid external APIs.
+       - **👁 Before / After Compare**: Hold to compare untouched original vs retouched photo.
+       - **⬇ Download Clean Photo**: 1-click high-res export to local drive.
+       - **★ Make Hero**: 1-click button to make the active photo the Brochure Cover.
+  2. **Hero Banner & Drag-and-Drop Queue (`UnitForm.jsx`)**:
+     - 1st photo in gallery features prominent gold badge: `★ HERO · BROCHURE COVER`.
+     - HTML5 Drag-and-Drop reordering across all thumbnails in the gallery. Dragging any photo to position #1 immediately promotes it to the Hero Cover.
+     - `◀` / `▶` arrow handles on hover for 1-tap re-ordering on touch devices.
+  3. **Sticky Top Save & Keyboard Shortcut (`UnitForm.jsx`)**:
+     - Added `[💾 Save Machine]` button pinned to the sticky top header bar.
+     - Added form-wide `Ctrl + Enter` / `Cmd + Enter` shortcut to save instantly from any field.
+  4. **1-Click "List to Site" Publishing**:
+     - Added `[🚀 List to Site]` in `UnitForm.jsx`, `MatchInbox.jsx`, and `Inventory.jsx`.
+     - 1-click action sets `status = 'Live'`, `verified = 1`, `verified_at = now()`, activates public brochure URL, and triggers buyer matching via `hunter_hook.php`.
+     - Turns into green `[✓ Live on Site (Unlist)]` toggle when live.
+  5. **Fullscreen Gridded Workstation Toggle (`UnitForm.jsx`)**:
+     - Added `⛶ Fullscreen / Wide` toggle in modal header to expand the 4-column gridded editor into a distraction-free full-page workstation.
+  6. **Live Match Counter & Brochure Readiness Meter (`UnitForm.jsx`)**:
+     - Displays `Brochure Readiness: XX%` pill calculating spec completeness.
+     - Displays live `[⚡ X Matches →]` pill that saves and opens Match Inbox.
+  7. **URL Clean-Up (`Inventory.jsx`)**:
+     - When unit modal is dismissed or saved, updates hash to `#/inventory` via `window.history.replaceState`.
+  8. **3rd-Party Machines Quick Edit (`Desk.jsx`)**:
+     - Added `[✏️ Edit]` button to cards in all Kanban lanes (`scraped`, `matched`, `branded`).
+- **Production Build & Packaging**:
+  - Recompiled Vite client bundle: `index-k5mauudb.js` (679 kB) / `index-XoxuOKnV.css` (67 kB).
+  - Synced to `HOSTINGER-DEPLOY-PACKAGE/public_html/assets/` and `cockpit-assets/` (`cockpit.js`, `cockpit.css`).
+  - Updated root `HOSTINGER-DEPLOY-PACKAGE/public_html/index.php`.
+  - Rebuilt production archive `HOSTINGER-DEPLOY-BAM-CRM.zip` (7.85 MB).

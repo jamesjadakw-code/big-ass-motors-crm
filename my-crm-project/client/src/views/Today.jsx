@@ -367,6 +367,7 @@ export default function Today({ notify, go }) {
             busy={editBusy}
             unitId={editingUnit.id}
             notify={notify}
+            go={go}
           />
         </Modal>
       )}

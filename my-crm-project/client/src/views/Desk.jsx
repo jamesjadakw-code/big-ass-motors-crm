@@ -38,19 +38,22 @@ function Card({ u, lane, canSeeAsk, onBrand, go, notify }) {
         </div>
       )}
       {lane.key === 'matched' && (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 items-center">
           <button type="button" className="btn-neon !px-2.5 !py-1 !text-[11px]" onClick={() => onBrand(u)}>Verify &amp; brand →</button>
+          <button type="button" className="btn-ghost !px-2 !py-0.5 !text-[11px]" onClick={() => go('inventory', u.id)} title="Edit machine specs and photos">✏️ Edit</button>
           <span className="btn-neon pointer-events-none !px-2.5 !py-1 !text-[11px] opacity-50" style={{ '--c': '120 120 120' }} title="Locked until this machine is verified and BAM-branded">🔒 Pitch</span>
         </div>
       )}
       {lane.key === 'scraped' && (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 items-center">
           <button type="button" className="btn-neon !px-2.5 !py-1 !text-[11px]" onClick={() => onBrand(u)}>Verify &amp; brand →</button>
+          <button type="button" className="btn-ghost !px-2 !py-0.5 !text-[11px]" onClick={() => go('inventory', u.id)} title="Edit machine specs and photos">✏️ Edit</button>
         </div>
       )}
       {lane.key === 'branded' && (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 items-center">
           <button type="button" className="btn-neon !px-2.5 !py-1 !text-[11px]" style={{ '--c': '52 211 153' }} onClick={() => api.openBrochure(u.id).catch((e) => notify(e.message, true))}>📄 BAM brochure</button>
+          <button type="button" className="btn-ghost !px-2 !py-0.5 !text-[11px]" onClick={() => go('inventory', u.id)} title="Edit machine specs and photos">✏️ Edit</button>
           <button type="button" className="btn-neon !px-2.5 !py-1 !text-[11px]" style={{ '--c': '52 211 153' }} onClick={() => go('match', u.id)}>Pitch {u.buyers?.length || 0} buyer{u.buyers?.length === 1 ? '' : 's'}</button>
         </div>
       )}
@@ -60,11 +63,12 @@ function Card({ u, lane, canSeeAsk, onBrand, go, notify }) {
 
 export default function Desk({ notify, go, user }) {
   const [units, setUnits] = useState(null);
+  const [shownBy, setShownBy] = useState({});   // machines drawn per lane (20, then 20 more on request)
 
   const load = useCallback(async () => {
     const all = (await api.inventory({})).filter(isThirdParty);
     const withBuyers = await Promise.all(all.map(async (u) => {
-      const buyers = await api.unitMatches(u.id).catch(() => []);
+      const buyers = u.buyerCount > 0 ? await api.unitMatches(u.id).catch(() => []) : [];   // machines with no buyer need no second scoring pass
       const pitchedTo = buyers.filter((b) => b.status === 'pitched').length;
       return { ...u, buyers, pitchedTo, hot: buyers.filter((b) => b.score >= 85).length };
     }));
@@ -107,7 +111,12 @@ export default function Desk({ notify, go, user }) {
               <div className="text-[11.5px] text-ink-400">{l.sub}</div>
             </div>
             <div className="grid flex-1 grid-cols-[minmax(0,1fr)] content-start gap-2.5 overflow-y-auto p-2.5">
-              {l.items.map((u) => <Card key={u.id} u={u} lane={l} canSeeAsk={canSeeAsk} onBrand={brand} go={go} notify={notify} />)}
+              {l.items.slice(0, shownBy[l.key] || 20).map((u) => <Card key={u.id} u={u} lane={l} canSeeAsk={canSeeAsk} onBrand={brand} go={go} notify={notify} />)}
+              {l.items.length > (shownBy[l.key] || 20) && (
+                <button type="button" className="btn-ghost !py-1.5 text-xs" onClick={() => setShownBy((m) => ({ ...m, [l.key]: (m[l.key] || 20) + 20 }))}>
+                  Show 20 more · {l.items.length - (shownBy[l.key] || 20)} left
+                </button>
+              )}
               {!l.items.length && <div className="rounded-lg border border-dashed border-ink-600 p-4 text-center text-xs text-ink-400">Nothing here yet</div>}
             </div>
           </section>

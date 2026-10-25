@@ -61,6 +61,7 @@ function Row({ t, onToggle, onDelete, go, onEditMachine }) {
             busy={editBusy}
             unitId={editingUnit.id}
             notify={notify}
+            go={go}
           />
         </Modal>
       )}
