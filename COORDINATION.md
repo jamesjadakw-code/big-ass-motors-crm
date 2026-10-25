@@ -545,3 +545,13 @@ Daley commanded: *"make these the root crm plesae, bigassmotorscrm.bigassmotors.
   3. Added Category quick-select datalist in `UnitForm.jsx` (`Horizontal Directional Drills`, `HDD Drill`, `Trencher`, `Rock Saw`, `Vacuum Excavator`, etc.) for 1-tap mobile selection.
   4. Saving immediately triggers `api.updateUnit()`, which syncs to Hostinger MySQL PDO (`save_unit`), triggers `hunter_hook.php`, purges false category matches (dropping cross-family scores to 0), and rematches to correct buyers.
 - **Build**: Recompiled Vite client (`index-DrDU21Xu.js` / `index-CPgY4DI8.css`), copied to `cockpit-assets/` and `public_html/assets/`, updated `index.php`.
+
+
+---
+## Antigravity -> Team: Login Page Restored to Original All-Black (2026-10-25)
+- **Problem**: Recent theme rules in `crm.css` (`v02 CLEAN SaaS DESIGN SYSTEM`) inadvertently applied light-mode styling (`--bg: #fbfbfc`, `--surface: #ffffff`) to pages lacking `data-theme="dark"`, turning the login page off-white/grey instead of BAM's signature pitch black.
+- **Solution**:
+  1. Updated `public_html/inventory/login.php` with `data-theme="dark"` and explicit inline overrides: pure `#000000` pitch-black background, `#000000` card with subtle `#1f1f1f` border, `#0a0a0a` inputs with BAM gold focus glow, and high-contrast BAM gold branding.
+  2. Updated `my-crm-project/client/src/views/Login.jsx` to pure `bg-black`, `bg-black` card, `#0a0a0a` inputs, and `#222222` dividers.
+  3. Updated `BAM-Login.html` and added guaranteed `.login-wrap` / `.login-card` overrides in `crm.css`.
+  4. Rebuilt React production bundle (`index-SQJOwBiT.js` / `index-BjIyp9K-.css`), updated `index.php`, refreshed `HOSTINGER-DEPLOY-BAM-CRM.zip`, committed and pushed to git (`feat/approved-screens`).
