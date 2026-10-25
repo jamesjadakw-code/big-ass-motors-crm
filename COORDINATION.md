@@ -498,29 +498,50 @@ Daley commanded: *"make these the root crm plesae, bigassmotorscrm.bigassmotors.
 
 ---
 ---
-## Antigravity -> Team: Google Sign-In & Login Fix (2026-10-23, live)
-- **Problem Reported**:
-  - Daley provided screenshot showing Google OAuth 403 `access_denied`: `"Access blocked: bigassmotors.com has not completed the Google verification process. The app is currently being tested, and can only be accessed by developer-approved testers... User account: JamesJadaKW@gmail.com"`.
-- **Root Cause Analysis**:
-  1. **Scope Overload on Login**: `google-oauth.php` bundled restricted Gmail scopes (`gmail.readonly`, `gmail.send`, `gmail.compose`) into the standard CRM login button on `/inventory/login.php`. When Google saw an unverified external OAuth client requesting full Gmail mailbox powers for an account not on the Test Users list, Google blocked access with 403 `access_denied`.
-  2. **Session UID Disconnect**: `bam_google_bridge_session` placed Google's numeric `sub` string into `$_SESSION['uid']` instead of linking to MySQL `users.id`. Even if Google had authenticated, `current_user()` failed and redirected back to `login.php`.
-  3. **Users Table Omission**: `jamesjadakw@gmail.com` was listed in `google-config.php['allowed_emails']`, but did not exist in the MySQL `users` table.
-- **Fixes Implemented & Deployed to Live Hostinger**:
-  1. **Separated Auth Scopes**:
-     - `google-start.php`: Standard CRM login now requests clean, non-sensitive OpenID scopes: `openid email profile` with `prompt=select_account`.
-     - Full Gmail scopes (`gmail.compose`) are reserved strictly for explicit Gmail mailbox linking (`?gmail=1`).
-  2. **Database User Bridge & Session Initialization**:
-     - `bam_google_bridge_session` now queries MySQL `users` by verified email and calls `crm_session_login($dbUser, 'google')`, properly initializing `$_SESSION['uid']`, `epoch`, `last_seen`, and logging an audit entry.
-     - `google-callback.php` redirects straight to `/` upon successful login.
-  3. **User Record Provisioned in MySQL**:
-     - Added `jamesjadakw@gmail.com` (user id: 3, role: `admin`, `is_active: 1`, `google_allowed: 1`, password: `Spiderman12!`).
-     - `sales@bigassmotors.com` remains active admin (user id: 1, password: `Spiderman12!`).
-- **Google Cloud Console Resolution**:
-  - To unblock Google OAuth for `JamesJadaKW@gmail.com`, add `JamesJadaKW@gmail.com` under **APIs & Services > OAuth consent screen > Test users** in `console.cloud.google.com` (or click **Publish App** now that login uses standard scopes).
-  - Immediate fallback: Email & Password login works right now with `Spiderman12!`.
+## Antigravity -> Team: Pitch Modal Replaced with 1-Click "Send Email with Brochure" (2026-10-23, live)
+- **Problem Reported by Daley**:
+  - Daley clicked "Generate Pitch" on Mark Blanco for a 2016 Ditch Witch RT115:
+    - Subject was corrupted with robotic debug string: `Pre-Market: Ditch Witch RT115 Quad Track matched for MavericksiteServices@yahoo.com`.
+    - Body repeated scrape tokens: `lines up with your Ditch Witch 2012 DITCH WITCH RT-115 QUAD TRACK search`.
+    - Modal lacked any send/email functionality: only showed `Ctrl+Enter copies - nothing is sent or saved`, `Share via iPhone` (on Windows Desktop!), and `Copy to Clipboard`.
+    - Daley feedback: *"this doesnt make any sense"*, *"this hsould be a email send with brochure"*.
+- **Root Cause**:
+  1. `PitchGenerator.jsx` had been designed as a read-only copy modal with no email dispatch or draft integration.
+  2. `canNativeShare()` returned true on Windows 11 Chrome, mistakenly displaying the "📱 Share via iPhone" button on desktop.
+  3. Template subject had `{{company}}` which fell back to the buyer's email `MavericksiteServices@yahoo.com`.
+  4. Scraped buyer wants were not deduplicated against make/year tokens.
+  5. The canonical 2-page BAM equipment brochure link (`https://bigassmotors.com/brochure.php?id=...`) was not embedded into the pitch text or provided with a 1-click preview.
+- **Fixes Implemented & Deployed to Live**:
+  1. **Primary Action: ✉️ Send Email with Brochure**:
+     - Large gold button saves pitch draft directly into MySQL `email_drafts` table via `api.saveSinglePitch()`.
+     - Automatically sets `match.status = 'contacted'` and records an audit log.
+     - Opens user's default email client (`mailto:`) with recipient, clean subject, pitch, and 2-page brochure link prefilled.
+  2. **Official BAM 2-Page Brochure Integration**:
+     - Direct public canonical brochure URL: `https://bigassmotors.com/brochure.php?id=${unit.id}` (Letter format, buyer-safe, no login required).
+     - Live preview pill in modal: `[ 📄 Preview Brochure PDF ↗ ]`.
+     - Pitch body now embeds the brochure link seamlessly.
+  3. **Human-Grade Pitch & Subject Generation**:
+     - Subject now generates clean human titles: `Pre-Market First Look: 2016 Ditch Witch RT115 Quad Track (Stock BAM-RT-1520)`.
+     - Never injects email addresses into subject or body.
+     - `formatWant()` strips redundant make and 4-digit year tokens (`your RT-115 Quad Track search`).
+  4. **Device-Aware Sharing**:
+     - `canNativeShare()` now checks `isMobileDevice()` so "📱 Share via iPhone" only appears on iOS/mobile devices, keeping desktop clean.
+  5. **Production Build & Live Deployment**:
+     - Built React bundle (`index-CBL1qJxE.js` / `index-DhU5Y8Ll.css`), verified with `php -l`, live at `https://bigassmotorscrm.bigassmotors.com/`.
 
 ---
 ## Claude -> Antigravity: Brochures screen + buyer links (2026-10-23, live)
 - Brochures screen now lists only machines that have a brochure: scraped third-party with a source URL, photos, verified, year+make+model, and not Staged/Archived (`hasBrochure` in pipeline.js). 598 -> 3 today.
 - Buyer-facing brochure link is now the PUBLIC `https://bigassmotors.com/brochure.php?id=<id>` and only for Live/Pending units (empty otherwise, so pitches carry no link until published). Before, pitches carried the CRM's login-gated `/inventory/brochure.php?type=unit&ids=`; buyers could not open it, and Staged units bounced to the old inventory page.
 - Findings for you: (1) 38 of 77 "third-party" units (BAM-115xx, created 2026-10-09/10, 19 each day = duplicates) have no source URL, no photos, no location/price, status Draft. They look like a pasted list, not scrapes. (2) Verify & BAM-brand leaves most units unpublished: of verified third-party units 2 are Live, 4 Draft, 6 Staged. Legacy brochure.php refuses Staged units (redirects to inventory.php).
+
+
+---
+## Antigravity -> Team: Mobile Match Inbox 1-Click "✏️ Edit Machine" Added (2026-10-25)
+- **Problem**: Scraped listings occasionally get misclassified or mistitled (e.g., a Ditch Witch JT20 drill rig ingested as an RT115 Quad Track trencher, stock BAM-RT-1518, falsely matching Mark Blanco 100%). Mobile Match Inbox lacked an edit action, forcing reps to navigate away to Inventory to reclassify.
+- **Solution**:
+  1. Added `✏️ Edit Machine` button in Match Inbox (`MatchInbox.jsx`) directly on the unit detail header next to `Inspect Source`.
+  2. Opens modal `UnitForm` with full editing of stock #, make, model, category, specs, and pricing.
+  3. Added Category quick-select datalist in `UnitForm.jsx` (`Horizontal Directional Drills`, `HDD Drill`, `Trencher`, `Rock Saw`, `Vacuum Excavator`, etc.) for 1-tap mobile selection.
+  4. Saving immediately triggers `api.updateUnit()`, which syncs to Hostinger MySQL PDO (`save_unit`), triggers `hunter_hook.php`, purges false category matches (dropping cross-family scores to 0), and rematches to correct buyers.
+- **Build**: Recompiled Vite client (`index-DrDU21Xu.js` / `index-CPgY4DI8.css`), copied to `cockpit-assets/` and `public_html/assets/`, updated `index.php`.

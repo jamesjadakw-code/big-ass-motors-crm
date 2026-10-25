@@ -3,7 +3,7 @@ import { UNIT_STATUSES } from '../api.js';
 import { Field } from '../ui.jsx';
 import PhotoUpload from '../components/PhotoUpload.jsx';
 
-const FIELDS = ['year', 'make', 'model', 'category', 'serial', 'hours', 'engineModel', 'hp', 'weight', 'dimensions',
+const FIELDS = ['stock', 'year', 'make', 'model', 'category', 'serial', 'hours', 'engineModel', 'hp', 'weight', 'dimensions',
   'attachments', 'hydraulicFlow', 'serviceHistory', 'inspectionNotes', 'sellerStatus', 'city', 'state', 'askPrice',
   'listPrice', 'buyPrice', 'sourceUrl', 'narrative', 'knownDefects', 'status'];
 
@@ -36,10 +36,32 @@ export default function UnitForm({ initial = {}, oemSpecs = {}, onSubmit, onCanc
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit({ ...f, oemSpecs, media }); }} className="space-y-4">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Field label="Stock #"><input className="input" placeholder="e.g. BAM-1234" value={f.stock} onChange={set('stock')} /></Field>
         <Field label="Year"><input className="input" type="number" value={f.year} onChange={set('year')} /></Field>
         <Field label="Make"><input className="input" value={f.make} onChange={set('make')} /></Field>
         <Field label="Model"><input className="input" value={f.model} onChange={set('model')} /></Field>
-        <Field label="Category"><input className="input" placeholder="Trencher" value={f.category} onChange={set('category')} /></Field>
+        <Field label="Category">
+          <input
+            className="input"
+            list="unit-category-list"
+            placeholder="HDD Drill, Trencher…"
+            value={f.category}
+            onChange={set('category')}
+          />
+          <datalist id="unit-category-list">
+            <option value="Horizontal Directional Drills" />
+            <option value="HDD Drill" />
+            <option value="Trenchers & Rock Saws" />
+            <option value="Trencher" />
+            <option value="Rock Saw" />
+            <option value="Vacuum Excavator" />
+            <option value="Excavator" />
+            <option value="Backhoe" />
+            <option value="Dozer" />
+            <option value="Skid Steer" />
+            <option value="Wheel Loader" />
+          </datalist>
+        </Field>
         <Field label="Serial / VIN"><input className="input" placeholder={P('serial')} value={f.serial} onChange={set('serial')} /></Field>
         <Field label="Meter hours"><input className="input" type="number" min="0" placeholder={P('hours')} value={f.hours} onChange={set('hours')} /></Field>
         <Field label="Engine"><input className="input" placeholder={oemSpecs.engine ? `OEM ref: ${oemSpecs.engine}` : ''} value={f.engineModel} onChange={set('engineModel')} /></Field>

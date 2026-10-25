@@ -9,6 +9,7 @@ import { hasPhotos } from '../localEngine.js';
 import PhotoUpload from '../components/PhotoUpload.jsx';
 import { Pager, usePaged } from '../components/Pager.jsx';
 import { formatListingDate } from '../components/ListingTasks.jsx';
+import UnitForm from './UnitForm.jsx';
 
 export default function MatchInbox({ param, query, notify, go }) {
   const [checked, setChecked] = useState(() => new Set()); // lead ids ticked for bulk pitching
@@ -29,6 +30,8 @@ export default function MatchInbox({ param, query, notify, go }) {
   const [callNote, setCallNote] = useState('');
   const [pitchFor, setPitchFor] = useState(null);          // lead the Pitch Generator is open for
   const [phoneView, setPhoneView] = useState(param ? 'detail' : 'list'); // phones show the list OR one machine; desktop shows both
+  const [editingUnit, setEditingUnit] = useState(false);
+  const [editBusy, setEditBusy] = useState(false);
 
   const loadUnits = useCallback(async () => {
     const list = await api.inventory({});
@@ -70,6 +73,34 @@ export default function MatchInbox({ param, query, notify, go }) {
     window.addEventListener('keydown', k);
     return () => window.removeEventListener('keydown', k);
   }, [buyers]);
+  async function handleSaveUnit(data) {
+    setEditBusy(true);
+    try {
+      await api.updateUnit(unit.id, data);
+      notify(`${unitTitle(unit)} updated`);
+      setEditingUnit(false);
+      await loadUnits();
+      await loadBuyers(unit.id);
+    } catch (e) {
+      notify(e.message, true);
+    } finally {
+      setEditBusy(false);
+    }
+  }
+
+  async function handleDeleteUnit(u) {
+    if (!window.confirm(`Delete ${unitTitle(u)}?`)) return;
+    try {
+      await api.deleteUnit(u.id);
+      notify(`${unitTitle(u)} deleted`);
+      setEditingUnit(false);
+      await loadUnits();
+      setSelId(null);
+    } catch (e) {
+      notify(e.message, true);
+    }
+  }
+
   // Scraped machines can't be pitched by text or e-mail until they are verified and BAM-branded.
   const locked = !!unit && isThirdParty(unit) && !unit.verified;
   async function brand() {
@@ -266,6 +297,14 @@ export default function MatchInbox({ param, query, notify, go }) {
               <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
                 <h2 className="h-display text-3xl font-bold">{unitTitle(unit)}</h2>
                 <div className="flex flex-wrap items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setEditingUnit(true)}
+                    className="inline-flex items-center gap-1 rounded-lg border border-bam/40 bg-bam/10 px-3 py-1.5 text-xs font-bold text-bam hover:bg-bam/20 transition-all shadow-sm"
+                    title="Edit machine details, category, make, model or specs"
+                  >
+                    ✏️ Edit Machine
+                  </button>
                   {unit.sourceUrl && (
                     <a
                       href={unit.sourceUrl}
@@ -513,6 +552,26 @@ export default function MatchInbox({ param, query, notify, go }) {
             <button className="btn-ghost" onClick={() => setReport(null)}>Close</button>
             {report.created > 0 && <button className="btn-primary" onClick={() => { setReport(null); go('inbox'); }}>Open Inbox</button>}
           </div>
+        </Modal>
+      )}
+
+      {editingUnit && unit && (
+        <Modal title={`Edit ${unitTitle(unit)}`} onClose={() => setEditingUnit(false)}>
+          <UnitForm
+            initial={unit}
+            oemSpecs={unit.oemSpecs || {}}
+            onSubmit={handleSaveUnit}
+            onCancel={() => setEditingUnit(false)}
+            submitLabel="Save unit"
+            busy={editBusy}
+            unitId={unit.id}
+            notify={notify}
+            extraActions={
+              <button type="button" className="btn-ghost !text-rose-400" onClick={() => handleDeleteUnit(unit)}>
+                Delete machine
+              </button>
+            }
+          />
         </Modal>
       )}
 

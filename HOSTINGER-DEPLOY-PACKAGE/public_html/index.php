@@ -104,6 +104,14 @@ if (is_post()) {
                     'source_url'             => (string) ($payload['sourceUrl'] ?? ''),
                     'status'                 => (string) ($payload['status'] ?? 'Draft'),
                 ], $unitId, $uid, true);
+                if (!empty($payload['confirm_active']) || !empty($payload['verified_at']) || !empty($payload['verifiedAt'])) {
+                    q('UPDATE inventory SET verified_at = NOW(), updated_at = NOW() WHERE id = ?', [$savedId]);
+                }
+                if (isset($payload['status']) && $payload['status'] === 'Sold') {
+                    q("UPDATE inventory SET status = 'Sold', sold_at = NOW(), updated_at = NOW() WHERE id = ?", [$savedId]);
+                } elseif (isset($payload['status']) && $payload['status'] === 'Archived') {
+                    q("UPDATE inventory SET status = 'Archived', archived_at = NOW(), updated_at = NOW() WHERE id = ?", [$savedId]);
+                }
                 if (is_file(BAM_ROOT . '/inc/hunter_hook.php')) {
                     require_once BAM_ROOT . '/inc/hunter_hook.php';
                     bam_hunter_on_unit_changed($savedId);
@@ -346,8 +354,8 @@ $mePayload = [
       window.BAM_HOSTINGER_BROCHURE_URL = <?= json_encode('/inventory/brochure.php', JSON_UNESCAPED_SLASHES) ?>;
       window.BAM_PDO_STATE = <?= json_encode($state, JSON_UNESCAPED_SLASHES) ?>;
     </script>
-    <script type="module" crossorigin src="/assets/index-DNyddxPM.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-D3CoVj3h.css">
+    <script type="module" crossorigin src="/assets/index-DrDU21Xu.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CPgY4DI8.css">
   </head>
   <body class="bg-ink-950 text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-gold/30 selection:text-gold">
     <div id="root"></div>
