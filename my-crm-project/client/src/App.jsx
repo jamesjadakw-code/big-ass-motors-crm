@@ -28,26 +28,44 @@ import QuickDealModal from './components/QuickDealModal.jsx';
 import CallDispositionModal from './components/CallDispositionModal.jsx';
 import { GOOGLE_FONTS, resolveFeatures, resolveLook } from './features.js';
 
-// [route, label, component, neon rgb, feature switch, count key]. Settings has no switch so nobody can lock themselves out.
-// ['sec', label] draws a section heading in the menu.
-const NAV = [
-  ['today', 'Today', Today, 'var(--bam-gold-rgb)', 'scr-today', 'today'],
-  ['match', 'Match Inbox', MatchInbox, 'var(--bam-gold-rgb)', 'scr-match', 'match'],
-  ['inbox', 'Inbox', Inbox, 'var(--bam-gold-rgb)', 'scr-inbox', 'inbox'],
-  ['brochures', 'Brochures', Brochures, 'var(--bam-gold-rgb)', 'scr-brochures', 'brochures'],
-  ['desk', '3rd-Party Machines', Desk, 'var(--bam-gold-dark-rgb)', 'N-desk', 'desk'],
-  ['leads', 'My Leads', Leads, '240 240 240', 'scr-leads', 'leads'],
-  ['tasks', 'My Tasks', Tasks, '240 240 240', 'scr-tasks', 'tasks'],
-  ['board', 'Board', Board, 'var(--bam-gold-light-rgb)', 'scr-board'],
-  ['sec', 'Inventory'],
-  ['inventory', 'Units', Inventory, 'var(--bam-gold-dark-rgb)', 'scr-inventory'],
-  ['ingest', 'Sourcing', Ingest, 'var(--bam-gold-rgb)', 'scr-ingest'],
-  ['sourcing-config', 'Sourcing Config', SourcingConfig, 'var(--bam-gold-rgb)', 'scr-sourcing-config'],
-  ['dashboard', 'Dashboard', Dashboard, '190 196 206', 'scr-dashboard'],
-  ['users', 'Users & Audit', TeamUsers, 'var(--bam-gold-rgb)', 'scr-users'],
-  ['settings', 'Settings', Settings, '190 196 206', null],
+// Nav items: [route, label, component, neon rgb, feature switch, count key].
+// Organized into 3 operational groups: Core Ops, Inventory & Sourcing, Marketing & Output.
+const NAV_GROUPS = [
+  {
+    id: 'core',
+    title: 'Core Ops',
+    items: [
+      ['today', 'Today', Today, 'var(--bam-gold-rgb)', 'scr-today', 'today'],
+      ['match', 'Match Inbox', MatchInbox, 'var(--bam-gold-rgb)', 'scr-match', 'match'],
+      ['leads', 'My Leads', Leads, '240 240 240', 'scr-leads', 'leads'],
+      ['tasks', 'My Tasks', Tasks, '240 240 240', 'scr-tasks', 'tasks'],
+      ['board', 'Board', Board, 'var(--bam-gold-light-rgb)', 'scr-board'],
+    ],
+  },
+  {
+    id: 'inventory',
+    title: 'Inventory & Sourcing',
+    items: [
+      ['inventory', 'Units', Inventory, 'var(--bam-gold-dark-rgb)', 'scr-inventory'],
+      ['desk', '3rd-Party Machines', Desk, 'var(--bam-gold-dark-rgb)', 'N-desk', 'desk'],
+      ['ingest', 'Sourcing', Ingest, 'var(--bam-gold-rgb)', 'scr-ingest'],
+      ['sourcing-config', 'Sourcing Config', SourcingConfig, 'var(--bam-gold-rgb)', 'scr-sourcing-config'],
+    ],
+  },
+  {
+    id: 'marketing',
+    title: 'Marketing & Output',
+    items: [
+      ['brochures', 'Brochures', Brochures, 'var(--bam-gold-rgb)', 'scr-brochures', 'brochures'],
+      ['inbox', 'Inbox', Inbox, 'var(--bam-gold-rgb)', 'scr-inbox', 'inbox'],
+      ['dashboard', 'Dashboard', Dashboard, '190 196 206', 'scr-dashboard'],
+      ['users', 'Users & Audit', TeamUsers, 'var(--bam-gold-rgb)', 'scr-users'],
+      ['settings', 'Settings', Settings, '190 196 206', null],
+    ],
+  },
 ];
-const ROUTES = NAV.filter((n) => n[0] !== 'sec');
+
+const ROUTES = NAV_GROUPS.flatMap((g) => g.items);
 
 const GOOGLE_HREF = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@500;700;900&family=Audiowide&family=Rajdhani:wght@500;600;700&family=Chakra+Petch:wght@500;600;700&family=Exo+2:wght@500;600;700;800&family=Michroma&family=Space+Grotesk:wght@500;600;700&display=swap';
 
@@ -156,7 +174,7 @@ export default function App() {
     let alive = true;
     const refresh = async () => {
       try {
-        const [t, inv, leads, tasks, drafts] = await Promise.all([api.today(), api.inventory({}), api.leads({}), api.tasks(), api.emailDrafts()]);
+        const [t, inv, leads, tasks, drafts] = await Promise.all([api.today(), api.inventory({}), api.leads({ noMatch: true }), api.tasks(), api.emailDrafts()]);
         if (!alive) return;
         const mine = (l) => String(l.ownerId) === String(user.id);
         setCounts({
@@ -179,18 +197,52 @@ export default function App() {
     return <Login onLogin={(u) => setUser(u)} />;
   }
 
-  const visibleNav = NAV.filter(([key, , , , sw]) => {
-    if (key === 'sec') return true;
+  const [openGroups, setOpenGroups] = useState(() => {
+    try {
+      const saved = localStorage.getItem('bam-nav-open-groups');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return { core: true, inventory: true, marketing: true };
+  });
+
+  const toggleGroup = useCallback((groupId) => {
+    setOpenGroups((prev) => {
+      const next = { ...prev, [groupId]: !prev[groupId] };
+      try { localStorage.setItem('bam-nav-open-groups', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }, []);
+
+  const isItemVisible = useCallback(([key, , , , sw]) => {
     if (key === 'sourcing-config' && user.role !== 'admin') return false;
     if (user.role === 'sales' && (key === 'settings' || key === 'users')) return false;
     if (user.role === 'broker' && key === 'settings') return false;
     return !sw || features[sw] !== false;
-  }).filter((n, i, a) => n[0] !== 'sec' || (a[i + 1] && a[i + 1][0] !== 'sec')); // drop a heading with nothing under it
-  const screens = visibleNav.filter((n) => n[0] !== 'sec');
-  // A switched-off screen can't be opened by link either: fall back to the first screen that is on.
-  const current = screens.find((n) => n[0] === loc.route) || screens[0];
+  }, [user.role, features]);
+
+  const visibleGroups = useMemo(() => {
+    return NAV_GROUPS.map((g) => ({
+      ...g,
+      items: g.items.filter(isItemVisible),
+    })).filter((g) => g.items.length > 0);
+  }, [isItemVisible]);
+
+  const screens = useMemo(() => visibleGroups.flatMap((g) => g.items), [visibleGroups]);
+  const current = screens.find((n) => n[0] === loc.route) || screens[0] || ROUTES[0];
   const View = current[2];
   const route = current[0];
+
+  // Auto-expand group if current route's group was collapsed
+  useEffect(() => {
+    const parentGroup = visibleGroups.find((g) => g.items.some((it) => it[0] === route));
+    if (parentGroup && openGroups[parentGroup.id] === false) {
+      setOpenGroups((prev) => {
+        const next = { ...prev, [parentGroup.id]: true };
+        try { localStorage.setItem('bam-nav-open-groups', JSON.stringify(next)); } catch {}
+        return next;
+      });
+    }
+  }, [route, visibleGroups, openGroups]);
 
   const mode = look.theme === 'clean' ? 'white' : (look.perUserMode && myMode) || look.mode;
   const fontFor = (key) => {
@@ -204,30 +256,76 @@ export default function App() {
     setMyMode(next);
   };
 
-  const navButtons = visibleNav.map(([key, label, , rgb, , countKey]) => {
-    if (key === 'sec') {
-      return <div key={`sec-${label}`} className="nav-sec hidden px-1 pt-1 text-[10px] font-bold uppercase tracking-[.2em] text-bam/55 md:block">{label}</div>;
-    }
+  const renderNavItem = ([key, label, , , , countKey]) => {
     const active = route === key;
     const n = countKey ? counts[countKey] : 0;
     return (
       <button
         key={key}
+        type="button"
         onClick={() => go(key)}
         style={{
-          '--c': rgb,
           fontFamily: `'${fontFor(key)}', sans-serif`,
-          color: active ? '#080808' : `rgb(${rgb})`,
-          background: active ? `rgb(${rgb})` : `rgb(${rgb} / .06)`,
-          border: `1.5px solid rgb(${rgb} / ${active ? 1 : 0.4})`,
         }}
-        className={`nav-btn ${active ? 'is-active' : ''} flex w-full shrink-0 items-center justify-between gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-left text-[13px] font-bold uppercase tracking-wider transition duration-150 hover:-translate-y-px hover:brightness-125`}
+        className={`nav-btn ${
+          active
+            ? 'is-active bg-bam text-black font-extrabold shadow-sm'
+            : 'text-neutral-300 hover:text-white hover:bg-neutral-800/80 border border-transparent hover:border-neutral-700/50'
+        } flex w-full shrink-0 items-center justify-between gap-2 whitespace-nowrap rounded-md px-3 py-1.5 text-left text-[12px] font-bold uppercase tracking-wider transition-all duration-150`}
       >
-        <span>{label}</span>
-        {n > 0 && <span className="rounded-full px-1.5 text-[10px] font-bold leading-4 tracking-normal" style={{ background: active ? '#080808' : '#e5484d', color: active ? 'var(--bam-gold)' : '#fff' }}>{n > 99 ? '99+' : n}</span>}
+        <span className="truncate">{label}</span>
+        {n > 0 && (
+          <span
+            className="rounded-full px-1.5 text-[10px] font-bold leading-4 tracking-normal"
+            style={{
+              background: active ? '#080808' : '#e5484d',
+              color: active ? 'var(--bam-gold)' : '#fff',
+            }}
+          >
+            {n > 99 ? '99+' : n}
+          </span>
+        )}
       </button>
     );
+  };
+
+  const sidebarNavContent = visibleGroups.map((group) => {
+    const isOpen = openGroups[group.id] !== false;
+    const groupBadgeTotal = group.items.reduce((sum, item) => {
+      const cKey = item[5];
+      return sum + (cKey && counts[cKey] ? counts[cKey] : 0);
+    }, 0);
+
+    return (
+      <div key={group.id} className="nav-group mb-2.5">
+        <button
+          type="button"
+          onClick={() => toggleGroup(group.id)}
+          className="flex w-full items-center justify-between px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-neutral-400 hover:text-white transition-colors select-none group"
+        >
+          <span className="flex items-center gap-1.5">
+            <span className="text-[9px] text-bam font-mono">
+              {isOpen ? '▾' : '▸'}
+            </span>
+            <span className="group-hover:text-bam transition-colors">{group.title}</span>
+          </span>
+          {groupBadgeTotal > 0 && !isOpen && (
+            <span className="rounded-full bg-bam/20 border border-bam/40 px-1.5 text-[9px] font-bold text-bam">
+              {groupBadgeTotal > 99 ? '99+' : groupBadgeTotal}
+            </span>
+          )}
+        </button>
+
+        {isOpen && (
+          <div className="mt-1 space-y-1">
+            {group.items.map(renderNavItem)}
+          </div>
+        )}
+      </div>
+    );
   });
+
+  const flatNavButtons = screens.map(renderNavItem);
 
   const userCard = (
     <div className="text-[11px] leading-snug text-ink-400">
@@ -281,7 +379,7 @@ export default function App() {
         <div {...rootProps}>
           <header className="relative z-10 flex flex-wrap items-center gap-3 border-b border-bam/25 bg-ink-950/95 px-4 py-2.5">
             <div className="font-['Orbitron'] text-[17px] font-black uppercase tracking-wider text-gold">Big Ass Motors</div>
-            <nav className="flex flex-1 gap-2 overflow-x-auto">{navButtons}</nav>
+            <nav className="flex flex-1 gap-2 overflow-x-auto">{flatNavButtons}</nav>
             <div className="hidden md:block">{userCard}</div>
           </header>
           {main}
@@ -296,11 +394,25 @@ export default function App() {
                 <button type="button" className="btn-ghost !px-3 !py-1 text-xs" aria-expanded={menuOpen} onClick={() => setMenuOpen((o) => !o)}>☰ Menu</button>
               )}
             </div>
-            <nav
-              className={`${look.phoneBar ? 'flex gap-2 overflow-x-auto' : `${menuOpen ? 'flex' : 'hidden'} flex-col gap-2`} px-3 pb-3 pt-1 md:block md:flex-1 md:space-y-2 md:overflow-visible md:pt-0`}
-            >
-              {navButtons}
+
+            {/* Desktop: Grouped collapsible sidebar with vertical scroll */}
+            <nav className="hidden md:block md:flex-1 md:overflow-y-auto px-3 py-1 space-y-1">
+              {sidebarNavContent}
             </nav>
+
+            {/* Mobile: horizontal phoneBar OR expandable menu */}
+            {look.phoneBar ? (
+              <nav className="flex gap-2 overflow-x-auto px-3 pb-3 pt-1 md:hidden">
+                {flatNavButtons}
+              </nav>
+            ) : (
+              menuOpen && (
+                <nav className="flex flex-col gap-1 px-3 pb-3 pt-1 md:hidden">
+                  {sidebarNavContent}
+                </nav>
+              )
+            )}
+
             <div className="hidden border-t border-ink-800 px-4 py-3 md:block">{userCard}</div>
           </aside>
           {main}

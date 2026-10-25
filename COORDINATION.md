@@ -555,3 +555,34 @@ Daley commanded: *"make these the root crm plesae, bigassmotorscrm.bigassmotors.
   2. Updated `my-crm-project/client/src/views/Login.jsx` to pure `bg-black`, `bg-black` card, `#0a0a0a` inputs, and `#222222` dividers.
   3. Updated `BAM-Login.html` and added guaranteed `.login-wrap` / `.login-card` overrides in `crm.css`.
   4. Rebuilt React production bundle (`index-SQJOwBiT.js` / `index-BjIyp9K-.css`), updated `index.php`, refreshed `HOSTINGER-DEPLOY-BAM-CRM.zip`, committed and pushed to git (`feat/approved-screens`).
+
+
+---
+## Antigravity -> Team: CRM Dashboard & Left Nav Clutter Elimination Refactor (2026-10-25)
+- **Objective**: Refactor the Big Ass Motors CRM dashboard UI for maximum operational speed and zero visual clutter while retaining 100% of existing functions, database calls, role gating, and backend logic across the 14 application screens.
+- **Completed Refactoring Items**:
+  1. **COMPACT METRICS (`Today.jsx`)**:
+     - Streamlined the top 5 oversized stat cards (`Overdue`, `Due Today`, `Never Called`, `Hot w/ Phone`, `Done Today`) into a sleek horizontal mini-ticker bar.
+     - Saves ~180px of vertical height so sales reps see their live action items immediately without scrolling.
+  2. **MISSION CONTROL STRIP (`Today.jsx`)**:
+     - Merged "Today's Play," "Motivation," and "Sales Coach" boxes into a single unified top banner.
+     - Primary play is immediately visible in high-contrast text.
+     - Added collapsible toggle (`💡 Sales Coach & Tips ▾`) revealing the daily motivation, coach guidance, and 1-2-3 tactical rules on demand.
+  3. **LEFT NAV GROUPING & STYLING (`App.jsx`)**:
+     - Grouped the 14 navigation screens into 3 logical collapsible sections:
+       - **Core Ops**: Today, Match Inbox, My Leads, My Tasks, Board
+       - **Inventory & Sourcing**: Units, 3rd-Party Machines, Sourcing, Sourcing Config
+       - **Marketing & Output**: Brochures, Inbox, Dashboard, Users & Audit, Settings
+     - **Wall of Yellow Buttons Eliminated**: Inactive tabs now use tranquil, quiet styling (`text-neutral-300 hover:text-white hover:bg-neutral-800/80` without garish yellow 1.5px borders). Active tabs pop with solid BAM Gold (`bg-bam text-black font-extrabold`).
+     - Persistent collapsible state with auto-expansion for the group containing the currently active screen.
+     - Badge counters bubble up to collapsed group headers so reps never miss urgent tasks or matches.
+     - 100% preserved role-based access control (`admin`, `sales`, `broker`), feature switches, and mobile bottom dock.
+  4. **TASK ROW CLEANUP & STICKY ACTIONS (`Today.jsx`)**:
+     - Redesigned task list rows to prominently feature Client Name (`fullName(t.lead)`) and company in bold text.
+     - Implemented `cleanTaskTitle()` to strip repetitive `"Source request:"` scrape prefixes, cleanly displaying the machine want and status badges.
+     - Added a sticky operational action bar at the top of the tasks section (`[📞 Log Call]` and `[⚡ New Scraped Matches]`) for rapid call dispositioning and navigation to high-score matches.
+- **Production Build & Packaging**:
+  - Recompiled Vite client bundle: `index-CqMjq3Jt.js` (649 kB) / `index-DjfudQ7W.css` (63 kB).
+  - Synced to `HOSTINGER-DEPLOY-PACKAGE/public_html/assets/` and `cockpit-assets/` (`cockpit.js`, `cockpit.css`).
+  - Updated root `HOSTINGER-DEPLOY-PACKAGE/public_html/index.php`.
+  - Rebuilt production archive `HOSTINGER-DEPLOY-BAM-CRM.zip` (7.24 MB).
