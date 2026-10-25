@@ -386,25 +386,14 @@ function buildInitialState() {
     serviceHistory: '', inspectionNotes: '', sellerStatus: 'Motivated', verified: true, ...o,
   });
 
-  const inventory = [
-    U('unit-1', { stock: 'BAM-1001', year: 2020, make: 'Ditch Witch', model: 'RT125 Quad', category: 'Trencher', hours: 1140, hp: 125, serial: 'DW2020RT125Q01', askPrice: 89500, listPrice: null, buyPrice: 82000, city: 'Phoenix', state: 'AZ', serviceHistory: 'Full dealer service records', narrative: 'Quad-track trencher with complete dealer records and walk-around video available.' }),
-    U('unit-2', { stock: 'BAM-1002', year: 2019, make: 'Ditch Witch', model: 'RT125', category: 'Trencher', hours: 1620, hp: 125, serial: 'DW2019RT12502', askPrice: 94000, listPrice: 112000, buyPrice: 86000, city: 'Raleigh', state: 'NC', narrative: 'Clean RT125 with fresh chain and teeth.' }),
-    U('unit-3', { stock: 'BAM-1003', year: 2021, make: 'Vermeer', model: 'RTX1250I2', category: 'Trencher', hours: 1084, hp: 130, serial: '', askPrice: 215000, listPrice: null, buyPrice: 203000, city: 'Simpsonville', state: 'SC', oemSpecs: { engine: 'Cummins QSB4.5', hp: 130 }, pendingFields: ['serial'], status: 'Draft', verified: false, sourceUrl: 'https://www.machinerytrader.com/', narrative: 'Quad-track RTX1250 trencher. Serial pending inspection.' }),
-    U('unit-4', { stock: 'BAM-1004', year: 2018, make: 'Vermeer', model: 'D60x90', category: 'HDD Drill', hours: 4000, serial: '', askPrice: 385000, listPrice: null, buyPrice: 360000, city: 'Dallas', state: 'TX', oemSpecs: { engine: 'Cummins QSB6.7', hp: 225 }, pendingFields: ['serial', 'hp', 'weight', 'dimensions'], status: 'Draft', verified: false, serviceHistory: 'Seller states: fully serviced (records not verified)', narrative: 'Ready-to-work 60x90 HDD with 600 ft of drill pipe included.' }),
-    U('unit-5', { stock: 'BAM-1005', year: 2014, make: 'Caterpillar', model: '320E', category: 'Excavator', hours: 6200, serial: 'CAT320E0099', askPrice: 78000, listPrice: 92000, buyPrice: 70000, city: 'Houston', state: 'TX', narrative: 'Well-maintained 320E excavator.' }),
-    U('unit-6', { stock: 'BAM-1006', year: 2017, make: 'Vermeer', model: 'RTX1250 Rocksaw', category: 'Rock Saw', hours: 1720, hp: 130, serial: 'VM2017RTX0155', askPrice: 189000, listPrice: null, buyPrice: 175000, city: 'Austin', state: 'TX', narrative: 'Rock saw configuration, strong hours.' }),
-  ];
+  const inventory = [];
 
   const tasks = [
     { id: 'task-1', title: 'Follow up: Wes Harlan', leadId: 'lead-1', due: offsetIso(-1, 14), done: false, priority: 'high', assignedTo: 1 },
     { id: 'task-2', title: 'Send quote sheet to Brad Lambert', leadId: 'lead-3', due: offsetIso(0, 16), done: false, priority: 'normal', assignedTo: 1 },
-    { id: 'task-3', title: 'Verify serial on BAM-1004', leadId: null, due: offsetIso(0, 11), done: false, priority: 'high', assignedTo: 1 },
   ];
 
-  const email_drafts = [
-    { id: 101, kind: 'unit_match', inventory_id: 'unit-1', lead_id: 'lead-1', to_email: 'wes@westtxtrenching.example', to_name: 'Wes Harlan', subject: '2020 Ditch Witch RT125 Quad — official brochure', body: 'Hi Wes,\n\nI have a 2020 Ditch Witch RT125 Quad (1,140 hrs · Full dealer service records) ready to work. Call for price. When do you need it on site in Midland? Sending you the 2-page official brochure now.\n\nThanks,\nJames\nBig Ass Motors LLC', status: 'Draft', created_at: offsetIso(-1, 11) },
-    { id: 102, kind: 'unit_match', inventory_id: 'unit-4', lead_id: 'lead-2', to_email: 'mike@duartebore.example', to_name: 'Mike Duarte', subject: '2018 Vermeer D60x90 — ficha técnica oficial', body: 'Hola Mike, soy James de Big Ass Motors LLC. Tengo un 2018 Vermeer D60x90 (4,000 hrs) listo para trabajo. Llame para el precio. ¿Cuándo lo necesita en obra? Le envío la ficha técnica oficial de 2 páginas ahora.', status: 'Draft', created_at: offsetIso(0, 9) },
-  ];
+  const email_drafts = [];
 
   const crm_audit = [
     { id: 501, user_id: 1, email: 'sales@bigassmotors.com', role: 'admin', event: 'login_google', detail: 'Google sign-in verified on access list', path: '/inventory/login.php', ip: '127.0.0.1', created_at: offsetIso(0, 9) },
@@ -576,11 +565,50 @@ function pendingOf(u) {
   return missing;
 }
 
-const withDerived = (u) => ({
-  ...u,
-  pendingFields: pendingOf(u),
-  margin: (u.listPrice || u.askPrice) && u.buyPrice ? (u.listPrice || u.askPrice) - u.buyPrice : null,
-});
+export function getListingAge(dateInput) {
+  if (!dateInput) return { days: 0, label: 'Fresh', level: 'fresh', text: 'Fresh' };
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return { days: 0, label: 'Fresh', level: 'fresh', text: 'Fresh' };
+  const diffMs = Date.now() - d.getTime();
+  const days = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+  if (days === 0) return { days, label: 'Scraped Today', level: 'fresh', text: 'Today' };
+  if (days === 1) return { days, label: '1d ago', level: 'fresh', text: '1 day' };
+  if (days <= 7) return { days, label: `${days}d ago`, level: 'fresh', text: `${days} days` };
+  if (days <= 21) return { days, label: `${days}d ago · Verify`, level: 'aging', text: 'Aging' };
+  return { days, label: `${days}d ago · Stale`, level: 'stale', text: 'Stale' };
+}
+
+const withDerived = (u) => {
+  const dateToUse = u.verifiedAt || u.verified_at || u.createdAt || u.created_at;
+  const age = getListingAge(dateToUse);
+  return {
+    ...u,
+    ageDays: age.days,
+    ageLabel: age.label,
+    ageLevel: age.level,
+    pendingFields: pendingOf(u),
+    margin: (u.listPrice || u.askPrice) && u.buyPrice ? (u.listPrice || u.askPrice) - u.buyPrice : null,
+  };
+};
+
+function filterLeads(list, { q, stage, id } = {}) {
+  if (id !== undefined && id !== null) list = list.filter((l) => String(l.id) === String(id));
+  if (stage && STAGES.includes(stage)) list = list.filter((l) => l.stage === stage);
+  if (q) {
+    const needle = String(q).toLowerCase();
+    list = list.filter((l) => [l.firstName, l.lastName, l.email, l.company, l.city, l.phone, l.wants?.model, l.wants?.make, l.ownerName]
+      .some((x) => (x || '').toLowerCase().includes(needle)));
+  }
+  return list;
+}
+
+function withBestMatch(list, inventory) {
+  const pool = inventory.filter(isMatchable);   // once, not once per lead
+  return list.map((l) => {
+    const best = unitsForLead(l, pool, { limit: 1 })[0];
+    return { ...l, bestMatch: best ? { unitId: best.unit.id, title: [best.unit.year, best.unit.make, best.unit.model].join(' '), score: best.score } : null };
+  });
+}
 
 const visibleLeadsForUser = (leads) => {
   const me = getCurrentUser();
@@ -1073,19 +1101,21 @@ export const localApi = {
     };
   },
 
+  // f: { q, stage, id, noMatch, limit }. The "best match" of every lead is the slow part (leads x machines), so it is only worked out
+  // when asked for and only for the leads that are returned: use noMatch for counts, limit for a short list, leadsPage for screens.
   leads: async (f = {}) => {
     const s = loadState();
-    let list = visibleLeadsForUser(s.leads);
-    if (f.stage && STAGES.includes(f.stage)) list = list.filter((l) => l.stage === f.stage);
-    if (f.q) {
-      const q = String(f.q).toLowerCase();
-      list = list.filter((l) => [l.firstName, l.lastName, l.email, l.company, l.city, l.phone, l.wants?.model, l.wants?.make, l.ownerName]
-        .some((x) => (x || '').toLowerCase().includes(q)));
-    }
-    return list.map((l) => {
-      const best = unitsForLead(l, s.inventory, { limit: 1 })[0];
-      return { ...l, bestMatch: best ? { unitId: best.unit.id, title: [best.unit.year, best.unit.make, best.unit.model].join(' '), score: best.score } : null };
-    });
+    let list = filterLeads(visibleLeadsForUser(s.leads), f);
+    if (f.limit) list = list.slice(0, f.limit);
+    return f.noMatch ? list : withBestMatch(list, s.inventory);
+  },
+
+  // One page of leads for a screen: { items (with best match), total }.
+  leadsPage: async ({ q, stage, mineOf, page = 0, size = 50 } = {}) => {
+    const s = loadState();
+    let list = filterLeads(visibleLeadsForUser(s.leads), { q, stage });
+    if (mineOf !== undefined && mineOf !== null) list = list.filter((l) => String(l.ownerId) === String(mineOf));
+    return { total: list.length, items: withBestMatch(list.slice(page * size, page * size + size), s.inventory) };
   },
 
   createLead: async (b) => {
@@ -1231,14 +1261,23 @@ export const localApi = {
     const s = loadState();
     let list = s.inventory;
     if (f.status && UNIT_STATUSES.includes(f.status)) list = list.filter((u) => u.status === f.status);
+    if (f.category) list = list.filter((u) => u.category === f.category);
+    if (f.freshness || ['fresh', 'aging', 'stale'].includes(f.status)) {
+      const flt = f.freshness || f.status;
+      list = list.filter((u) => {
+        const d = withDerived(u);
+        return d.ageLevel === flt;
+      });
+    }
     if (f.q) {
       const q = String(f.q).toLowerCase();
       list = list.filter((u) => [u.stock, u.year, u.make, u.model, u.category, u.serial, u.city, u.state].some((x) => String(x ?? '').toLowerCase().includes(q)));
     }
     const leads = visibleLeadsForUser(s.leads);
     return list.map((u) => {
-      const tops = topBuyers(u, leads, { limit: 3 });
-      return { ...withDerived(u), topScore: tops[0]?.score ?? 0, buyerCount: topBuyers(u, leads, { limit: 99 }).length };
+      if (f.noBuyers) return withDerived(u);   // screens that only list machines (titles, photos) skip the buyer scoring
+      const all = topBuyers(u, leads, { limit: 99 });   // scored once (was twice); BAM's own stock is rejected before any scoring
+      return { ...withDerived(u), topScore: all[0]?.score ?? 0, buyerCount: all.length };
     });
   },
 
@@ -1290,6 +1329,9 @@ export const localApi = {
     const s = loadState();
     const u = s.inventory.find((x) => String(x.id) === String(id));
     if (!u) throw new Error('Unit not found');
+    if (b.confirm_active) {
+      b.verifiedAt = nowIso();
+    }
     if (b.media !== undefined && !Array.isArray(b.media)) {
       b.media = String(b.media || '').split('\n').map((x) => x.trim()).filter(Boolean);
     }
@@ -1313,6 +1355,20 @@ export const localApi = {
     return gone;
   },
 
+  purgeAllUnits: async () => {
+    const s = loadState();
+    const count = s.inventory ? s.inventory.length : 0;
+    s.inventory = [];
+    s.matches = [];
+    if (Array.isArray(s.tasks)) {
+      s.tasks = s.tasks.filter((t) => !/BAM-\d+/i.test(t.title || ''));
+    }
+    saveState('purge_all_units', {});
+    recordAudit('cockpit_purge_all_units', 'Admin permanently purged ALL machine listings (0 units)', '/inventory/cockpit.php');
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    return { ok: true, purged: count, count: 0 };
+  },
+
   unitMatches: async (id, min = 40) => {
     const s = loadState();
     const u = s.inventory.find((x) => String(x.id) === String(id));
@@ -1332,10 +1388,66 @@ export const localApi = {
     });
   },
 
-  // The link a BUYER can open: the public website brochure, which exists only once the machine is Live. The CRM's own brochure page needs a CRM login.
-  brochureUrl: (id) => {
-    const u = loadState().inventory.find((x) => String(x.id) === String(id));
-    return u && ['Live', 'Pending'].includes(u.rawStatus ?? u.status) ? `https://bigassmotors.com/brochure.php?id=${encodeURIComponent(u.serverId ?? u.id)}` : '';
+  // Public canonical 2-page equipment brochure URL (publicly accessible, Letter PDF printable)
+  brochureUrl: (id) => (id ? `https://bigassmotors.com/brochure.php?id=${encodeURIComponent(id)}` : ''),
+
+  // Zero-API Single Pitch -> Saves buyer-safe draft directly into MySQL email_drafts table and queues mailto
+  saveSinglePitch: async ({ unitId, leadId, subject, body }) => {
+    const s = loadState();
+    const unit = s.inventory.find((u) => String(u.id) === String(unitId));
+    const lead = s.leads.find((l) => String(l.id) === String(leadId));
+    if (!unit || !lead) throw new Error('Unit or lead not found');
+
+    const draftId = ((s.email_drafts && s.email_drafts[0]?.id) || 100) + (s.email_drafts || []).length + 1;
+    const toName = [lead.firstName, lead.lastName].filter(Boolean).join(' ') || lead.company || 'Buyer';
+    const draftRow = {
+      id: draftId,
+      kind: 'unit_match',
+      inventory_id: unit.id,
+      lead_id: lead.id,
+      to_email: lead.email || '',
+      to_name: toName,
+      subject: subject,
+      body: body,
+      status: 'Draft',
+      created_at: nowIso(),
+    };
+    s.email_drafts = s.email_drafts || [];
+    s.email_drafts.unshift(draftRow);
+
+    lead.interactions = lead.interactions || [];
+    lead.interactions.push({
+      id: uid(),
+      at: nowIso(),
+      type: 'email',
+      note: `Drafted pitch + 2-page brochure (#${draftId}) for ${unit.stock || ''}`,
+      unitId: unit.id,
+    });
+
+    let m = s.matches.find((x) => String(x.leadId) === String(lead.id) && String(x.unitId) === String(unit.id));
+    if (!m) s.matches.push((m = { leadId: lead.id, unitId: unit.id }));
+    m.status = 'contacted';
+    m.at = nowIso();
+
+    const composeUrl = `mailto:${encodeURIComponent(lead.email || '')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    saveState('bulk_pitch', {
+      unitId: unit.id,
+      results: [{
+        leadId: lead.id,
+        name: toName,
+        email: lead.email,
+        ok: true,
+        draftId: String(draftId),
+        subject: subject,
+        body: body,
+        composeUrl,
+        attachment: `${unit.stock || 'BAM'}_2Page_Brochure.pdf`,
+      }],
+    });
+
+    recordAudit('pitch_email_draft', `Saved pitch + brochure draft for ${toName} (${unit.stock})`);
+    return { ok: true, draftId, composeUrl, draftRow };
   },
 
   matchStatus: async ({ leadId, unitId, status }) => {

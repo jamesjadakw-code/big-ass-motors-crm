@@ -64,6 +64,29 @@ export default function Inventory({ param, notify, go }) {
           <p className="text-sm text-ink-400">{units.length} unit{units.length === 1 ? '' : 's'}</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {units.length > 0 && (
+            <button
+              type="button"
+              onClick={async () => {
+                const confirmed = window.confirm(
+                  `⚠️ PERMANENTLY REMOVE ALL ${units.length} MACHINES?\n\nThis will purge all machine listings and photos from the CRM down to 0 units.\n\nAre you sure?`
+                );
+                if (!confirmed) return;
+                try {
+                  await api.purgeAllUnits();
+                  setUnits([]);
+                  notify?.('All machines purged. 0 machines in CRM.');
+                  load();
+                } catch (err) {
+                  notify?.(err.message, true);
+                }
+              }}
+              className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-300 hover:bg-red-500 hover:text-white transition shadow-sm"
+              title="Permanently remove all machines (0 units)"
+            >
+              ⚠️ Purge All ({units.length}) Machines
+            </button>
+          )}
           <button className="btn-ghost" onClick={() => go('ingest')}>Add from listing</button>
           <button className="btn-primary" onClick={() => setEditing('new')}>+ Add machine</button>
         </div>

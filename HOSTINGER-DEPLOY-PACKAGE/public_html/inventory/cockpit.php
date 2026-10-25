@@ -57,6 +57,29 @@ if (is_post()) {
                 audit('cockpit_unit_save', 'Saved unit #' . $savedId, 'unit', $savedId);
                 break;
 
+            case 'delete_unit':
+                $delUnitId = isset($payload['id']) && is_numeric($payload['id']) ? (int) $payload['id'] : 0;
+                if ($delUnitId > 0 && crm_can('admin', $ME)) {
+                    q('DELETE FROM inventory_photos WHERE inventory_id = ?', [$delUnitId]);
+                    try { q('DELETE FROM inventory_files WHERE inventory_id = ?', [$delUnitId]); } catch (Throwable) {}
+                    try { q('DELETE FROM matches WHERE unit_id = ?', [$delUnitId]); } catch (Throwable) {}
+                    try { q('UPDATE email_drafts SET inventory_id = NULL WHERE inventory_id = ?', [$delUnitId]); } catch (Throwable) {}
+                    q('DELETE FROM inventory WHERE id = ?', [$delUnitId]);
+                    audit('cockpit_unit_delete', 'Deleted unit #' . $delUnitId, 'unit', $delUnitId);
+                }
+                break;
+
+            case 'purge_all_units':
+                if (crm_can('admin', $ME)) {
+                    q('DELETE FROM inventory_photos');
+                    try { q('DELETE FROM inventory_files'); } catch (Throwable) {}
+                    try { q('DELETE FROM matches'); } catch (Throwable) {}
+                    try { q('UPDATE email_drafts SET inventory_id = NULL'); } catch (Throwable) {}
+                    q('DELETE FROM inventory');
+                    audit('cockpit_purge_all_units', 'Admin permanently purged ALL machine listings (0 units)');
+                }
+                break;
+
             case 'save_lead':
                 $leadId = isset($payload['id']) && is_numeric($payload['id']) ? (int) $payload['id'] : 0;
                 $wants = is_array($payload['wants'] ?? null) ? $payload['wants'] : [];
