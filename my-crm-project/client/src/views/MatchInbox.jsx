@@ -289,31 +289,58 @@ export default function MatchInbox({ param, query, notify, go }) {
         {!unit ? <Empty>Add inventory to start matching.</Empty> : (
           <div className="d-stack mx-auto max-w-4xl">
             <div>
-              <div className="flex flex-wrap items-center gap-2 text-xs text-ink-400">
-                <span className="font-bold tracking-wider text-bam">{unit.stock}</span>{unit.category}
-                <FreshnessBadge unit={unit} />
-                {isThirdParty(unit) && <span className="chip bg-red-500/15 text-red-300">{unit.verified ? 'BAM-BRANDED' : 'NEW'} · {sourceName(unit)} · Uploaded {formatListingDate(unit.createdAt || unit.created_at || unit.foundAt)} · matched to {buyers.length} buyer{buyers.length === 1 ? '' : 's'}</span>}
-              </div>
-              <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
-                <h2 className="h-display text-3xl font-bold">{unitTitle(unit)}</h2>
+              {/* Sticky Machine Preview Header & Action Bar */}
+            <div className="sticky top-0 z-20 -mx-4 -mt-4 mb-3 border-b border-ink-800 bg-ink-950/95 px-4 py-2.5 backdrop-blur shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-ink-400">
+                    <span className="font-bold tracking-wider text-bam">{unit.stock}</span>
+                    <span className="text-neutral-300">{unit.category}</span>
+                    <FreshnessBadge unit={unit} />
+                    {isThirdParty(unit) && (
+                      <span className="chip bg-red-500/15 text-red-300 text-[10px] py-0">
+                        {unit.verified ? 'BAM-BRANDED' : 'NEW'} · {sourceName(unit)} · {buyers.length} buyer{buyers.length === 1 ? '' : 's'}
+                      </span>
+                    )}
+                  </div>
+                  <h2 className="h-display text-xl sm:text-2xl font-bold text-white truncate mt-0.5">{unitTitle(unit)}</h2>
+                </div>
+
+                {/* Sticky Action Buttons */}
                 <div className="flex flex-wrap items-center gap-1.5">
                   <button
                     type="button"
                     onClick={() => setEditingUnit(true)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-bam/40 bg-bam/10 px-3 py-1.5 text-xs font-bold text-bam hover:bg-bam/20 transition-all shadow-sm"
-                    title="Edit machine details, category, make, model or specs"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-bam px-3 py-1.5 text-xs font-black text-black shadow-sm transition-all hover:brightness-110 active:scale-95"
+                    title="Edit machine specs, price, photos, and source"
                   >
                     ✏️ Edit Machine
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => api.openBrochure(unit.id).catch((e) => notify(e.message, true))}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-600 bg-ink-800 px-3 py-1.5 text-xs font-semibold text-neutral-200 shadow-sm transition-all hover:border-bam hover:text-white hover:bg-ink-700"
+                    title="Open official 2-page BAM equipment brochure PDF"
+                  >
+                    📄 View Brochure
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => go('inventory', unit.id)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-ink-900 px-2.5 py-1.5 text-xs font-semibold text-neutral-300 shadow-sm transition-all hover:text-white hover:bg-ink-800"
+                    title="Open complete record in Inventory desk"
+                  >
+                    🔍 Full Details
                   </button>
                   {unit.sourceUrl && (
                     <a
                       href={unit.sourceUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 rounded-lg border border-neutral-600 bg-ink-800 px-3 py-1.5 text-xs font-semibold text-neutral-200 hover:border-bam hover:text-white hover:bg-ink-700 shadow-sm transition-all"
-                      title="Inspect original listing in a new tab"
+                      className="inline-flex items-center gap-1 rounded-lg border border-neutral-700 bg-ink-900 px-2.5 py-1.5 text-xs font-medium text-neutral-400 hover:text-bam hover:border-bam/50 transition-all"
+                      title="Inspect original scraped listing in a new tab"
                     >
-                      🔗 Inspect Source
+                      🔗 Source
                     </a>
                   )}
                   <button
@@ -323,27 +350,28 @@ export default function MatchInbox({ param, query, notify, go }) {
                       notify(`${unitTitle(unit)} confirmed active! Freshness renewed.`);
                       loadUnits();
                     }}
-                    className="inline-flex items-center gap-1 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20 transition-all"
+                    className="inline-flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/20 transition-all"
                     title="Confirm this listing is still active today"
                   >
-                    ✓ Still Active
+                    ✓ Active
                   </button>
                   <button
                     type="button"
                     onClick={async () => {
                       if (!window.confirm(`Mark ${unitTitle(unit)} as SOLD / Taken Down?\n\nThis will remove it from active matching immediately.`)) return;
                       await api.updateUnit(unit.id, { status: 'Sold' });
-                      notify(`${unitTitle(unit)} marked as Sold and removed.`);
+                      notify(`${unitTitle(unit)} marked as Sold.`);
                       loadUnits();
                       loadBuyers(null);
                     }}
-                    className="inline-flex items-center gap-1 rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-1.5 text-xs font-bold text-rose-400 hover:bg-rose-500/20 transition-all"
+                    className="inline-flex items-center gap-1 rounded-lg border border-rose-500/30 bg-rose-500/10 px-2.5 py-1.5 text-xs font-semibold text-rose-400 hover:bg-rose-500/20 transition-all"
                     title="Mark listing as sold or removed by seller"
                   >
-                    ✕ Mark Sold
+                    ✕ Sold
                   </button>
                 </div>
               </div>
+            </div>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 {!hasPhotos(unit) && (
                   <span className="chip bg-red-500/15 text-red-300">NO PHOTOS · not matched or pitched until it has photos</span>

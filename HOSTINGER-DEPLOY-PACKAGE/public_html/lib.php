@@ -113,10 +113,15 @@ function new_map_unit(array $r, array $photos, callable $photoUrl, bool $showCos
         'city'          => $city,
         'state'         => $state,
         'status'        => new_unit_status($r['status'] ?? ''),
-        'rawStatus'     => new_str($r['status'] ?? '', 20),
-        'narrative'     => new_str($r['description'] ?? '', 4000),
+        'rawStatus'       => new_str($r['status'] ?? '', 20),
+        'narrative'       => new_str($r['description'] ?? '', 4000),
+        'attachments'     => new_str($r['attachments'] ?? '', 1000),
+        'knownDefects'    => new_str($r['known_defects'] ?? '', 1000),
+        'inspectionNotes' => new_str($r['inspection_notes'] ?? '', 1000),
+        'serviceHistory'  => new_str($r['service_history'] ?? '', 1000),
+        'sellerStatus'    => new_str($r['seller_status'] ?? '', 60),
         'verified'      => !empty($r['verified_at']),
-        'sourceUrl'     => new_str($r['source_url'] ?? '', 500),
+        'sourceUrl'     => new_str($r['source_url'] ?? '', 600),
         // Only URL listings (Add from URL / uploader: inventory.url_listing = 1) are third-party machines that may be matched.
         'thirdParty'    => ((int) ($r['url_listing'] ?? 0) === 1) || (trim((string) ($r['source_url'] ?? '')) !== '' && ($r['submitted_via'] ?? '') !== 'legacy'),
         'media'         => $media,
@@ -124,6 +129,8 @@ function new_map_unit(array $r, array $photos, callable $photoUrl, bool $showCos
         'oemSpecs'      => [],
         'pendingFields' => [],
         'createdAt'     => !empty($r['created_at']) ? (string) $r['created_at'] : null,
+        'updatedAt'     => !empty($r['updated_at']) ? (string) $r['updated_at'] : null,
+        'verifiedAt'    => !empty($r['verified_at']) ? (string) $r['verified_at'] : null,
         'serverId'      => $id,
     ];
     // Unconfirmed specs stay unset; the app shows them as Pending Inspection. Nothing is guessed.

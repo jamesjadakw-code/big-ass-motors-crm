@@ -2,6 +2,7 @@
 // Each row shows the website it was scraped from, how many photos it has and the listing score (10 photos = high).
 
 import { useState } from 'react';
+import { api } from '../api.js';
 import { ScoreBadge } from '../ui.jsx';
 
 const TONE = {
@@ -43,12 +44,21 @@ export function groupListings(tasks) {
     .sort((a, b) => b.items[0].listing.score - a.items[0].listing.score || a.type.localeCompare(b.type));
 }
 
-export default function ListingTasks({ tasks, onToggle, go, title = 'New scraped machines', empty = 'No new scraped machines to review.' }) {
-  const [limit, setLimit] = useState(20);   // 20 machines drawn; more on request
+export default function ListingTasks({
+  tasks,
+  onToggle,
+  go,
+  onEditMachine,
+  notify,
+  title = 'New scraped machines',
+  empty = 'No new scraped machines to review.'
+}) {
+  const [limit, setLimit] = useState(20);
   let room = limit;
   const groups = groupListings(tasks)
     .map((g) => { const items = g.items.slice(0, Math.max(0, room)); room -= items.length; return { ...g, shown: items, items: g.items }; })
     .filter((g) => g.shown.length);
+
   return (
     <section className="card">
       <div className="flex items-center justify-between border-b border-ink-700 px-4 py-3">
@@ -62,21 +72,82 @@ export default function ListingTasks({ tasks, onToggle, go, title = 'New scraped
             <span>{g.type} · {g.items.length}</span><span className="font-normal normal-case tracking-normal text-ink-400">best first</span>
           </div>
           {g.shown.map((t) => (
-            <div key={t.id} className="row-int d-row flex items-start gap-3 border-l-4 border-ink-600">
-              <input type="checkbox" checked={false} onChange={() => onToggle(t)} className="mt-1 h-4 w-4 accent-[rgb(var(--accent-rgb))]" aria-label={`Mark ${t.listing.title} reviewed`} />
-              <button type="button" onClick={() => go('match', t.unitId)} className="min-w-0 flex-1 text-left hover:text-bam" title="Open this machine and its buyers">
-                <div className="text-sm font-medium">{t.listing.title} <span className="text-ink-400">→</span></div>
-                <div className="text-xs text-ink-400 flex flex-wrap items-center gap-1.5 mt-0.5">
-                  <span className="inline-flex items-center gap-1 font-semibold text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded text-[11px] border border-amber-500/25" title={`Uploaded on ${t.listing.uploadedAt || t.listing.createdAt || 'Recent'}`}>
-                    📅 {formatListingDate(t.listing.uploadedAt || t.listing.createdAt || t.due)}
-                  </span>
-                  <span>·</span>
-                  <span className="font-medium text-ink-200">{t.listing.source}</span>
-                  {t.listing.city && <span>· {[t.listing.city, t.listing.state].filter(Boolean).join(', ')}</span>}
+            <div key={t.id} className="row-int d-row flex flex-col sm:flex-row sm:items-start gap-3 border-l-4 border-ink-600 py-3">
+              <div className="flex items-start gap-3 flex-1 min-w-0">
+                <input
+                  type="checkbox"
+                  checked={false}
+                  onChange={() => onToggle(t)}
+                  className="mt-1 h-4 w-4 accent-bam cursor-pointer"
+                  aria-label={`Mark ${t.listing.title} reviewed`}
+                />
+                <div className="min-w-0 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onEditMachine) onEditMachine(t.unitId);
+                      else go('inventory', t.unitId);
+                    }}
+                    className="text-left group block w-full"
+                    title="Click to open full machine edit record"
+                  >
+                    <div className="text-sm font-bold text-white group-hover:text-bam transition-colors flex items-center gap-1.5">
+                      <span>{t.listing.title}</span>
+                      <span className="text-xs text-bam font-normal opacity-0 group-hover:opacity-100 transition-opacity">✏️ Edit</span>
+                    </div>
+                    <div className="text-xs text-ink-400 flex flex-wrap items-center gap-1.5 mt-0.5">
+                      <span className="inline-flex items-center gap-1 font-semibold text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded text-[11px] border border-amber-500/25" title={`Uploaded on ${t.listing.uploadedAt || t.listing.createdAt || 'Recent'}`}>
+                        📅 {formatListingDate(t.listing.uploadedAt || t.listing.createdAt || t.due)}
+                      </span>
+                      <span>·</span>
+                      <span className="font-medium text-ink-200">{t.listing.source}</span>
+                      {t.listing.city && <span>· {[t.listing.city, t.listing.state].filter(Boolean).join(', ')}</span>}
+                    </div>
+                  </button>
+
+                  {/* Sticky Action Buttons */}
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (onEditMachine) onEditMachine(t.unitId);
+                        else go('inventory', t.unitId);
+                      }}
+                      className="inline-flex items-center gap-1 rounded bg-bam px-2.5 py-1 text-[11px] font-black text-black shadow-sm transition-all hover:brightness-110 active:scale-95"
+                      title="Edit complete machine record with all pre-populated fields"
+                    >
+                      ✏️ Edit Machine
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => api.openBrochure(t.unitId).catch((err) => notify?.(err.message, true))}
+                      className="inline-flex items-center gap-1 rounded border border-neutral-700 bg-ink-900 px-2.5 py-1 text-[11px] font-semibold text-neutral-200 hover:border-bam hover:text-white hover:bg-ink-800 shadow-sm transition-all"
+                      title="Open official 2-page BAM equipment brochure PDF"
+                    >
+                      📄 View Brochure
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => go('inventory', t.unitId)}
+                      className="inline-flex items-center gap-1 rounded border border-neutral-700 bg-ink-900 px-2 py-1 text-[11px] font-medium text-neutral-400 hover:text-white transition-all"
+                      title="Open full record in Inventory desk"
+                    >
+                      🔍 Full Details
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => go('match', t.unitId)}
+                      className="inline-flex items-center gap-1 rounded border border-neutral-700 bg-ink-900 px-2 py-1 text-[11px] font-medium text-neutral-400 hover:text-bam transition-all"
+                      title="Open Match Inbox for this machine"
+                    >
+                      ⚡ Match Inbox →
+                    </button>
+                  </div>
                 </div>
-              </button>
-              <div className="flex shrink-0 flex-col items-end gap-1">
-                <span className="flex items-center gap-1.5" title="Listing score out of 100: up to 60 for photos (10 photos = full) and 40 for stated info">
+              </div>
+
+              <div className="flex shrink-0 sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-1">
+                <span className="flex items-center gap-1.5" title="Listing score out of 100: up to 60 for photos and 40 for stated info">
                   <span className={`chip ${TONE[t.listing.label]}`}>{t.listing.label}</span>
                   <ScoreBadge score={t.listing.score} />
                 </span>

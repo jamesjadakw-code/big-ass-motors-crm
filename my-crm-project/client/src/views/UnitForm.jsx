@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { UNIT_STATUSES } from '../api.js';
+import { api, UNIT_STATUSES } from '../api.js';
 import { Field } from '../ui.jsx';
 import PhotoUpload from '../components/PhotoUpload.jsx';
 
@@ -8,23 +8,62 @@ const FIELDS = ['stock', 'year', 'make', 'model', 'category', 'serial', 'hours',
   'listPrice', 'buyPrice', 'sourceUrl', 'narrative', 'knownDefects', 'status'];
 
 export default function UnitForm({ initial = {}, oemSpecs = {}, onSubmit, onCancel, submitLabel = 'Save unit', busy, extraActions, unitId, notify }) {
-  const [media, setMedia] = useState(() => (Array.isArray(initial.media) ? initial.media : []));
-  const [mediaText, setMediaText] = useState(() => (Array.isArray(initial.media) ? initial.media.join('\n') : ''));
+  const resolvedId = unitId || initial.id || initial.serverId;
+
+  const [media, setMedia] = useState(() => {
+    const arr = Array.isArray(initial.media) && initial.media.length > 0
+      ? initial.media
+      : (Array.isArray(initial.photos) ? initial.photos : []);
+    return [...arr];
+  });
+
+  const [mediaText, setMediaText] = useState(() => {
+    const arr = Array.isArray(initial.media) && initial.media.length > 0
+      ? initial.media
+      : (Array.isArray(initial.photos) ? initial.photos : []);
+    return arr.join('\n');
+  });
+
   const [f, setF] = useState(() => {
+    const specs = initial.oemSpecs || oemSpecs || {};
     const o = {};
-    for (const k of FIELDS) o[k] = initial[k] ?? '';
-    if (!o.status) o.status = 'Draft';
+    o.stock = initial.stock || initial.stock_no || '';
+    o.year = initial.year ?? '';
+    o.make = initial.make || '';
+    o.model = initial.model || '';
+    o.category = initial.category || '';
+    o.serial = initial.serial || initial.serial_vin || '';
+    o.hours = initial.hours ?? '';
+    o.engineModel = initial.engineModel || initial.engine || specs.engine || '';
+    o.hp = initial.hp || specs.hp || '';
+    o.weight = initial.weight || specs.weight || specs.operating_weight || '';
+    o.dimensions = initial.dimensions || specs.dimensions || '';
+    o.hydraulicFlow = initial.hydraulicFlow || initial.hydraulic_flow || specs.hydraulic_flow || '';
+    o.attachments = initial.attachments || '';
+    o.serviceHistory = initial.serviceHistory || initial.service_history || '';
+    o.inspectionNotes = initial.inspectionNotes || initial.inspection_notes || '';
+    o.knownDefects = initial.knownDefects || initial.known_defects || '';
+    o.sellerStatus = initial.sellerStatus || initial.seller_status || '';
+    o.city = initial.city || '';
+    o.state = initial.state || '';
+    o.askPrice = initial.askPrice ?? initial.ask_price ?? initial.seller_cost_ask ?? '';
+    o.buyPrice = initial.buyPrice ?? initial.buy_price ?? initial.seller_cost_ask ?? '';
+    o.listPrice = initial.listPrice ?? initial.public_price ?? initial.price ?? '';
+    o.sourceUrl = initial.sourceUrl || initial.source_url || '';
+    o.narrative = initial.narrative || initial.description || '';
+    o.status = initial.status || 'Draft';
     return o;
   });
+
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
-  const ref = (k) => oemSpecs[k];
+  const ref = (k) => (oemSpecs && oemSpecs[k]) || (initial.oemSpecs && initial.oemSpecs[k]);
   const pend = (k) => f[k] === '' && !ref(k);
   const P = (k) => (pend(k) ? '' : ref(k) ? `OEM ref: ${ref(k)}` : '');
 
   function updateMediaText(t) {
     setMediaText(t);
     const urls = t.split('\n').map((x) => x.trim()).filter((x) => /^https?:\/\//i.test(x));
-    setMedia([...media.filter((m) => !/^https?:\/\//i.test(m)), ...urls]);   // photos already stored on the server (site paths) stay
+    setMedia([...media.filter((m) => !/^https?:\/\//i.test(m)), ...urls]);
   }
 
   function removePhoto(idx) {
@@ -35,6 +74,42 @@ export default function UnitForm({ initial = {}, oemSpecs = {}, onSubmit, onCanc
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit({ ...f, oemSpecs, media }); }} className="space-y-4">
+      {/* Sticky Header Action Bar */}
+      <div className="sticky top-0 z-20 -mx-6 -mt-4 mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-ink-800 bg-ink-950/95 px-6 py-2.5 backdrop-blur">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="font-mono text-xs font-bold text-bam">{f.stock || 'NEW UNIT'}</span>
+          <span className="truncate text-sm font-bold text-white">
+            {[f.year, f.make, f.model].filter(Boolean).join(' ') || 'Machine Details'}
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="inline-flex items-center gap-1 rounded bg-bam px-2.5 py-1 text-xs font-black text-black shadow-sm">
+            ✏️ Edit Machine
+          </span>
+          {resolvedId && (
+            <button
+              type="button"
+              onClick={() => api.openBrochure(resolvedId).catch((err) => notify?.(err.message, true))}
+              className="inline-flex items-center gap-1 rounded border border-neutral-700 bg-ink-900 px-2.5 py-1 text-xs font-semibold text-neutral-200 hover:border-bam hover:text-white hover:bg-ink-800 shadow-sm transition-all"
+              title="Open official 2-page BAM equipment brochure PDF"
+            >
+              📄 View Brochure
+            </button>
+          )}
+          {f.sourceUrl && (
+            <a
+              href={f.sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 rounded border border-neutral-700 bg-ink-900 px-2.5 py-1 text-xs font-medium text-neutral-300 hover:text-bam hover:border-bam/50 transition-all"
+              title="Inspect original scraped listing website"
+            >
+              🔗 Source Link
+            </a>
+          )}
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Field label="Stock #"><input className="input" placeholder="e.g. BAM-1234" value={f.stock} onChange={set('stock')} /></Field>
         <Field label="Year"><input className="input" type="number" value={f.year} onChange={set('year')} /></Field>
@@ -64,7 +139,7 @@ export default function UnitForm({ initial = {}, oemSpecs = {}, onSubmit, onCanc
         </Field>
         <Field label="Serial / VIN"><input className="input" placeholder={P('serial')} value={f.serial} onChange={set('serial')} /></Field>
         <Field label="Meter hours"><input className="input" type="number" min="0" placeholder={P('hours')} value={f.hours} onChange={set('hours')} /></Field>
-        <Field label="Engine"><input className="input" placeholder={oemSpecs.engine ? `OEM ref: ${oemSpecs.engine}` : ''} value={f.engineModel} onChange={set('engineModel')} /></Field>
+        <Field label="Engine"><input className="input" placeholder={ref('engine') ? `OEM ref: ${ref('engine')}` : ''} value={f.engineModel} onChange={set('engineModel')} /></Field>
         <Field label="Power (HP)"><input className="input" type="number" min="0" placeholder={P('hp')} value={f.hp} onChange={set('hp')} /></Field>
         <Field label="Operating weight"><input className="input" placeholder="Only if stated" value={f.weight} onChange={set('weight')} /></Field>
         <Field label="Transport dimensions"><input className="input" placeholder="Only if stated" value={f.dimensions} onChange={set('dimensions')} /></Field>
@@ -98,8 +173,8 @@ export default function UnitForm({ initial = {}, oemSpecs = {}, onSubmit, onCanc
       <div className="rounded-lg border border-neutral-700 bg-black/40 p-3 space-y-2.5">
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold uppercase tracking-wider text-amber-400">Photos &amp; Media ({media.length})</label>
-          {unitId
-            ? <PhotoUpload unitId={unitId} notify={notify} label="Upload from my computer" className="btn-neon !py-1 text-xs"
+          {resolvedId
+            ? <PhotoUpload unitId={resolvedId} notify={notify} label="Upload from my computer" className="btn-neon !py-1 text-xs"
                 onAdded={(r) => { setMedia(r.media); setMediaText(r.media.filter((m) => /^https?:\/\//i.test(m)).join('\n')); }} />
             : <span className="text-[11px] text-neutral-400">Captured by BAM Grabber / URL Puller</span>}
         </div>

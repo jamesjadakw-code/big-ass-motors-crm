@@ -586,3 +586,37 @@ Daley commanded: *"make these the root crm plesae, bigassmotorscrm.bigassmotors.
   - Synced to `HOSTINGER-DEPLOY-PACKAGE/public_html/assets/` and `cockpit-assets/` (`cockpit.js`, `cockpit.css`).
   - Updated root `HOSTINGER-DEPLOY-PACKAGE/public_html/index.php`.
   - Rebuilt production archive `HOSTINGER-DEPLOY-BAM-CRM.zip` (7.24 MB).
+
+
+---
+## Antigravity -> Team: Instant Pre-Populated Machine Routing & Sticky Header Actions (2026-10-25)
+- **Objective**: Ensure that clicking any machine from the Today page, Task lists, or Match Inbox instantly opens the complete machine record with 100% of fields and photos pre-populated, with clear sticky action buttons ("✏️ Edit Machine", "📄 View Brochure", "🔍 Full Details").
+- **Completed Implementations**:
+  1. **Pre-Populated Form Engine (`UnitForm.jsx`)**:
+     - Added robust resolution for all database field aliases: `stock` (`stock_no`), `serial` (`serial_vin`), `askPrice` (`seller_cost_ask`), `buyPrice` (`buy_price`), `listPrice` (`public_price`), `narrative` (`description`), `media` (`photos`), and OEM spec fallbacks (`engineModel`, `hp`, `weight`, `dimensions`, `hydraulicFlow`).
+     - Zero manual re-entry: 100% of machine specifications, photo galleries, internal costs, and seller/sourcing notes are pre-populated upon opening.
+     - Added sticky header bar inside `UnitForm`: `✏️ Edit Machine`, `📄 View Brochure`, `🔗 Source Link`, stock badge.
+  2. **Match Inbox Sticky Preview Header (`MatchInbox.jsx`)**:
+     - Pinned a sticky action header atop the right-hand machine preview card:
+       - `[✏️ Edit Machine]` (primary BAM gold button: opens pre-populated `UnitForm` modal)
+       - `[📄 View Brochure]` (instant 1-click canonical 2-page equipment brochure PDF opener)
+       - `[🔍 Full Details]` (deep-links to `#/inventory/<id>`)
+       - Secondary operational pills: `🔗 Source`, `✓ Active`, `✕ Sold`.
+  3. **Today Page & Scraped Machine Tasks (`Today.jsx`, `ListingTasks.jsx`)**:
+     - Added sticky/prominent action buttons (`[✏️ Edit Machine]`, `[📄 View Brochure]`, `[🔍 Full Details]`) to every machine task in `ListingTasks.jsx`.
+     - Clicking machine title or `[✏️ Edit Machine]` directly triggers in-place modal on the Today page without losing context or scroll position.
+     - Added quick `[✏️ Edit]` and `[📄 PDF]` actions to Hot Buyers list in `Today.jsx`.
+     - In `TaskRow`, any task with `unitId` renders quick machine pills (`🚜 Machine #... · ✏️ Edit` / `📄 Brochure`).
+  4. **Task List View (`Tasks.jsx`)**:
+     - Enabled `onEditMachine` handler and modal on `Tasks.jsx` so tasks linked to machines can open the pre-populated record immediately.
+  5. **Inventory Deep-Link Routing (`Inventory.jsx`)**:
+     - `Inventory.jsx` now accepts `param` from hash route `#/inventory/:id`.
+     - Automatically looks up the unit and opens the pre-populated edit modal on arrival.
+     - Added clickable thumbnails, clickable machine titles, and `[✏️ Edit Machine]` / `[📄 Brochure]` card buttons.
+  6. **Hostinger PDO Hydration (`lib.php`)**:
+     - Added `'attachments'`, `'knownDefects'`, `'inspectionNotes'`, `'serviceHistory'`, and `'sellerStatus'` to `new_map_unit()`.
+- **Production Build & Packaging**:
+  - Recompiled Vite production bundle: `index-BfGUgFjA.js` (658 kB) / `index-Bjg_xkpA.css` (65 kB).
+  - Synced to `HOSTINGER-DEPLOY-PACKAGE/public_html/assets/` and `cockpit-assets/` (`cockpit.js`, `cockpit.css`).
+  - Updated root `HOSTINGER-DEPLOY-PACKAGE/public_html/index.php`.
+  - Rebuilt production deployment archive `HOSTINGER-DEPLOY-BAM-CRM.zip` (7.54 MB).

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api.js';
-import { Empty, Ring, fullName, when } from '../ui.jsx';
+import { Empty, Ring, fullName, when, Modal, unitTitle } from '../ui.jsx';
+import UnitForm from './UnitForm.jsx';
 import { Gate, useFeature } from '../FeatureContext.jsx';
 import ListingTasks from '../components/ListingTasks.jsx';
 
@@ -30,7 +31,7 @@ export function cleanTaskTitle(title) {
     .trim();
 }
 
-function TaskRow({ t, onToggle, overdue, go }) {
+function TaskRow({ t, onToggle, overdue, go, onEditMachine }) {
   const cleanTitle = cleanTaskTitle(t.title);
   const clientName = t.lead ? fullName(t.lead) : '';
 
@@ -71,6 +72,31 @@ function TaskRow({ t, onToggle, overdue, go }) {
             <span className="text-ink-400">{when(t.due)}</span>
           )}
         </div>
+        {t.unitId && (
+          <div className="mt-1.5 flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onEditMachine) onEditMachine(t.unitId);
+                else go('inventory', t.unitId);
+              }}
+              className="inline-flex items-center gap-1 rounded bg-bam/15 border border-bam/30 px-2 py-0.5 text-[10.5px] font-bold text-bam hover:bg-bam hover:text-black transition-all"
+            >
+              🚜 Machine #{t.unitId} · ✏️ Edit
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                api.openBrochure(t.unitId).catch(() => {});
+              }}
+              className="inline-flex items-center gap-1 rounded bg-ink-800 border border-neutral-700 px-2 py-0.5 text-[10.5px] font-medium text-neutral-300 hover:text-white transition-all"
+            >
+              📄 Brochure
+            </button>
+          </div>
+        )}
       </div>
       {t.priority === 'high' && <span className="chip bg-rose-500/20 text-rose-300 text-[10px] uppercase font-bold">HIGH</span>}
     </div>
@@ -242,11 +268,11 @@ export default function Today({ notify, go }) {
           {/* Tasks list */}
           {!regularOpen && !upcoming.length && <Empty>No open tasks. Log a call to auto-schedule the next follow-up.</Empty>}
           {overdue.length > 0 && <div className="bg-rose-950/50 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-rose-400">Overdue · {overdue.length}</div>}
-          {overdue.map((t) => <TaskRow key={t.id} t={t} onToggle={toggle} overdue go={go} />)}
+          {overdue.map((t) => <TaskRow key={t.id} t={t} onToggle={toggle} overdue go={go} onEditMachine={openEditUnit} />)}
           {dueToday.length > 0 && <div className="bg-ink-800/80 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-ink-300">Due today · {dueToday.length}</div>}
-          {dueToday.map((t) => <TaskRow key={t.id} t={t} onToggle={toggle} go={go} />)}
+          {dueToday.map((t) => <TaskRow key={t.id} t={t} onToggle={toggle} go={go} onEditMachine={openEditUnit} />)}
           {upcoming.length > 0 && <div className="bg-ink-800/80 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-ink-400">Upcoming · {upcoming.length}</div>}
-          {upcoming.map((t) => <TaskRow key={t.id} t={t} onToggle={toggle} go={go} />)}
+          {upcoming.map((t) => <TaskRow key={t.id} t={t} onToggle={toggle} go={go} onEditMachine={openEditUnit} />)}
         </section>
 
         {/* Left/Secondary: Hot Buyers & Priority Leads */}
@@ -258,17 +284,42 @@ export default function Today({ notify, go }) {
             </div>
             {!d.hot?.length && <Empty>No 85+ matches right now.</Empty>}
             {d.hot?.slice(0, 6).map((h) => (
-              <button key={h.id} onClick={() => go('match', h.unitId)} className="row-int flex w-full items-center gap-3 border-b border-ink-800 px-4 py-2.5 text-left last:border-0 hover:bg-ink-800/50 transition-colors">
-                <Ring score={h.score} size={36} />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[13.5px] font-semibold text-white">{fullName(h)}</div>
-                  <div className="truncate text-xs text-ink-400 flex items-center gap-1.5">
-                    <span className="text-bam font-medium">wants</span>
-                    <span className="text-neutral-300">{h.unit}</span>
+              <div key={h.id} className="row-int flex w-full items-center gap-3 border-b border-ink-800 px-4 py-2.5 text-left last:border-0 hover:bg-ink-800/50 transition-colors">
+                <button type="button" onClick={() => go('match', h.unitId)} className="flex items-center gap-3 flex-1 min-w-0 text-left group">
+                  <Ring score={h.score} size={36} />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[13.5px] font-semibold text-white group-hover:text-bam transition-colors">{fullName(h)}</div>
+                    <div className="truncate text-xs text-ink-400 flex items-center gap-1.5">
+                      <span className="text-bam font-medium">wants</span>
+                      <span className="text-neutral-300">{h.unit}</span>
+                    </div>
                   </div>
+                </button>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEditUnit(h.unitId);
+                    }}
+                    className="rounded bg-bam/15 border border-bam/30 px-2 py-0.5 text-[10.5px] font-bold text-bam hover:bg-bam hover:text-black transition-all"
+                    title="Edit machine record with pre-populated fields"
+                  >
+                    ✏️ Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      api.openBrochure(h.unitId).catch(() => {});
+                    }}
+                    className="rounded bg-ink-800 border border-neutral-700 px-2 py-0.5 text-[10.5px] font-medium text-neutral-300 hover:text-white transition-all"
+                    title="Open 2-page equipment brochure PDF"
+                  >
+                    📄 PDF
+                  </button>
                 </div>
-                <span className="text-xs text-ink-500 font-bold">→</span>
-              </button>
+              </div>
             ))}
           </section>
 
@@ -302,7 +353,23 @@ export default function Today({ notify, go }) {
       </div>
 
       {/* Scraped Machine Pipeline */}
-      <ListingTasks tasks={listings} onToggle={toggle} go={go} />
+      <ListingTasks tasks={listings} onToggle={toggle} go={go} onEditMachine={openEditUnit} notify={notify} />
+
+      {/* Instant Pre-Populated Machine Edit Modal */}
+      {editingUnit && (
+        <Modal title={`Edit Machine · ${editingUnit.stock || unitTitle(editingUnit)}`} wide onClose={() => setEditingUnit(null)}>
+          <UnitForm
+            initial={editingUnit}
+            oemSpecs={editingUnit.oemSpecs || {}}
+            onSubmit={handleSaveUnit}
+            onCancel={() => setEditingUnit(null)}
+            submitLabel="Save unit"
+            busy={editBusy}
+            unitId={editingUnit.id}
+            notify={notify}
+          />
+        </Modal>
+      )}
     </div>
   );
 }
