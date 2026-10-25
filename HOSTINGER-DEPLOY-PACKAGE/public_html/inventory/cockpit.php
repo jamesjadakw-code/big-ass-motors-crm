@@ -40,6 +40,7 @@ if (is_post()) {
                     'attachments'            => (string) ($payload['attachments'] ?? ''),
                     'source_url'             => (string) ($payload['sourceUrl'] ?? ''),
                     'status'                 => (string) ($payload['status'] ?? 'Draft'),
+                    'submitted_via'          => 'crm_buyer_match',
                 ], $unitId, $uid, true);
                 if (is_file(BAM_ROOT . '/inc/hunter_hook.php')) {
                     require_once BAM_ROOT . '/inc/hunter_hook.php';
@@ -64,19 +65,24 @@ if (is_post()) {
                     try { q('DELETE FROM inventory_files WHERE inventory_id = ?', [$delUnitId]); } catch (Throwable) {}
                     try { q('DELETE FROM matches WHERE unit_id = ?', [$delUnitId]); } catch (Throwable) {}
                     try { q('UPDATE email_drafts SET inventory_id = NULL WHERE inventory_id = ?', [$delUnitId]); } catch (Throwable) {}
-                    q('DELETE FROM inventory WHERE id = ?', [$delUnitId]);
-                    audit('cockpit_unit_delete', 'Deleted unit #' . $delUnitId, 'unit', $delUnitId);
+                    q("DELETE FROM inventory WHERE id = ? AND submitted_via = 'crm_buyer_match'", [$delUnitId]);
+                    audit('cockpit_unit_delete', 'Deleted CRM candidate unit #' . $delUnitId, 'unit', $delUnitId);
                 }
                 break;
 
             case 'purge_all_units':
                 if (crm_can('admin', $ME)) {
-                    q('DELETE FROM inventory_photos');
-                    try { q('DELETE FROM inventory_files'); } catch (Throwable) {}
-                    try { q('DELETE FROM matches'); } catch (Throwable) {}
-                    try { q('UPDATE email_drafts SET inventory_id = NULL'); } catch (Throwable) {}
-                    q('DELETE FROM inventory');
-                    audit('cockpit_purge_all_units', 'Admin permanently purged ALL machine listings (0 units)');
+                    // Only purges CRM candidate machines; BAM website inventory is 100% preserved
+                    $crmIds = q("SELECT id FROM inventory WHERE submitted_via = 'crm_buyer_match'")->fetchAll(PDO::FETCH_COLUMN);
+                    if ($crmIds) {
+                        $in = implode(',', array_fill(0, count($crmIds), '?'));
+                        q("DELETE FROM inventory_photos WHERE inventory_id IN ($in)", $crmIds);
+                        try { q("DELETE FROM inventory_files WHERE inventory_id IN ($in)", $crmIds); } catch (Throwable) {}
+                        try { q("DELETE FROM matches WHERE unit_id IN ($in)", $crmIds); } catch (Throwable) {}
+                        try { q("UPDATE email_drafts SET inventory_id = NULL WHERE inventory_id IN ($in)", $crmIds); } catch (Throwable) {}
+                        q("DELETE FROM inventory WHERE id IN ($in)", $crmIds);
+                    }
+                    audit('cockpit_purge_all_units', 'Admin purged CRM candidate machines (website inventory preserved)');
                 }
                 break;
 
@@ -219,9 +225,12 @@ if (is_post()) {
 // Accounts and passwords are managed only in Users & roles.)
 
 // ---------------- Hydrate State from MySQL PDO (`inventory`, `leads`, `users`, `email_drafts`, `crm_audit`) ----------------
+// The CRM is dedicated to finding machines for buyers (Hunter CRM).
+// BAM's website inventory remains 100% active on the public site (bigassmotors.com), but OFF the CRM.
+// Only candidate machines explicitly sourced in the CRM for buyers are shown here.
 $pdoUnits = [];
 try {
-    foreach (q("SELECT * FROM inventory WHERE status NOT IN ('Archived') ORDER BY updated_at DESC, id DESC LIMIT 250")->fetchAll() as $r) {
+    foreach (q("SELECT * FROM inventory WHERE submitted_via = 'crm_buyer_match' AND status NOT IN ('Archived') ORDER BY updated_at DESC, id DESC LIMIT 250")->fetchAll() as $r) {
         $locParts = array_map('trim', explode(',', (string) ($r['unit_location_internal'] ?: $r['seller_location'] ?? '')));
         $pdoUnits[] = [
             'id'              => (string) $r['id'],

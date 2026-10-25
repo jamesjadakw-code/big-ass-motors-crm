@@ -28,10 +28,12 @@ function new_build_state(array $me): array
         ? array_map('new_map_user', $userRows)
         : array_map(static fn ($u) => ['id' => (int) $u['id'], 'name' => new_str($u['name'], 120), 'role' => 'sales', 'active' => 1], $userRows);
 
-    // ---- inventory + photos (photo_url() from inc/inventory.php, so server uploads and hot-linked photos both work) ----
+    // ---- inventory + photos ----
+    // BAM's website listings remain active on the public site (bigassmotors.com), but OFF the CRM.
+    // The CRM only displays candidate machines explicitly sourced for buyers.
     $units = [];
     try {
-        $rows = q("SELECT * FROM inventory WHERE status <> 'Archived' ORDER BY updated_at DESC, id DESC LIMIT " . NEW_MAX_UNITS)->fetchAll();
+        $rows = q("SELECT * FROM inventory WHERE submitted_via = 'crm_buyer_match' AND status <> 'Archived' ORDER BY updated_at DESC, id DESC LIMIT " . NEW_MAX_UNITS)->fetchAll();
         $byUnit = [];
         if ($rows) {
             $ids = array_map(static fn ($r) => (int) $r['id'], $rows);
