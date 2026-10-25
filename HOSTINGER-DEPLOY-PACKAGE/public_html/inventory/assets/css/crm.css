@@ -916,3 +916,42 @@ html:not([data-theme=dark]):not([data-theme=contrast]) .flash-err {
   color: #9f1d22 !important;
 }
 
+
+
+/* Login Page: Guaranteed Pitch-Black standard */
+.login-wrap {
+  background: #000000 !important;
+}
+.login-card {
+  background: #000000 !important;
+  border: 1px solid #1f1f1f !important;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.95) !important;
+}
+.login-card input:not([type=checkbox]):not([type=radio]) {
+  background: #0a0a0a !important;
+  border: 1px solid #262626 !important;
+  color: #ffffff !important;
+}
+.login-card input:not([type=checkbox]):not([type=radio]):focus {
+  border-color: #FFC107 !important;
+  box-shadow: 0 0 0 1px #FFC107 !important;
+}
+.login-card .gsi-btn {
+  background: #0a0a0a !important;
+  border: 1px solid #262626 !important;
+  color: #ffffff !important;
+}
+.login-card .gsi-btn:hover {
+  border-color: #FFC107 !important;
+}
+.login-card .gsi-or {
+  color: #71717a !important;
+}
+.login-card .gsi-or::before, .login-card .gsi-or::after {
+  background: #222222 !important;
+}
+.login-card .btn-y {
+  background: #FFC107 !important;
+  border-color: #FFC107 !important;
+  color: #000000 !important;
+}
